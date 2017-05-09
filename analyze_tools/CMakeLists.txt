@@ -1,0 +1,1 @@
+pybind11_add_module(analyze_tools src/main.cpp)
