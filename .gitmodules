@@ -1,3 +1,6 @@
 [submodule "analyze_tools/libs/pybind11"]
 	path = analyze_tools/libs/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "analyze_tools/libs/spdlog"]
+	path = analyze_tools/libs/spdlog
+	url = https://github.com/gabime/spdlog

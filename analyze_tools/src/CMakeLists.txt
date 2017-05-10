@@ -1,3 +1,3 @@
-set(source_files main.cpp cell_linked_list.h cell_linked_list.cpp)
+add_sources(cell_linked_list.h cell_linked_list.cpp
+        logger.h logger.cpp)
 
-pybind11_add_module(analyze_tools ${source_files})
