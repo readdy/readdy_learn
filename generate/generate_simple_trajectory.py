@@ -25,7 +25,9 @@ Created on 10.05.17
 @author: clonker
 """
 import numpy as np
+import readdy._internal.readdybinding.common as common
 import readdy._internal.readdybinding.common.io as io
+
 from contextlib import closing
 from readdy._internal.readdybinding.api import KernelProvider, Simulation
 from readdy._internal.readdybinding.common import Vec
@@ -33,30 +35,31 @@ from readdy.util import platform_utils
 
 
 def generate(n_timesteps, fname):
+    common.set_logging_level("debug")
     kernel_provider = KernelProvider.get()
     kernel_provider.load_from_dir(platform_utils.get_readdy_plugin_dir())
 
-    box_x, box_y, box_z = 10., 10., 10.
+    box_x, box_y, box_z = 15., 15., 15.
 
-    time_step = .1
+    time_step = .01
 
     sim = Simulation()
-    sim.set_kernel("CPU")
+    sim.set_kernel("SingleCPU")
 
     sim.kbt = 1.0
     sim.box_size = Vec(box_x, box_y, box_z)
     sim.periodic_boundary = [True, True, True]
 
-    # diffusion constant = 1.0, radius = .0 (deprecated anyways)
-    sim.register_particle_type("A", 1.0, 0.)
-    sim.register_particle_type("B", 1.0, 0.)
-    sim.register_particle_type("C", 1.0, 0.)
+    # diffusion constant = .1, radius = .7 (deprecated anyways)
+    sim.register_particle_type("A", .1, 0.)
+    sim.register_particle_type("B", .1, 0.)
+    sim.register_particle_type("C", .1, 0.)
 
-    # rate = .01, radius = .2
-    sim.register_reaction_fusion("A+B->C", "A", "B", "C", .01, .2)
+    # rate = .05, radius = .7
+    sim.register_reaction_fusion("A+B->C", "A", "B", "C", .05, .7)
 
-    n_a_particles = 200
-    n_b_particles = 200
+    n_a_particles = 400
+    n_b_particles = 400
 
     a_particles_coordinates_x = np.random.uniform(0., box_x, n_a_particles) - .5 * box_x
     a_particles_coordinates_y = np.random.uniform(0., box_y, n_a_particles) - .5 * box_y
@@ -72,6 +75,7 @@ def generate(n_timesteps, fname):
 
     # stride = 1
     handle = sim.register_observable_trajectory(1)
+    sim.register_observable_n_particles(1000, [], lambda n: print("currently %s particles" % n))
 
     with closing(io.File(fname, io.FileAction.CREATE, io.FileFlag.OVERWRITE)) as f:
         handle.enable_write_to_file(f, u"", int(3))
@@ -79,4 +83,4 @@ def generate(n_timesteps, fname):
 
 
 if __name__ == '__main__':
-    generate(2000, "simple_trajectory.h5")
+    generate(50000, "simple_trajectory.h5")

@@ -24,3 +24,9 @@ Created on 10.05.17
 
 @author: clonker
 """
+
+import analyze_tools.analyze_tools as at
+import h5py
+
+if __name__ == '__main__':
+    pass

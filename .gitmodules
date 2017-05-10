@@ -1,3 +1,3 @@
-[submodule "libs/pybind11"]
-	path = libs/pybind11
-	url = https://github.com/pybind/pybind11
+[submodule "analyze_tools/libs/pybind11"]
+	path = analyze_tools/libs/pybind11
+	url = https://github.com/pybind/pybind11.git
