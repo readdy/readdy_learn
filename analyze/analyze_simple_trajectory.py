@@ -30,32 +30,32 @@ import analyze.log as log
 import analyze.trajectory_reader as tr
 import analyze_tools.analyze_tools as at
 import h5py
+import numpy as np
 
 
-def get_discrete_trajectory(fname):
-    dtraj = []
-    if os.path.exists(fname):
-        with h5py.File(fname) as f:
-            traj = f["readdy/trajectory"]
-            traj_time = traj["time"]
-            traj_time_records = traj["records"]
-            for time, records in zip(traj_time, traj_time_records):
-                current_counts = {}
-                for record in records:
-                    type_id = record["typeId"]
-                    if type_id in current_counts.keys():
-                        current_counts[type_id] += 1
-                    else:
-                        current_counts[type_id] = 1
-                dtraj.append(current_counts)
+def get_count_trajectory(fname, cache_fname=None):
+    if cache_fname and os.path.exists(cache_fname):
+        return np.load(cache_fname)
     else:
-        log.warn("file {} did not exist".format(fname))
-
-    return dtraj
+        dtraj = []
+        if os.path.exists(fname):
+            with h5py.File(fname) as f:
+                traj = f["readdy/trajectory"]
+                traj_time = traj["time"]
+                traj_time_records = traj["records"]
+                for time, records in zip(traj_time, traj_time_records):
+                    current_counts = [0]*3
+                    for record in records:
+                        type_id = record["typeId"]
+                        current_counts[type_id] += 1
+                    dtraj.append(current_counts)
+        else:
+            log.warn("file {} did not exist".format(fname))
+        dtraj = np.array(dtraj)
+        if cache_fname:
+            np.save(cache_fname, dtraj)
+        return dtraj
 
 if __name__ == '__main__':
     log.set_level("debug")
-    dtraj = get_discrete_trajectory("../generate/simple_trajectory.h5")
-    type_mapping = {"A": 0, "B": 1, "C": 2}
-    for i in range(100):
-        print(dtraj[i])
+    counts = get_count_trajectory("../generate/simple_trajectory.h5", cache_fname='counts_traj.npy')
