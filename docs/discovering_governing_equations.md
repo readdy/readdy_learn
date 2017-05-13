@@ -84,3 +84,9 @@ This yields a discrete trajectory $$t\mapsto S(t)$$. In the case of multiple box
 
 ## RDME case  
 
+# Todos
+- Use second derivative w.r.t time to obtain only the change in particle numbers. I.e. find $$\xi$$ according to 
+
+$$$
+\ddot{x} = \theta(x, \dot{x}) \xi
+$$$
