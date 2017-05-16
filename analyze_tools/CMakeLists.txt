@@ -19,6 +19,7 @@ macro (add_sources)
     endif()
 endmacro()
 
+find_package(Eigen3 REQUIRED)
 
 add_subdirectory(libs/pybind11)
 
@@ -26,4 +27,4 @@ add_sources(main.cpp)
 add_subdirectory(src)
 
 pybind11_add_module(analyze_tools ${source_files})
-target_include_directories(analyze_tools PRIVATE libs/spdlog/include)
+target_include_directories(analyze_tools PRIVATE libs/spdlog/include ${EIGEN3_INCLUDE_DIR})
