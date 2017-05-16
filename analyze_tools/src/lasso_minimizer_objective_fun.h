@@ -37,7 +37,7 @@
 #include "logger.h"
 
 namespace analyze_tools {
-inline double lasso_minimizer_fun(const pybind11::array_t<double, 0> &alphas, const double k_reg,
+inline double lasso_minimizer_fun(const pybind11::array_t<double, 0> &propensities, const double alpha,
                                   const pybind11::array_t<double, 0> &theta, const pybind11::array_t<double, 0> &dX) {
     double result = 0;
     if(theta.ndim() != 3) {
@@ -50,16 +50,16 @@ inline double lasso_minimizer_fun(const pybind11::array_t<double, 0> &alphas, co
         for (std::size_t s = 0; s < n_species; ++s) {
             auto x = dX.at(t, s);
             for (std::size_t r = 0; r < n_reactions; ++r) {
-                x -= alphas.at(r) * theta.at(t, r, s);
+                x -= propensities.at(r) * theta.at(t, r, s);
             }
             result += x * x;
         }
     }
     double regulator = 0;
     for (std::size_t r = 0; r < n_reactions; ++r) {
-        regulator += std::abs(alphas.at(r));
+        regulator += std::abs(propensities.at(r));
     }
-    regulator *= k_reg;
+    regulator *= alpha;
     return result + regulator;
 }
 }
