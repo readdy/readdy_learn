@@ -38,6 +38,23 @@
 
 namespace analyze_tools {
 
+inline double theta_norm_squared(const pybind11::array_t<double, 0> &theta) {
+    double result = 0;
+    const auto n_timesteps = theta.shape()[0];
+    const auto n_reactions = theta.shape()[1];
+    const auto n_species = theta.shape()[2];
+
+    for (std::size_t t = 0; t < n_timesteps; ++t) {
+        for (std::size_t s = 0; s < n_species; ++s) {
+            for (std::size_t r = 0; r < n_reactions; ++r) {
+                const auto tval = theta.at(t,r,s);
+                result += tval * tval;
+            }
+        }
+    }
+    return result;
+}
+
 inline double lasso_cost_fun(const pybind11::array_t<double, 0> &propensities, const double alpha,
                              const pybind11::array_t<double, 0> &theta, const pybind11::array_t<double, 0> &dX) {
     double result = 0;
