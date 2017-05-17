@@ -2,27 +2,25 @@ Recovering model from RD-data. TOC:
 
 [[toc]]
 
-
-# Ideas in the context of reaction diffusion:
-- Discretize space into (small) boxes
-- thus find small fluctuations in concentration
-- we also have to take into account the ($$\tau$$ lagged) time series, yielding blocks of $$N_\text{boxes} \times \tau$$ i think...
-- fit the data onto a model with all possible reactions, penalizing small values (rates etc)
-- Trajektorien (dh #Partikel pro Box) wie MSMs behandeln $$X_t \rightarrow S_t \rightarrow P(\tau)$$
-- Bei ReaDDy Trajektorien: Alle Species nehmen und mögliche Reaktionen dazu aufstellen:
-  - Bspw: Species $$A,B,C$$ yield
-    - $$\{ A,B,C\}\rightarrow \{ A,B,C \}$$ (without self-reactions)
-    - $$\{A,B,C\}+\{A,B,C\}\rightarrow\{A,B,C\}$$
-
-
-Propensity functions:
-- $$A+A\rightarrow_{k}C$$ has $$\alpha(t)=A(t)(A(t)-1)k$$
-- $$A+B\rightarrow_kD$$ has $$\alpha(t)=A(t)B(t)k$$
-
-Goals
+# Goals
 - Which reactions?
 - Which rates corresponding to the reactions?
 - Which diffusion constants?
+
+# Ideas/Todos:
+- [ ] Discretize space into (small) boxes, thus find small fluctuations in concentration
+- [x] Fit the data onto a model with all possible reactions, penalizing small values (rates etc)
+- [ ] Find propagator $$x_{t+\tau} = \mathcal{T}(\tau)\circ x_t$$
+
+
+Koopman: $$\mathcal{K}:\mathcal{F}\to\mathcal{F}, \phi\mapsto\phi\circ F$$, where $$\dot x = F(x)$$. With $$g(\mathbf{x})=\mathbf{x}$$ one obtains
+$$$
+F(x) = (\mathcal{K}g)(x) = \sum \mathbf{v}_k(\mathcal{K}\varphi_k)(x) = \sum_k \mu_k\mathbf{v}_k\varphi_k(x),
+$$$
+where $$v_k, \varphi_k, \mu_k$$ are the modes, eigenfunctions and eigenvalues, respectively. Estimate Koopman operator via EDMD, then recover generator $$\mathcal{L}$$ by estimating rates.
+$$$
+\mathcal{T}=\exp(\tau\mathcal{L})
+$$$
 
 # Papers
 
@@ -33,7 +31,7 @@ Goals
 
 _SINDy_: Sparse identification of nonlinear dynamics
 $$$
-\frac{d\mathbf{x(t)}}{dt} = \mathbf{f}(\mathbf{x(t)})
+\frac{\mathrm{d}\mathbf{x(t)}}{\mathrm{d}t} = \mathbf{f}(\mathbf{x(t)})
 $$$
 - the function $$\mathbf{f}$$ usually only consists of a few terms, i.e., sparse in the space of possible functions
 - to determine $$\mathbf{f}$$, collect a time history of the state $$\mathbf{x}(t)$$ and either measure $$\dot{\mathbf{x}}(t)$$ or approximate it numerically - the sample $$t_1, t_2, \ldots, t_m$$ and arrange it into matrices
@@ -49,17 +47,56 @@ $$$
 $$$
 where each function acts on the columns of $$\mathbf{X}$$.
 
-# The method
-## Single Box
-- collect particle counts per species, write down reactions in CME style, e.g.,
+# Reaction-kinetics in a single box / concentrations
+## ODE formulation
+There are $$S$$ particle species. The concentration of them at a fixed time is in a vector $$\mathbf{x}\in\mathbb{R}^S$$
 
 $$$
-\dot x = \begin{pmatrix}\dot x_A \\ \dot x_B \\ \dot x_C \end{pmatrix} = \begin{pmatrix} ... \end{pmatrix}
+\mathbf{x}(t) = \begin{pmatrix}x_1(t) \\ \vdots \\ x_S(t) \end{pmatrix}
+$$$
+The change of species $$i\in [1,S]$$ yields a system of ODEs
+$$$
+\dot{x_i}(t) 
+= \sum_{r=1}^R \theta_{r,i}(\mathbf{x}(t))\,\xi_r
+$$$
+where $$\theta_{r,i}(\mathbf{x}(t))$$ is the amount that species $$i$$ gains in a reaction $$r$$.This depends on the current state of the system. Each function $$\theta_r(\mathbf{x}(t))$$ represents one reaction of the system. $$\xi_r$$ is the propensity for the $$r$$-th reaction.
+
+__Example:__ $$A+B\rightarrow C$$ and $$C\rightarrow A$$ with macroscopic rates $$\xi_1$$ and $$\xi_2$$ respectively
+$$$
+\mathbf{\dot{x}}(t) 
+= \begin{pmatrix}\dot{x}_A(t) \\ \dot{x}_B(t) \\ \dot{x}_C(t) \end{pmatrix}
+= \begin{pmatrix}
+  -x_A(t)x_B(t) & x_C(t)\\
+  -x_A(t)x_B(t) &  0 \\ 
+  x_A(t)x_B(t) & -x_C(t)
+  \end{pmatrix}
+  \begin{pmatrix} \xi_1 \\ \xi_2 \end{pmatrix}
 $$$
 
-Use these functions as $$\theta_i$$ in $$\dot X = \Theta(X)\Xi$$.
+## Learn propensities from data
+Use the functions $$\theta_r$$ as ansatz-functions for a minimization problem. Formulate the problem in terms of data. Let $$\mathbf{X}\in\mathbb{R}^{T\times S}$$ be the concentrations of particles per time and per species. There are $$T$$ timesteps and $$S$$ species. The time-derivative $$\mathbf{\dot{X}}\in\mathbb{R}^{T\times S}$$ has to be approximated.
 
-# Examples
+We propose $$R$$ ansatz functions, each $$\theta_r(.)$$ representing a reaction with propensity $$\xi_r$$. Then we can formulate $$\Theta(\mathbf{X})\in\mathbb{R}^{T\times S\times R}$$ as a data-tensor and the corresponding propensities as a vector $$\Xi\in\mathbb{R}^R$$. We can reformulate the reaction-kinetics ODEs in a discrete form
+$$$
+\mathbf{\dot{X}} = \Theta(\mathbf{X})\,\Xi
+$$$
+
+### Minimize matrix norm with l1 penalty
+
+We want to find the propensities $$\tilde{\Xi}$$ that minimize the residual in the above equation with respect to a Frobenius norm. We enforce sparsity in the reactions that generate the system by introducing an L1 penalty term with the hyperparameter $$\alpha$$.
+$$$
+\begin{aligned}
+  \tilde{\Xi} &= \mathrm{argmin}_{\Xi}\left(\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 + \alpha\lVert\Xi\rVert_1\right) \\\\
+  \tilde{\Xi} &= \mathrm{argmin}_{\Xi}\left(
+    \left\lVert \mathbf{\dot{X}} - \Theta(\mathbf{X})\Xi \right\rVert^2_F 
+    + \alpha\lVert\Xi\rVert_1
+  \right)
+\end{aligned}
+$$$
+
+__Insert example image here__
+
+# Include spatial information - diffusion
 The space is discretized into $$m$$ pairwise disjoint boxes $$\Omega = \bigcup_{i=1}^m Q_i$$. The boxes should be chosen such that there is usually only one reaction at a time (so rather small). 
 
 ## For one box containing three species with occasional reactions
@@ -81,12 +118,3 @@ This yields a discrete trajectory $$t\mapsto S(t)$$. In the case of multiple box
 - only works when well mixed
 - one has to take care of the time scales which are fitted: If one educt relevant species is depleted, further fitting will decrease the rate
   - perhaps remove respective ansatz functions from LASSO loop
-
-## RDME case  
-
-# Todos
-- Use second derivative w.r.t time to obtain only the change in particle numbers. I.e. find $$\xi$$ according to 
-
-$$$
-\ddot{x} = \theta(x, \dot{x}) \xi
-$$$
