@@ -37,8 +37,9 @@
 #include "logger.h"
 
 namespace analyze_tools {
-inline double lasso_minimizer_fun(const pybind11::array_t<double, 0> &propensities, const double alpha,
-                                  const pybind11::array_t<double, 0> &theta, const pybind11::array_t<double, 0> &dX) {
+
+inline double lasso_cost_fun(const pybind11::array_t<double, 0> &propensities, const double alpha,
+                             const pybind11::array_t<double, 0> &theta, const pybind11::array_t<double, 0> &dX) {
     double result = 0;
     if(theta.ndim() != 3) {
         throw std::invalid_argument("invalid dims");
