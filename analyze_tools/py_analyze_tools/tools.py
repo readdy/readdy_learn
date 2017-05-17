@@ -25,7 +25,251 @@ Created on 17.05.17
 @author: clonker
 """
 
+import analyze_tools as at
+import functools
+import operator
+
+import h5py
 import numpy as np
+import os
+import scipy.optimize as so
+
+
+def get_count_trajectory(fname, cache_fname=None):
+    if cache_fname and os.path.exists(cache_fname):
+        return np.load(cache_fname)
+    else:
+        dtraj = []
+        if os.path.exists(fname):
+            with h5py.File(fname) as f:
+                traj = f["readdy/trajectory"]
+                traj_time = traj["time"]
+                traj_time_records = traj["records"]
+                for time, records in zip(traj_time, traj_time_records):
+                    current_counts = [0] * 4
+                    for record in records:
+                        type_id = record["typeId"]
+                        current_counts[type_id] += 1
+                    dtraj.append(current_counts)
+        else:
+            print("file {} did not exist".format(fname))
+        dtraj = np.array(dtraj)
+        if cache_fname:
+            np.save(cache_fname, dtraj)
+        return dtraj
+
+
+def frobenius_l1_regression(alpha, n_time_steps, n_basis_functions, n_species, theta, dcounts_dt):
+    bounds = [(0., None)] * n_basis_functions
+    init_xi = np.array([.5] * n_basis_functions)
+    iterations = []
+    scale = 1. / (n_time_steps * n_species)
+    result = so.minimize(
+        lambda x: at.lasso_minimizer_objective_fun(x, alpha, scale * theta, scale * dcounts_dt),
+        init_xi,
+        bounds=bounds,
+        callback=lambda x: iterations.append(x),
+        tol=1e-16,
+        method='L-BFGS-B')
+    return result.x
+
+
+class Trajectory(object):
+    def __init__(self, fname):
+        with h5py.File(fname) as f:
+            self._counts = f["readdy/observables/n_particles/data"][:].astype(np.double)
+            self._box_size = [15., 15., 15.]
+            self._time_step = .01
+            self._thetas = []
+            self._thetas_ode = []
+            self._large_theta = None
+            self._large_theta_norm_squared = 0
+            self._n_basis_functions = 0
+            self._n_time_steps = 0
+            self._n_species = 0
+            self._dcounts_dt = None
+            self._xi = None
+            self._dirty = True
+
+    def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
+        self._update()
+        tmp = np.sqrt(microscopic_rate / diffusion_coefficient) * reaction_radius
+        rate_chapman = 4. * np.pi * diffusion_coefficient * reaction_radius * (1. - np.tanh(tmp) / tmp)
+        rate_per_volume = xi * functools.reduce(operator.mul, self._box_size, 1)
+
+        print("erban chapman rate (per volume): {}".format(rate_chapman))
+        print("lasso fitted rate (per counts): {}".format(xi))
+        print("lasso fitted rate (per volume): {}".format(rate_per_volume))
+
+        return rate_chapman, xi, rate_per_volume
+
+    def _update(self):
+        if self._dirty:
+            self._dirty = False
+            print("max counts = {}, min nonzero counts = {}".format(np.max(self.counts),
+                                                                    np.min(self.counts[np.nonzero(self.counts)])))
+            self._xi = None
+            self._n_basis_functions = len(self._thetas)
+            if len(self._thetas) > 0:
+                self._n_time_steps = self.counts.shape[0]
+                self._n_species = self.counts.shape[1]
+                self._dcounts_dt = np.gradient(self.counts, axis=0) / self._time_step
+                self._last_alpha = .01
+                self._large_theta = np.array([f(self._counts) for f in self._thetas])
+                self._large_theta = np.transpose(self._large_theta, axes=(1, 0, 2))
+                self._large_theta_norm_squared = at.theta_norm_squared(self._large_theta)
+
+    def __str__(self):
+        self._update()
+        string = "Trajectory("
+        string += "counts.shape={}, box_size={}, time_step={}, n_basis_functions={}, large_theta.shape={}, " \
+                  "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}".format(self.counts.shape,
+                                                                                        self._box_size, self.time_step,
+                                                                                        self.n_basis_functions,
+                                                                                        self._large_theta.shape,
+                                                                                        self._n_time_steps,
+                                                                                        self._n_species, self._dirty,
+                                                                                        self._dcounts_dt.shape)
+        string += ")"
+        return string
+
+    def frob_l1_regression(self, alpha):
+        self._update()
+        return frobenius_l1_regression(alpha, self.n_time_steps, self.n_basis_functions, self.n_species, self._large_theta, self.dcounts_dt)
+
+    def estimate(self, alpha):
+        self._update()
+        self._xi = self.frob_l1_regression(alpha)
+        return self._xi
+
+    @property
+    def propensities(self):
+        if not self._xi:
+            self.estimate(self._last_alpha)
+        return self._xi
+
+    @property
+    def n_basis_functions(self):
+        return self._n_basis_functions
+
+    @property
+    def thetas(self):
+        return self._thetas
+
+    @thetas.setter
+    def thetas(self, value):
+        self._thetas = value
+        self._dirty = True
+
+    @property
+    def dcounts_dt(self):
+        return self._dcounts_dt
+
+    @property
+    def counts(self):
+        return self._counts
+
+    @property
+    def n_time_steps(self):
+        return self._n_time_steps
+
+    @counts.setter
+    def counts(self, value):
+        self._counts = value
+        self._dirty = True
+
+    @property
+    def thetas(self):
+        return self._thetas
+
+    @property
+    def time_step(self):
+        return self._time_step
+
+    @time_step.setter
+    def time_step(self, value):
+        self._time_step = value
+        self._dirty = True
+
+    def add_conversion(self, type1, type2):
+        def conversion(concentration):
+            if len(concentration.shape) == 1:
+                concentration = np.expand_dims(concentration, axis=0)
+                result = np.zeros((1, self._n_species))
+            else:
+                result = np.zeros((concentration.shape[0], self._n_species))
+            result[:, type1] = -concentration[:, type1]
+            result[:, type2] = concentration[:, type1]
+            return result.squeeze()
+
+        self._thetas.append(conversion)
+        self._dirty = True
+
+    def add_fusion(self, type_from1, type_from2, type_to):
+        def fusion(concentration):
+            if len(concentration.shape) == 1:
+                concentration = np.expand_dims(concentration, axis=0)
+                result = np.zeros((1, self._n_species))
+            else:
+                result = np.zeros((concentration.shape[0], self._n_species))
+            delta = concentration[:, type_from1] * concentration[:, type_from2]
+            result[:, type_from1] = -delta
+            result[:, type_from2] = -delta
+            result[:, type_to] = delta
+            return result.squeeze()
+
+        self._thetas.append(fusion)
+        self._dirty = True
+
+    def add_fission(self, type_from, type_to1, type_to2):
+        def fission(concentration):
+            if len(concentration.shape) == 1:
+                concentration = np.expand_dims(concentration, axis=0)
+                result = np.zeros((1, self._n_species))
+            else:
+                result = np.zeros((concentration.shape[0], self._n_species))
+            delta = concentration[:, type_from]
+            result[:, type_from] = -delta
+            result[:, type_to1] = delta
+            result[:, type_to2] = delta
+            return result.squeeze()
+
+        self._thetas.append(fission)
+        self._dirty = True
+
+    @property
+    def n_species(self):
+        return self._n_species
+
+
+class CV(object):
+    def __init__(self, traj):
+        self._traj = traj
+
+    def calculate_cost(self, alphas, train_indices, test_indices):
+        from pathos.multiprocessing import Pool
+
+        large_theta_train = np.array([f(self._traj.counts[train_indices]) for f in self._traj.thetas])
+        large_theta_train = np.transpose(large_theta_train, axes=(1, 0, 2))
+        dtraining_data_dt = self._traj.dcounts_dt[train_indices]
+
+        large_theta_test = np.array([f(self._traj.counts[test_indices]) for f in self._traj.thetas])
+        large_theta_test = np.transpose(large_theta_test, axes=(1, 0, 2))
+        dtest_data_dt = self._traj.dcounts_dt[test_indices]
+
+        with Pool(processes=8) as p:
+            coefficients = p.map(lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions, self._traj.n_species, large_theta_train, dtraining_data_dt), alphas)
+
+        cost_learn = []
+        cost_test = []
+        for coeff in coefficients:
+            cost_learn.append(at.lasso_minimizer_objective_fun(coeff, 0.0, large_theta_train / (
+                self._traj.n_species * self._traj.n_time_steps), dtraining_data_dt / (
+                                                                   self._traj.n_species * self._traj.n_time_steps)))
+            cost_test.append(at.lasso_minimizer_objective_fun(coeff, 0.0, large_theta_test / (
+                self._traj.n_species * self._traj.n_time_steps), dtest_data_dt / (
+                                                                  self._traj.n_species * self._traj.n_time_steps)))
+        return alphas, np.array(cost_learn), np.array(cost_test)
 
 
 def preprocess_data(X, y, normalize):
