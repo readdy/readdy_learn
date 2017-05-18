@@ -28,12 +28,12 @@ Created on 17.05.17
 import analyze_tools as at
 import functools
 import operator
-from pathos.multiprocessing import Pool
 
 import h5py
 import numpy as np
 import os
 import scipy.optimize as so
+from pathos.multiprocessing import Pool
 
 
 def get_count_trajectory(fname, cache_fname=None):
@@ -60,11 +60,12 @@ def get_count_trajectory(fname, cache_fname=None):
         return dtraj
 
 
-def frobenius_l1_regression(alpha, n_time_steps, n_basis_functions, n_species, theta, dcounts_dt):
+def frobenius_l1_regression(alpha, n_time_steps, n_basis_functions, n_species, theta, dcounts_dt, scale=None):
     bounds = [(0., None)] * n_basis_functions
     init_xi = np.array([.5] * n_basis_functions)
     iterations = []
-    scale = 1. / (n_time_steps * n_species)
+    if not scale:
+        scale = 1. / (n_time_steps * n_species)
     result = so.minimize(
         lambda x: at.lasso_minimizer_objective_fun(x, alpha, scale * theta, scale * dcounts_dt),
         init_xi,
@@ -134,9 +135,10 @@ class Trajectory(object):
         string += ")"
         return string
 
-    def frob_l1_regression(self, alpha):
+    def frob_l1_regression(self, alpha, scale=None):
         self._update()
-        return frobenius_l1_regression(alpha, self.n_time_steps, self.n_basis_functions, self.n_species, self._large_theta, self.dcounts_dt)
+        return frobenius_l1_regression(alpha, self.n_time_steps, self.n_basis_functions, self.n_species,
+                                       self._large_theta, self.dcounts_dt, scale)
 
     def estimate(self, alpha):
         self._update()
@@ -242,8 +244,8 @@ class Trajectory(object):
     def n_species(self):
         return self._n_species
 
-class CVResult(object):
 
+class CVResult(object):
     def __init__(self):
         self._large_theta_train = None
         self._train_data_derivative = None
@@ -318,6 +320,7 @@ class CVResult(object):
     def relative_cost(self, value):
         self._relative_cost = value
 
+
 class CV(object):
     def __init__(self, traj):
         self._traj = traj
@@ -335,7 +338,10 @@ class CV(object):
         cv.test_data_derivative = self._traj.dcounts_dt[test_indices]
 
         with Pool(processes=8) as p:
-            coefficients = p.map(lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions, self._traj.n_species, cv.large_theta_train, cv.train_data_derivative), alphas)
+            coefficients = p.map(
+                lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions,
+                                                  self._traj.n_species, cv.large_theta_train, cv.train_data_derivative),
+                alphas)
 
         cost_learn = []
         cost_test = []
