@@ -19,8 +19,6 @@ macro (add_sources)
     endif()
 endmacro()
 
-find_package(Eigen3 REQUIRED)
-
 add_subdirectory(libs/pybind11)
 
 add_sources(main.cpp)
