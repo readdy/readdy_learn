@@ -82,12 +82,11 @@ $$$
 $$$
 
 ### Minimize matrix norm with l1 penalty
-
-We want to find the propensities $$\tilde{\Xi}$$ that minimize the residual in the above equation with respect to a Frobenius norm. We enforce sparsity in the reactions that generate the system by introducing an L1 penalty term with the hyperparameter $$\alpha$$.
+We want to find the propensities $$\hat{\Xi}$$ that minimize the residual in the above equation with respect to a Frobenius norm. We enforce sparsity in the reactions that generate the system by introducing an L1 penalty term with the hyperparameter $$\alpha$$.
 $$$
 \begin{aligned}
-  \tilde{\Xi} &= \mathrm{argmin}_{\Xi}\left(\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 + \alpha\lVert\Xi\rVert_1\right) \\\\
-  \tilde{\Xi} &= \mathrm{argmin}_{\Xi}\left(
+  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 + \alpha\lVert\Xi\rVert_1\right) \\\\
+  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(
     \left\lVert \mathbf{\dot{X}} - \Theta(\mathbf{X})\Xi \right\rVert^2_F 
     + \alpha\lVert\Xi\rVert_1
   \right)
@@ -96,7 +95,27 @@ $$$
 
 __Simon:__ Consider averaging over multiple realisations and consider fiting time-correlations
 
-__Insert example image here__
+__Insert example image here: Reproducing the ODE behavior__
+
+### Cross validation
+Aim is to find the hyperparameter $$\hat{\alpha}$$ that produces best fits without overfitting the noise. The procedure is:
+- Split dataset timeseries into training- and test-set, $$(\mathbf{\dot{X}}_\mathrm{train},\Theta(\mathbf{X})_\mathrm{train})$$ and $$(\mathbf{\dot{X}}_\mathrm{test},\Theta(\mathbf{X})_\mathrm{test})$$ respectively
+- For a given set of $$\alpha_i$$ solve the minimization on the training set to find the corresponding $$\hat{\Xi}_i$$
+- For each $$\hat{\Xi}_i$$, calculate the cost function/residual for the training and test set $$E_{\mathrm{train},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{train} - \Theta(\mathbf{X})_\mathrm{train}\hat{\Xi}_i \right\rVert^2_F$$ and $$E_{\mathrm{test},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{test} - \Theta(\mathbf{X})_\mathrm{test}\hat{\Xi}_i \right\rVert^2_F$$ respectively
+
+__Insert example image here: train and test cost as function of alpha__
+
+The scale of the optimal hyperparameter $$\hat{\alpha}$$ can be approximated. For values large enough the L1 penalty term dominates and the cost function saturates. This domination roughly occurs when
+$$$
+\alpha_\mathrm{dom} \left\lVert\hat{\Xi}\right\rVert_1 \approx \left\lVert
+\mathbf{\dot{X}}_\mathrm{train} 
+- \Theta(\mathbf{X})_\mathrm{train}\hat{\Xi}(\alpha=0)
+\right\rVert^2_F
+$$$
+The optimal hyperparameter $$\hat{\alpha}$$ then typically lies below this value
+$$$
+\hat{\alpha} < \alpha_\mathrm{dom}
+$$$
 
 # Include spatial information - diffusion
 The space is discretized into $$m$$ pairwise disjoint boxes $$\Omega = \bigcup_{i=1}^m Q_i$$. The boxes should be chosen such that there is usually only one reaction at a time (so rather small). 
