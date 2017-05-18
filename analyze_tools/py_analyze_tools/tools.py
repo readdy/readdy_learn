@@ -335,8 +335,16 @@ def magnitude(x):
 
 
 class CV(object):
-    def __init__(self, traj):
-        self._traj = traj
+    def __init__(self, traj_train, traj_test=None):
+        if not traj_test:
+            traj_test = traj_train
+        traj_train.update()
+        traj_test.update()
+        assert traj_train.time_step == traj_test.time_step
+        assert traj_train.n_basis_functions == traj_test.n_basis_functions
+        self._traj_train = traj_train
+        self._traj_test = traj_test
+        self._scale = 1. / (traj_train.n_species * traj_train.n_time_steps)
 
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
                    return_cv_result=False):
@@ -356,35 +364,34 @@ class CV(object):
         else:
             return cv_result.alphas[min_idx]
 
-    def calculate_cost(self, alphas, train_indices, test_indices):
-        self._traj.update()
+    def calculate_cost(self, alphas, train_indices, test_indices, njobs=8):
+        self._traj_train.update()
         cv = CVResult()
         cv.alphas = alphas
 
-        cv.large_theta_train = np.array([f(self._traj.counts[train_indices]) for f in self._traj.thetas])
+        cv.large_theta_train = np.array([f(self._traj_train.counts[train_indices]) for f in self._traj_train.thetas])
         cv.large_theta_train = np.transpose(cv.large_theta_train, axes=(1, 0, 2))
-        cv.train_data_derivative = self._traj.dcounts_dt[train_indices]
+        cv.train_data_derivative = self._traj_train.dcounts_dt[train_indices]
 
-        cv.large_theta_test = np.array([f(self._traj.counts[test_indices]) for f in self._traj.thetas])
+        cv.large_theta_test = np.array([f(self._traj_test.counts[test_indices]) for f in self._traj_test.thetas])
         cv.large_theta_test = np.transpose(cv.large_theta_test, axes=(1, 0, 2))
-        cv.test_data_derivative = self._traj.dcounts_dt[test_indices]
+        cv.test_data_derivative = self._traj_test.dcounts_dt[test_indices]
 
-        with Pool(processes=8) as p:
+        with Pool(processes=njobs) as p:
             coefficients = p.map(
-                lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions,
-                                                  self._traj.n_species, cv.large_theta_train, cv.train_data_derivative),
+                lambda x: frobenius_l1_regression(x, self._traj_train.n_time_steps, self._traj_train.n_basis_functions,
+                                                  self._traj_train.n_species, cv.large_theta_train,
+                                                  cv.train_data_derivative, scale=self._scale),
                 alphas)
         cv.coefficients = coefficients
         cost_learn = []
         cost_test = []
         relative_cost = []
         for coeff in coefficients:
-            cost_learn.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_train / (
-                self._traj.n_species * self._traj.n_time_steps), cv.train_data_derivative / (
-                                                                   self._traj.n_species * self._traj.n_time_steps)))
-            cost_test.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_test / (
-                self._traj.n_species * self._traj.n_time_steps), cv.test_data_derivative / (
-                                                                  self._traj.n_species * self._traj.n_time_steps)))
+            cost_learn.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_train * self._scale,
+                                                               cv.train_data_derivative * self._scale))
+            cost_test.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_test * self._scale,
+                                                              cv.test_data_derivative * self._scale))
             relative_cost.append(cost_test[-1] / at.theta_norm_squared(cv.large_theta_test))
         cv.costs_test = cost_test
         cv.costs_train = cost_learn
