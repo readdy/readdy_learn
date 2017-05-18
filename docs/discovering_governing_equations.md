@@ -99,11 +99,9 @@ __Insert example image here: Reproducing the ODE behavior (probablity overfitted
 
 ### Cross validation
 Aim is to find the hyperparameter $$\hat{\alpha}$$ that produces best fits without overfitting the noise. The procedure is:
-- Split dataset timeseries into training- and test-set, $$(\mathbf{\dot{X}}_\mathrm{train},\Theta(\mathbf{X})_\mathrm{train})$$ and $$(\mathbf{\dot{X}}_\mathrm{test},\Theta(\mathbf{X})_\mathrm{test})$$ respectively
+- Aquire two datasets: training- and test-set, $$(\mathbf{\dot{X}}_\mathrm{train},\Theta(\mathbf{X})_\mathrm{train})$$ and $$(\mathbf{\dot{X}}_\mathrm{test},\Theta(\mathbf{X})_\mathrm{test})$$ respectively, either by splitting one time-series or having two independent realisations
 - For a given set of $$\alpha_i$$ solve the minimization on the training set to find the corresponding $$\hat{\Xi}_i$$
 - For each $$\hat{\Xi}_i$$, calculate the cost function/residual for the test set  $$E_{\mathrm{test},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{test} - \Theta(\mathbf{X})_\mathrm{test}\hat{\Xi}_i \right\rVert^2_F$$
-
-__Insert example image here: train and test cost as function of alpha__
 
 The scale of the optimal hyperparameter $$\hat{\alpha}$$ can be approximated. For values large enough (roughly $$\alpha_0$$) the L1 penalty term dominates and the cost function saturates
 $$$
