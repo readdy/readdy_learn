@@ -330,11 +330,16 @@ class CVResult(object):
         self._coefficients = value
 
 
+def magnitude(x):
+    return np.math.floor(np.math.log10(x))
+
+
 class CV(object):
     def __init__(self, traj):
         self._traj = traj
 
     def calculate_cost(self, alphas, train_indices, test_indices):
+        self._traj._update()
         cv = CVResult()
         cv.alphas = alphas
 
