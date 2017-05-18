@@ -94,6 +94,8 @@ $$$
 \end{aligned}
 $$$
 
+__Simon:__ Consider averaging over multiple realisations and consider fiting time-correlations
+
 __Insert example image here__
 
 # Include spatial information - diffusion
