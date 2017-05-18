@@ -94,7 +94,7 @@ class Trajectory(object):
             self._dirty = True
 
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
-        self._update()
+        self.update()
         tmp = np.sqrt(microscopic_rate / diffusion_coefficient) * reaction_radius
         rate_chapman = 4. * np.pi * diffusion_coefficient * reaction_radius * (1. - np.tanh(tmp) / tmp)
         rate_per_volume = xi * functools.reduce(operator.mul, self._box_size, 1)
@@ -105,7 +105,7 @@ class Trajectory(object):
 
         return rate_chapman, xi, rate_per_volume
 
-    def _update(self):
+    def update(self):
         if self._dirty:
             self._dirty = False
             print("max counts = {}, min nonzero counts = {}".format(np.max(self.counts),
@@ -122,7 +122,7 @@ class Trajectory(object):
                 self._large_theta_norm_squared = at.theta_norm_squared(self._large_theta)
 
     def __str__(self):
-        self._update()
+        self.update()
         string = "Trajectory("
         string += "counts.shape={}, box_size={}, time_step={}, n_basis_functions={}, large_theta.shape={}, " \
                   "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}".format(self.counts.shape,
@@ -136,12 +136,12 @@ class Trajectory(object):
         return string
 
     def frob_l1_regression(self, alpha, scale=None):
-        self._update()
+        self.update()
         return frobenius_l1_regression(alpha, self.n_time_steps, self.n_basis_functions, self.n_species,
                                        self._large_theta, self.dcounts_dt, scale)
 
     def estimate(self, alpha):
-        self._update()
+        self.update()
         self._xi = self.frob_l1_regression(alpha)
         return self._xi
 
@@ -338,8 +338,26 @@ class CV(object):
     def __init__(self, traj):
         self._traj = traj
 
+    def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
+                   return_cv_result=False):
+        result = self.calculate_cost([0], train_indices, test_indices)
+        norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
+        print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
+        quotient = result.costs_test[0] / norm_of_coeff
+        print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
+
+        search_grid = np.linspace(0, 10 ** (magnitude(quotient) + 1), num=n_grid_points)
+        cv_result = self.calculate_cost(search_grid, train_indices, test_indices)
+        min_idx = np.argmin(cv_result.costs_test)
+        print("best suited alpha found at idx={}, alpha={}, costs_test={}".format(min_idx, cv_result.alphas[min_idx],
+                                                                                  cv_result.costs_test[min_idx]))
+        if return_cv_result:
+            return cv_result.alphas[min_idx], cv_result
+        else:
+            return cv_result.alphas[min_idx]
+
     def calculate_cost(self, alphas, train_indices, test_indices):
-        self._traj._update()
+        self._traj.update()
         cv = CVResult()
         cv.alphas = alphas
 
