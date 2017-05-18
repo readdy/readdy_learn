@@ -255,6 +255,7 @@ class CVResult(object):
         self._costs_test = None
         self._relative_cost = None
         self._alphas = None
+        self._coefficients = None
 
     @property
     def large_theta_train(self):
@@ -320,6 +321,14 @@ class CVResult(object):
     def relative_cost(self, value):
         self._relative_cost = value
 
+    @property
+    def coefficients(self):
+        return self._coefficients
+
+    @coefficients.setter
+    def coefficients(self, value):
+        self._coefficients = value
+
 
 class CV(object):
     def __init__(self, traj):
@@ -342,7 +351,7 @@ class CV(object):
                 lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions,
                                                   self._traj.n_species, cv.large_theta_train, cv.train_data_derivative),
                 alphas)
-
+        cv.coefficients = coefficients
         cost_learn = []
         cost_test = []
         relative_cost = []
