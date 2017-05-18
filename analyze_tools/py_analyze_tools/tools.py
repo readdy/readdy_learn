@@ -28,6 +28,7 @@ Created on 17.05.17
 import analyze_tools as at
 import functools
 import operator
+from pathos.multiprocessing import Pool
 
 import h5py
 import numpy as np
@@ -241,35 +242,116 @@ class Trajectory(object):
     def n_species(self):
         return self._n_species
 
+class CVResult(object):
+
+    def __init__(self):
+        self._large_theta_train = None
+        self._train_data_derivative = None
+        self._large_theta_test = None
+        self._test_data_derivative = None
+        self._costs_train = None
+        self._costs_test = None
+        self._relative_cost = None
+        self._alphas = None
+
+    @property
+    def large_theta_train(self):
+        return self._large_theta_train
+
+    @large_theta_train.setter
+    def large_theta_train(self, value):
+        self._large_theta_train = value
+
+    @property
+    def train_data_derivative(self):
+        return self._train_data_derivative
+
+    @train_data_derivative.setter
+    def train_data_derivative(self, value):
+        self._train_data_derivative = value
+
+    @property
+    def large_theta_test(self):
+        return self._large_theta_test
+
+    @large_theta_test.setter
+    def large_theta_test(self, value):
+        self._large_theta_test = value
+
+    @property
+    def test_data_derivative(self):
+        return self._test_data_derivative
+
+    @test_data_derivative.setter
+    def test_data_derivative(self, value):
+        self._test_data_derivative = value
+
+    @property
+    def costs_train(self):
+        return self._costs_train
+
+    @costs_train.setter
+    def costs_train(self, value):
+        self._costs_train = value
+
+    @property
+    def costs_test(self):
+        return self._costs_test
+
+    @costs_test.setter
+    def costs_test(self, value):
+        self._costs_test = value
+
+    @property
+    def alphas(self):
+        return self._alphas
+
+    @alphas.setter
+    def alphas(self, value):
+        self._alphas = value
+
+    @property
+    def relative_cost(self):
+        return self._relative_cost
+
+    @relative_cost.setter
+    def relative_cost(self, value):
+        self._relative_cost = value
 
 class CV(object):
     def __init__(self, traj):
         self._traj = traj
 
     def calculate_cost(self, alphas, train_indices, test_indices):
-        from pathos.multiprocessing import Pool
+        cv = CVResult()
+        cv.alphas = alphas
 
-        large_theta_train = np.array([f(self._traj.counts[train_indices]) for f in self._traj.thetas])
-        large_theta_train = np.transpose(large_theta_train, axes=(1, 0, 2))
-        dtraining_data_dt = self._traj.dcounts_dt[train_indices]
+        cv.large_theta_train = np.array([f(self._traj.counts[train_indices]) for f in self._traj.thetas])
+        cv.large_theta_train = np.transpose(cv.large_theta_train, axes=(1, 0, 2))
+        cv.train_data_derivative = self._traj.dcounts_dt[train_indices]
 
-        large_theta_test = np.array([f(self._traj.counts[test_indices]) for f in self._traj.thetas])
-        large_theta_test = np.transpose(large_theta_test, axes=(1, 0, 2))
-        dtest_data_dt = self._traj.dcounts_dt[test_indices]
+        cv.large_theta_test = np.array([f(self._traj.counts[test_indices]) for f in self._traj.thetas])
+        cv.large_theta_test = np.transpose(cv.large_theta_test, axes=(1, 0, 2))
+        cv.test_data_derivative = self._traj.dcounts_dt[test_indices]
 
         with Pool(processes=8) as p:
-            coefficients = p.map(lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions, self._traj.n_species, large_theta_train, dtraining_data_dt), alphas)
+            coefficients = p.map(lambda x: frobenius_l1_regression(x, self._traj.n_time_steps, self._traj.n_basis_functions, self._traj.n_species, cv.large_theta_train, cv.train_data_derivative), alphas)
 
         cost_learn = []
         cost_test = []
+        relative_cost = []
         for coeff in coefficients:
-            cost_learn.append(at.lasso_minimizer_objective_fun(coeff, 0.0, large_theta_train / (
-                self._traj.n_species * self._traj.n_time_steps), dtraining_data_dt / (
+            cost_learn.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_train / (
+                self._traj.n_species * self._traj.n_time_steps), cv.train_data_derivative / (
                                                                    self._traj.n_species * self._traj.n_time_steps)))
-            cost_test.append(at.lasso_minimizer_objective_fun(coeff, 0.0, large_theta_test / (
-                self._traj.n_species * self._traj.n_time_steps), dtest_data_dt / (
+            cost_test.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_test / (
+                self._traj.n_species * self._traj.n_time_steps), cv.test_data_derivative / (
                                                                   self._traj.n_species * self._traj.n_time_steps)))
-        return alphas, np.array(cost_learn), np.array(cost_test)
+            relative_cost.append(cost_test[-1] / at.theta_norm_squared(cv.large_theta_test))
+        cv.costs_test = cost_test
+        cv.costs_train = cost_learn
+        cv.relative_cost = relative_cost
+        return cv
 
 
 def preprocess_data(X, y, normalize):
