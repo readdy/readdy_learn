@@ -95,27 +95,24 @@ $$$
 
 __Simon:__ Consider averaging over multiple realisations and consider fiting time-correlations
 
-__Insert example image here: Reproducing the ODE behavior__
+__Insert example image here: Reproducing the ODE behavior (probablity overfitted)__
 
 ### Cross validation
 Aim is to find the hyperparameter $$\hat{\alpha}$$ that produces best fits without overfitting the noise. The procedure is:
 - Split dataset timeseries into training- and test-set, $$(\mathbf{\dot{X}}_\mathrm{train},\Theta(\mathbf{X})_\mathrm{train})$$ and $$(\mathbf{\dot{X}}_\mathrm{test},\Theta(\mathbf{X})_\mathrm{test})$$ respectively
 - For a given set of $$\alpha_i$$ solve the minimization on the training set to find the corresponding $$\hat{\Xi}_i$$
-- For each $$\hat{\Xi}_i$$, calculate the cost function/residual for the training and test set $$E_{\mathrm{train},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{train} - \Theta(\mathbf{X})_\mathrm{train}\hat{\Xi}_i \right\rVert^2_F$$ and $$E_{\mathrm{test},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{test} - \Theta(\mathbf{X})_\mathrm{test}\hat{\Xi}_i \right\rVert^2_F$$ respectively
+- For each $$\hat{\Xi}_i$$, calculate the cost function/residual for the test set  $$E_{\mathrm{test},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{test} - \Theta(\mathbf{X})_\mathrm{test}\hat{\Xi}_i \right\rVert^2_F$$
 
 __Insert example image here: train and test cost as function of alpha__
 
-The scale of the optimal hyperparameter $$\hat{\alpha}$$ can be approximated. For values large enough the L1 penalty term dominates and the cost function saturates. This domination roughly occurs when
+The scale of the optimal hyperparameter $$\hat{\alpha}$$ can be approximated. For values large enough (roughly $$\alpha_0$$) the L1 penalty term dominates and the cost function saturates
 $$$
-\alpha_\mathrm{dom} \left\lVert\hat{\Xi}\right\rVert_1 \approx \left\lVert
+\alpha_\mathrm{0} \left\lVert\hat{\Xi}\right\rVert_1 \approx \left\lVert
 \mathbf{\dot{X}}_\mathrm{train} 
 - \Theta(\mathbf{X})_\mathrm{train}\hat{\Xi}(\alpha=0)
 \right\rVert^2_F
 $$$
-The optimal hyperparameter $$\hat{\alpha}$$ then typically lies below this value
-$$$
-\hat{\alpha} < \alpha_\mathrm{dom}
-$$$
+Let $$\omega = \lfloor\log_{10}\alpha_0\rfloor$$ be the order of magnitude of $$\alpha_0$$, then the search grid for finding the optimal hyperparameter $$\hat\alpha$$ is spanned over the interval $$[0, 10^{\omega+1}]$$.
 
 # Include spatial information - diffusion
 The space is discretized into $$m$$ pairwise disjoint boxes $$\Omega = \bigcup_{i=1}^m Q_i$$. The boxes should be chosen such that there is usually only one reaction at a time (so rather small). 
