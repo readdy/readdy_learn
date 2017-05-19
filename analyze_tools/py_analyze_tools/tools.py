@@ -349,13 +349,13 @@ class CV(object):
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
                    return_cv_result=False, njobs=8, alphas=None):
         if not alphas:
-	    result = self.calculate_cost([0], train_indices, test_indices)
-        	norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
-        	print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
-        	quotient = result.costs_test[0] / norm_of_coeff
-        	print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
+            result = self.calculate_cost([0], train_indices, test_indices)
+            norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
+            print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
+            quotient = result.costs_test[0] / norm_of_coeff
+            print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
 
-        	alphas = np.linspace(0, 10 ** (magnitude(quotient) + 1), num=n_grid_points)
+            alphas = np.linspace(0, 10 ** (magnitude(quotient) + 1), num=n_grid_points)
         cv_result = self.calculate_cost(alphas, train_indices, test_indices, njobs)
         min_idx = np.argmin(cv_result.costs_test)
         print("best suited alpha found at idx={}, alpha={}, costs_test={}".format(min_idx, cv_result.alphas[min_idx],
