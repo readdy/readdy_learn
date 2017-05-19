@@ -366,15 +366,17 @@ class CV(object):
                                             njobs, n_grid_points, max_level)
 
     def find_alpha_recurse(self, n_grid_points=10, train_indices=range(0, 6000), test_indices=range(6000, 12000),
-                           return_cv_result=False, njobs=8, max_level=4):
+                           return_cv_result=False, njobs=8, max_level=4, initial_interval=None):
         assert n_grid_points > 1, "number of grid points should be larger than 1"
-        result = self.calculate_cost([0], train_indices, test_indices)
-        norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
-        print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
-        quotient = self._scale * (result.costs_test[0] * result.costs_test[0]) / norm_of_coeff
-        print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
+        if initial_interval is None:
+            result = self.calculate_cost([0], train_indices, test_indices)
+            norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
+            print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
+            quotient = self._scale * (result.costs_test[0] * result.costs_test[0]) / norm_of_coeff
+            print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
+            initial_interval = [0, 10 ** (magnitude(quotient) + 1)]
 
-        return self._find_alpha_recurse(0, [0, 10 ** (magnitude(quotient) + 1)], train_indices, test_indices, return_cv_result,
+        return self._find_alpha_recurse(0, initial_interval, train_indices, test_indices, return_cv_result,
                                  njobs, n_grid_points, max_level)
 
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
