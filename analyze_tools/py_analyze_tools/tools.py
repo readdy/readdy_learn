@@ -342,7 +342,40 @@ class CV(object):
         assert traj_train.n_basis_functions == traj_test.n_basis_functions
         self._traj_train = traj_train
         self._traj_test = traj_test
-        self._scale = 1. / (2.*traj_train.n_species * traj_train.n_time_steps)
+        self._scale = 1. / (2. * traj_train.n_species * traj_train.n_time_steps)
+
+    def _find_alpha_recurse(self, level, search_interval, train_indices, test_indices, return_cv_result, njobs,
+                            n_grid_points, max_level):
+        alphas = np.linspace(search_interval[0], search_interval[1], num=n_grid_points)
+        spacing = alphas[1] - alphas[0]
+
+        cv_result = self.calculate_cost(alphas, train_indices, test_indices, njobs)
+        min_idx = np.argmin(cv_result.costs_test)
+        print("best suited alpha found on level {} at idx={}, alpha={}, costs_test={}"
+              .format(level, min_idx, cv_result.alphas[min_idx], cv_result.costs_test[min_idx]))
+
+        if level >= max_level:
+            if return_cv_result:
+                return cv_result.alphas[min_idx], cv_result
+            else:
+                return cv_result.alphas[min_idx]
+        else:
+            # take best alpha grid point and make interval around that
+            new_interval = [max(0, alphas[min_idx] - .5 * spacing), alphas[min_idx] + .5 * spacing]
+            return self._find_alpha_recurse(level + 1, new_interval, train_indices, test_indices, return_cv_result,
+                                            njobs, n_grid_points, max_level)
+
+    def find_alpha_recurse(self, n_grid_points=10, train_indices=range(0, 6000), test_indices=range(6000, 12000),
+                           return_cv_result=False, njobs=8, max_level=4):
+        assert n_grid_points > 1, "number of grid points should be larger than 1"
+        result = self.calculate_cost([0], train_indices, test_indices)
+        norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
+        print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
+        quotient = self._scale * (result.costs_test[0] * result.costs_test[0]) / norm_of_coeff
+        print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
+
+        return self._find_alpha_recurse(0, [0, 10 ** (magnitude(quotient) + 1)], train_indices, test_indices, return_cv_result,
+                                 njobs, n_grid_points, max_level)
 
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
                    return_cv_result=False, njobs=8, alphas=None):
@@ -350,7 +383,7 @@ class CV(object):
             result = self.calculate_cost([0], train_indices, test_indices)
             norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
             print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
-            quotient = self._scale * (result.costs_test[0]*result.costs_test[0]) / norm_of_coeff
+            quotient = self._scale * (result.costs_test[0] * result.costs_test[0]) / norm_of_coeff
             print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
 
             alphas = np.linspace(0, 10 ** (magnitude(quotient) + 1), num=n_grid_points)
