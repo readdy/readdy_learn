@@ -111,10 +111,10 @@ class Trajectory(object):
                                                                     np.min(self.counts[np.nonzero(self.counts)])))
             self._xi = None
             self._n_basis_functions = len(self._thetas)
+            self._n_time_steps = self.counts.shape[0]
+            self._n_species = self.counts.shape[1]
+            self._dcounts_dt = np.gradient(self.counts, axis=0) / self._time_step
             if len(self._thetas) > 0:
-                self._n_time_steps = self.counts.shape[0]
-                self._n_species = self.counts.shape[1]
-                self._dcounts_dt = np.gradient(self.counts, axis=0) / self._time_step
                 self._last_alpha = .01
                 self._large_theta = np.array([f(self._counts) for f in self._thetas])
                 self._large_theta = np.transpose(self._large_theta, axes=(1, 0, 2))
@@ -165,6 +165,10 @@ class Trajectory(object):
     @property
     def dcounts_dt(self):
         return self._dcounts_dt
+
+    @property
+    def theta(self):
+        return self._large_theta
 
     @property
     def counts(self):

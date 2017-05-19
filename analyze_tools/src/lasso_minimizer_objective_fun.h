@@ -78,8 +78,9 @@ inline double score(const input_array &propensities, const input_array &theta, c
     return std::sqrt(result);
 }
 
-inline double lasso_cost_fun(const input_array &propensities, const double alpha,
-                             const input_array &theta, const input_array &dX, const double prefactor = -1) {
+inline double elastic_net_objective_function(const input_array &propensities, const double alpha, const double l1_ratio,
+                                             const input_array &theta, const input_array &dX,
+                                             const double prefactor = -1) {
     double result = 0;
     if (theta.ndim() != 3) {
         throw std::invalid_argument("invalid dims");
@@ -102,18 +103,38 @@ inline double lasso_cost_fun(const input_array &propensities, const double alpha
         result *= 1. / (2. * n_timesteps * n_species);
     }
     double regulator = 0;
-    for (std::size_t r = 0; r < n_reactions; ++r) {
-        regulator += std::abs(propensities.at(r));
+    {
+        double regulator_l1 = 0;
+        for (std::size_t r = 0; r < n_reactions; ++r) {
+            regulator_l1 += std::abs(propensities.at(r));
+        }
+        regulator_l1 *= alpha * l1_ratio;
+        regulator += regulator_l1;
     }
-    regulator *= alpha;
+    if (l1_ratio < 1.0) {
+        double l2_norm_squared = 0;
+        for (std::size_t r = 0; r < n_reactions; ++r) {
+            l2_norm_squared += propensities.at(r) * propensities.at(r);
+        }
+        l2_norm_squared *= 0.5 * alpha * (1 - l1_ratio);
+        regulator += l2_norm_squared;
+    }
     return result + regulator;
+}
+
+inline double lasso_cost_fun(const input_array &propensities, const double alpha,
+                             const input_array &theta, const input_array &dX, const double prefactor = -1) {
+    return elastic_net_objective_function(propensities, alpha, 1.0, theta, dX, prefactor);
 }
 
 inline static void export_to_python(py::module &m) {
     using namespace py::literals;
     auto module = m.def_submodule("opt");
     module.def("lasso_minimizer_objective_fun", &lasso_cost_fun, "propensities"_a, "alpha"_a, "theta"_a, "dX"_a,
-               "prefactor"_a=-1.);
+               "prefactor"_a = -1.);
+    module.def("elastic_net_objective_fun", &elastic_net_objective_function, "propensities"_a, "alpha"_a, "l1_ratio"_a,
+               "theta"_a, "dX"_a,
+               "prefactor"_a = -1.);
     module.def("theta_norm_squared", &theta_norm_squared);
     module.def("score", &score);
 }
