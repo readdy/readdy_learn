@@ -13,7 +13,7 @@ Recovering model from RD-data. TOC:
 - [ ] Find propagator $$x_{t+\tau} = \mathcal{T}(\tau)\circ x_t$$
 
 
-Koopman: $$\mathcal{K}:\mathcal{F}\to\mathcal{F}, \phi\mapsto\phi\circ F$$, where $$\dot x = F(x)$$. With $$g(\mathbf{x})=\mathbf{x}$$ one obtains
+__Koopman:__ $$\mathcal{K}:\mathcal{F}\to\mathcal{F}, \phi\mapsto\phi\circ F$$, where $$\dot x = F(x)$$. With $$g(\mathbf{x})=\mathbf{x}$$ one obtains
 $$$
 F(x) = (\mathcal{K}g)(x) = \sum \mathbf{v}_k(\mathcal{K}\varphi_k)(x) = \sum_k \mu_k\mathbf{v}_k\varphi_k(x),
 $$$
@@ -22,6 +22,15 @@ $$$
 \mathcal{T}=\exp(\tau\mathcal{L})
 $$$
 
+__Validation:__
+```mermaid
+graph TD;
+  ReaDDy/microscopic-rates-->|simulate|Data;
+  Data-->readdy_learn;
+  ansatz-reactions-->readdy_learn;
+  readdy_learn-->Propensities;
+  Propensities-->|does-reproduce?|ReaDDy/microscopic-rates
+```
 # Papers
 
 ## Discovering governing equations from data by sparse identification of nonlinear dynamical systems 
@@ -85,8 +94,8 @@ $$$
 We want to find the propensities $$\hat{\Xi}$$ that minimize the residual in the above equation with respect to a Frobenius norm. We enforce sparsity in the reactions that generate the system by introducing an L1 penalty term with the hyperparameter $$\alpha$$.
 $$$
 \begin{aligned}
-  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 + \alpha\lVert\Xi\rVert_1\right) \\\\
-  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(
+  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(\frac{1}{2ST}\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 + \alpha\lVert\Xi\rVert_1\right) \\\\
+  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(\frac{1}{2ST}
     \left\lVert \mathbf{\dot{X}} - \Theta(\mathbf{X})\Xi \right\rVert^2_F 
     + \alpha\lVert\Xi\rVert_1
   \right)
@@ -101,11 +110,12 @@ __Insert example image here: Reproducing the ODE behavior (probablity overfitted
 Aim is to find the hyperparameter $$\hat{\alpha}$$ that produces best fits without overfitting the noise. The procedure is:
 - Aquire two datasets: training- and test-set, $$(\mathbf{\dot{X}}_\mathrm{train},\Theta(\mathbf{X})_\mathrm{train})$$ and $$(\mathbf{\dot{X}}_\mathrm{test},\Theta(\mathbf{X})_\mathrm{test})$$ respectively, either by splitting one time-series or having two independent realisations
 - For a given set of $$\alpha_i$$ solve the minimization on the training set to find the corresponding $$\hat{\Xi}_i$$
-- For each $$\hat{\Xi}_i$$, calculate the cost function/residual for the test set  $$E_{\mathrm{test},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{test} - \Theta(\mathbf{X})_\mathrm{test}\hat{\Xi}_i \right\rVert^2_F$$
+- For each $$\hat{\Xi}_i$$, calculate the cost function/residual for the test set  $$E_{\mathrm{test},i} = \left\lVert \mathbf{\dot{X}}_\mathrm{test} - \Theta(\mathbf{X})_\mathrm{test}\hat{\Xi}_i \right\rVert_F$$
 
 The scale of the optimal hyperparameter $$\hat{\alpha}$$ can be approximated. For values large enough (roughly $$\alpha_0$$) the L1 penalty term dominates and the cost function saturates
 $$$
-\alpha_\mathrm{0} \left\lVert\hat{\Xi}\right\rVert_1 \approx \left\lVert
+\alpha_\mathrm{0} \left\lVert\hat{\Xi}\right\rVert_1 \approx 
+\frac{1}{2ST}\left\lVert
 \mathbf{\dot{X}}_\mathrm{train} 
 - \Theta(\mathbf{X})_\mathrm{train}\hat{\Xi}(\alpha=0)
 \right\rVert^2_F
