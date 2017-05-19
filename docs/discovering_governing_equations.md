@@ -13,7 +13,7 @@ Recovering model from RD-data. TOC:
 - [ ] Find propagator $$x_{t+\tau} = \mathcal{T}(\tau)\circ x_t$$
 
 
-Koopman: $$\mathcal{K}:\mathcal{F}\to\mathcal{F}, \phi\mapsto\phi\circ F$$, where $$\dot x = F(x)$$. With $$g(\mathbf{x})=\mathbf{x}$$ one obtains
+__Koopman:__ $$\mathcal{K}:\mathcal{F}\to\mathcal{F}, \phi\mapsto\phi\circ F$$, where $$\dot x = F(x)$$. With $$g(\mathbf{x})=\mathbf{x}$$ one obtains
 $$$
 F(x) = (\mathcal{K}g)(x) = \sum \mathbf{v}_k(\mathcal{K}\varphi_k)(x) = \sum_k \mu_k\mathbf{v}_k\varphi_k(x),
 $$$
@@ -22,6 +22,15 @@ $$$
 \mathcal{T}=\exp(\tau\mathcal{L})
 $$$
 
+__Validation:__
+```mermaid
+graph TD;
+  ReaDDy/microscopic-rates-->|simulate|Data;
+  Data-->readdy_learn;
+  ansatz-reactions-->readdy_learn;
+  readdy_learn-->Propensities;
+  Propensities-->|does-reproduce?|ReaDDy/microscopic-rates
+```
 # Papers
 
 ## Discovering governing equations from data by sparse identification of nonlinear dynamical systems 
