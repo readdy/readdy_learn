@@ -379,7 +379,7 @@ class CV(object):
 
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
                    return_cv_result=False, njobs=8, alphas=None):
-        if not alphas:
+        if alphas is None:
             result = self.calculate_cost([0], train_indices, test_indices)
             norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
             print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
