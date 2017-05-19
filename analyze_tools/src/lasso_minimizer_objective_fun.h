@@ -37,8 +37,11 @@
 #include "logger.h"
 
 namespace analyze_tools {
+namespace opt {
+namespace py = pybind11;
+using input_array = py::array_t<double, 0>;
 
-inline double theta_norm_squared(const pybind11::array_t<double, 0> &theta) {
+inline double theta_norm_squared(const input_array &theta) {
     double result = 0;
     const auto n_timesteps = theta.shape()[0];
     const auto n_reactions = theta.shape()[1];
@@ -47,7 +50,7 @@ inline double theta_norm_squared(const pybind11::array_t<double, 0> &theta) {
     for (std::size_t t = 0; t < n_timesteps; ++t) {
         for (std::size_t s = 0; s < n_species; ++s) {
             for (std::size_t r = 0; r < n_reactions; ++r) {
-                const auto tval = theta.at(t,r,s);
+                const auto tval = theta.at(t, r, s);
                 result += tval * tval;
             }
         }
@@ -55,10 +58,9 @@ inline double theta_norm_squared(const pybind11::array_t<double, 0> &theta) {
     return result;
 }
 
-inline double lasso_cost_fun(const pybind11::array_t<double, 0> &propensities, const double alpha,
-                             const pybind11::array_t<double, 0> &theta, const pybind11::array_t<double, 0> &dX) {
+inline double score(const input_array &propensities, const input_array &theta, const input_array &dX) {
     double result = 0;
-    if(theta.ndim() != 3) {
+    if (theta.ndim() != 3) {
         throw std::invalid_argument("invalid dims");
     }
     const auto n_timesteps = theta.shape()[0];
@@ -73,11 +75,48 @@ inline double lasso_cost_fun(const pybind11::array_t<double, 0> &propensities, c
             result += x * x;
         }
     }
+    return std::sqrt(result);
+}
+
+inline double lasso_cost_fun(const input_array &propensities, const double alpha,
+                             const input_array &theta, const input_array &dX, const double prefactor = -1) {
+    double result = 0;
+    if (theta.ndim() != 3) {
+        throw std::invalid_argument("invalid dims");
+    }
+    const auto n_timesteps = theta.shape()[0];
+    const auto n_reactions = theta.shape()[1];
+    const auto n_species = theta.shape()[2];
+    for (std::size_t t = 0; t < n_timesteps; ++t) {
+        for (std::size_t s = 0; s < n_species; ++s) {
+            auto x = dX.at(t, s);
+            for (std::size_t r = 0; r < n_reactions; ++r) {
+                x -= propensities.at(r) * theta.at(t, r, s);
+            }
+            result += x * x;
+        }
+    }
+    if (prefactor >= 0) {
+        result *= prefactor;
+    } else {
+        result *= 1. / (2. * n_timesteps * n_species);
+    }
     double regulator = 0;
     for (std::size_t r = 0; r < n_reactions; ++r) {
         regulator += std::abs(propensities.at(r));
     }
     regulator *= alpha;
     return result + regulator;
+}
+
+inline static void export_to_python(py::module &m) {
+    using namespace py::literals;
+    auto module = m.def_submodule("opt");
+    module.def("lasso_minimizer_objective_fun", &lasso_cost_fun, "propensities"_a, "alpha"_a, "theta"_a, "dX"_a,
+               "prefactor"_a=-1.);
+    module.def("theta_norm_squared", &theta_norm_squared);
+    module.def("score", &score);
+}
+
 }
 }

@@ -25,10 +25,10 @@ Created on 17.05.17
 @author: clonker
 """
 
-import analyze_tools as at
 import functools
 import operator
 
+import analyze_tools.opt as opt
 import h5py
 import numpy as np
 import os
@@ -60,14 +60,13 @@ def get_count_trajectory(fname, cache_fname=None):
         return dtraj
 
 
-def frobenius_l1_regression(alpha, n_time_steps, n_basis_functions, n_species, theta, dcounts_dt, scale=None):
+def frobenius_l1_regression(alpha, n_basis_functions, theta, dcounts_dt, scale=-1.):
     bounds = [(0., None)] * n_basis_functions
     init_xi = np.array([.5] * n_basis_functions)
     iterations = []
-    if not scale:
-        scale = 1. / (n_time_steps * n_species)
+    fun = lambda x: opt.lasso_minimizer_objective_fun(x, alpha, theta, dcounts_dt, scale)
     result = so.minimize(
-        lambda x: at.lasso_minimizer_objective_fun(x, alpha, scale * theta, scale * dcounts_dt),
+        fun,
         init_xi,
         bounds=bounds,
         callback=lambda x: iterations.append(x),
@@ -119,7 +118,7 @@ class Trajectory(object):
                 self._last_alpha = .01
                 self._large_theta = np.array([f(self._counts) for f in self._thetas])
                 self._large_theta = np.transpose(self._large_theta, axes=(1, 0, 2))
-                self._large_theta_norm_squared = at.theta_norm_squared(self._large_theta)
+                self._large_theta_norm_squared = opt.theta_norm_squared(self._large_theta)
 
     def __str__(self):
         self.update()
@@ -135,10 +134,9 @@ class Trajectory(object):
         string += ")"
         return string
 
-    def frob_l1_regression(self, alpha, scale=None):
+    def frob_l1_regression(self, alpha, scale=-1.):
         self.update()
-        return frobenius_l1_regression(alpha, self.n_time_steps, self.n_basis_functions, self.n_species,
-                                       self._large_theta, self.dcounts_dt, scale)
+        return frobenius_l1_regression(alpha, self.n_basis_functions, self._large_theta, self.dcounts_dt, scale=scale)
 
     def estimate(self, alpha):
         self.update()
@@ -344,7 +342,7 @@ class CV(object):
         assert traj_train.n_basis_functions == traj_test.n_basis_functions
         self._traj_train = traj_train
         self._traj_test = traj_test
-        self._scale = 1. / (traj_train.n_species * traj_train.n_time_steps)
+        self._scale = 1. / (2.*traj_train.n_species * traj_train.n_time_steps)
 
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
                    return_cv_result=False, njobs=8, alphas=None):
@@ -352,7 +350,7 @@ class CV(object):
             result = self.calculate_cost([0], train_indices, test_indices)
             norm_of_coeff = np.linalg.norm(result.coefficients[0], ord=1)
             print("norm of coefficients for alpha=0: {}".format(norm_of_coeff))
-            quotient = result.costs_test[0] / norm_of_coeff
+            quotient = self._scale * (result.costs_test[0]*result.costs_test[0]) / norm_of_coeff
             print("quotient = {}, order of magnitude = {}".format(quotient, magnitude(quotient)))
 
             alphas = np.linspace(0, 10 ** (magnitude(quotient) + 1), num=n_grid_points)
@@ -377,11 +375,9 @@ class CV(object):
         cv.large_theta_test = np.array([f(self._traj_test.counts[test_indices]) for f in self._traj_test.thetas])
         cv.large_theta_test = np.transpose(cv.large_theta_test, axes=(1, 0, 2))
         cv.test_data_derivative = self._traj_test.dcounts_dt[test_indices]
-
         with Pool(processes=njobs) as p:
             coefficients = p.map(
-                lambda x: frobenius_l1_regression(x, self._traj_train.n_time_steps, self._traj_train.n_basis_functions,
-                                                  self._traj_train.n_species, cv.large_theta_train,
+                lambda x: frobenius_l1_regression(x, self._traj_train.n_basis_functions, cv.large_theta_train,
                                                   cv.train_data_derivative, scale=self._scale),
                 alphas)
         cv.coefficients = coefficients
@@ -389,11 +385,9 @@ class CV(object):
         cost_test = []
         relative_cost = []
         for coeff in coefficients:
-            cost_learn.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_train * self._scale,
-                                                               cv.train_data_derivative * self._scale))
-            cost_test.append(at.lasso_minimizer_objective_fun(coeff, 0.0, cv.large_theta_test * self._scale,
-                                                              cv.test_data_derivative * self._scale))
-            relative_cost.append(cost_test[-1] / at.theta_norm_squared(cv.large_theta_test))
+            cost_learn.append(opt.score(coeff, cv.large_theta_train, cv.train_data_derivative))
+            cost_test.append(opt.score(coeff, cv.large_theta_test, cv.test_data_derivative))
+            relative_cost.append(cost_test[-1] / np.math.sqrt(opt.theta_norm_squared(cv.large_theta_test)))
         cv.costs_test = cost_test
         cv.costs_train = cost_learn
         cv.relative_cost = relative_cost

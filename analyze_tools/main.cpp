@@ -10,7 +10,6 @@ PYBIND11_PLUGIN(analyze_tools) {
 
     analyze_tools::cell_linked_list::export_to_python(module);
     analyze_tools::log::export_to_python(module);
-    module.def("lasso_minimizer_objective_fun", &analyze_tools::lasso_cost_fun);
-    module.def("theta_norm_squared", &analyze_tools::theta_norm_squared);
+    analyze_tools::opt::export_to_python(module);
     return module.ptr();
 }
