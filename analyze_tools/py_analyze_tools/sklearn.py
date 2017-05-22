@@ -131,9 +131,9 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
     def _get_slice(self, X):
         if X is not None:
-            if isinstance(X, tuple) and isinstance(X[0], numbers.integral):
-                data = self.trajs[0].counts[X[1]]
-                expected = self.trajs[0].dcounts_dt[X[1]]
+            if isinstance(X, tuple) and len(X)==2 and len(self.trajs) > 1:
+                data = self.trajs[X[0]].counts[X[1]]
+                expected = self.trajs[X[0]].dcounts_dt[X[1]]
             else:
                 data = self.trajs[0].counts[X]
                 expected = self.trajs[0].dcounts_dt[X]
@@ -175,4 +175,4 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         data, _ = self._get_slice(X)
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.transpose(large_theta, axes=(1, 0, 2))
-        return opt.score(self.coefficients_, large_theta, y)
+        return -1.*opt.score(self.coefficients_, large_theta, y)
