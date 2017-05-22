@@ -115,7 +115,7 @@ class BasisFunctionConfiguration(object):
 
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
-    def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0):
+    def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi = None):
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -124,6 +124,10 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             self.trajs = [trajs]
         else:
             self.trajs = trajs
+        if init_xi is None:
+            self.init_xi = np.array([.5]*self.basis_function_configuration.n_basis_functions)
+        else:
+            self.init_xi = init_xi
 
     def _get_slice(self, X):
         if X is not None:
@@ -151,7 +155,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         large_theta = np.transpose(large_theta, axes=(1, 0, 2))
 
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
-        init_xi = np.array([.5] * self.basis_function_configuration.n_basis_functions)
+        init_xi = self.init_xi
         iterations = []
         fun = lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
 
