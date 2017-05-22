@@ -25,6 +25,8 @@ Created on 19.05.17
 @author: clonker
 """
 
+import numbers
+
 import analyze_tools.opt as opt
 import numpy as np
 import scipy.optimize as so
@@ -113,13 +115,28 @@ class BasisFunctionConfiguration(object):
 
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
-    def __init__(self, counts, dcounts_dt, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0):
+    def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0):
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.scale = scale
-        self.counts = counts
-        self.dcounts_dt = dcounts_dt
+        if not isinstance(trajs, (list, tuple)):
+            self.trajs = [trajs]
+        else:
+            self.trajs = trajs
+
+    def _get_slice(self, X):
+        if X is not None:
+            if isinstance(X, tuple) and isinstance(X[0], numbers.integral):
+                data = self.trajs[0].counts[X[1]]
+                expected = self.trajs[0].dcounts_dt[X[1]]
+            else:
+                data = self.trajs[0].counts[X]
+                expected = self.trajs[0].dcounts_dt[X]
+        else:
+            data = self.trajs[0].counts
+            expected = self.trajs[0].dcounts_dt
+        return data, expected
 
     def fit(self, X, y=None):
         """
@@ -128,21 +145,14 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         :param kwargs:
         :return:
         """
-        if X is not None:
-            data = self.counts[X]
-            expected = self.dcounts_dt[X]
-        else:
-            data = self.counts
-            expected = self.dcounts_dt
+        data, expected = self._get_slice(X)
 
-        # print("data=%s, expected=%s" % (data, expected))
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.transpose(large_theta, axes=(1, 0, 2))
 
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
         init_xi = np.array([.5] * self.basis_function_configuration.n_basis_functions)
         iterations = []
-        # print("alpha=%s,l1_ratio=%s,large_theta_shape=%s,expected_shape=%s,scale=%s"%(self.alpha,self.l1_ratio, large_theta.shape,expected.shape,self.scale))
         fun = lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
 
         result = so.minimize(
@@ -158,10 +168,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         return self
 
     def score(self, X, y):
-        if X is not None:
-            data = self.counts[X]
-        else:
-            data = self.counts
+        data, _ = self._get_slice(X)
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.transpose(large_theta, axes=(1, 0, 2))
         return opt.score(self.coefficients_, large_theta, y)
