@@ -92,4 +92,4 @@ def generate(n_timesteps, fname):
 
 
 if __name__ == '__main__':
-    generate(100000, "simple_trajectory_3.h5")
+    generate(50, "simple_trajectory_4.h5")

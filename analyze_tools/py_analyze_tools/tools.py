@@ -28,7 +28,7 @@ Created on 17.05.17
 import functools
 import operator
 
-import analyze_tools.opt as opt
+import analyze_tools.analyze_tools.opt as opt
 import h5py
 import numpy as np
 import os
@@ -75,6 +75,24 @@ def frobenius_l1_regression(alpha, n_basis_functions, theta, dcounts_dt, scale=-
     return result.x
 
 
+class TrajectoryConfig(object):
+    def __init__(self, f):
+        self.types = {}
+        self.reactions = []
+        if "config" in f["readdy"]:
+            if "particle_types" in f["readdy/config"]:
+                for t in f["readdy/config/particle_types"].keys():
+                    self.types[t] = f["readdy/config/particle_types"][t].value
+            if "registered_reactions" in f["readdy/config"]:
+                group = f["readdy/config/registered_reactions"]
+                if "order1" in group:
+                    for type_from in group["order1"].keys():
+                        self.reactions.append(group["order1"][type_from].value)
+                if "order2" in group:
+                    for types_from in group["order2"].keys():
+                        self.reactions.append(group["order2"][types_from].value)
+
+
 class Trajectory(object):
     def __init__(self, fname):
         with h5py.File(fname) as f:
@@ -91,6 +109,7 @@ class Trajectory(object):
             self._dcounts_dt = None
             self._xi = None
             self._dirty = True
+            self._config = TrajectoryConfig(f)
 
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
@@ -381,7 +400,7 @@ class CV(object):
             initial_interval = [0, 10 ** (magnitude(quotient) + 1)]
 
         return self._find_alpha_recurse(0, initial_interval, train_indices, test_indices, return_cv_result,
-                                 njobs, n_grid_points, max_level)
+                                        njobs, n_grid_points, max_level)
 
     def find_alpha(self, n_grid_points=200, train_indices=range(0, 6000), test_indices=range(6000, 12000),
                    return_cv_result=False, njobs=8, alphas=None):
