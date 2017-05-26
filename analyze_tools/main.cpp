@@ -1,7 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-#include "src/cell_linked_list.h"
 #include "src/lasso_minimizer_objective_fun.h"
 
 namespace py = pybind11;

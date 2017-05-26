@@ -28,7 +28,7 @@ Created on 17.05.17
 import functools
 import operator
 
-import analyze_tools.analyze_tools.opt as opt
+import analyze_tools.opt as opt
 import h5py
 import numpy as np
 import os
