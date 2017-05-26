@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include "logger.h"
-
 namespace analyze_tools {
 namespace opt {
 namespace py = pybind11;
