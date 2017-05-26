@@ -20,33 +20,21 @@
  ********************************************************************/
 
 
+
+#include <readdy/common/logging.h>
+
 /**
  * << detailed description >>
  *
- * @file logger.cpp
+ * @file main_exec.cpp
  * @brief << brief description >>
  * @author clonker
- * @date 10.05.17
+ * @date 26.05.17
  * @copyright GNU Lesser General Public License v3.0
  */
 
-#include "logger.h"
-
-namespace analyze_tools {
-namespace log {
-std::shared_ptr<spdlog::logger> get() {
-    if (!spdlog::get("console")) {
-        spdlog::set_sync_mode();
-        auto console = spdlog::stdout_color_mt("console");
-        // console->set_pattern("[          ] [%Y-%m-%d %H:%M:%S] [%t] [%l] %v");
-    }
-    return spdlog::get("console");
-}
-
-std::shared_ptr<spdlog::logger> console() {
-    static std::shared_ptr<spdlog::logger> logger = get();
-    return logger;
-}
-
-}
+int main() {
+    readdy::log::debug(5);
+   // analyze_tools::cell_linked_list cll ("foo");
+    return 0;
 }

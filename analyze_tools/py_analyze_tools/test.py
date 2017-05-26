@@ -29,12 +29,16 @@ import unittest
 import h5py
 from analyze_tools.py_analyze_tools.tools import TrajectoryConfig
 
+import analyze_tools.analyze_tools as at
 
 class Tests(unittest.TestCase):
 
     def test_load_trajectory_config(self):
         with h5py.File("generate/simple_trajectory_4.h5") as f:
             cfg = TrajectoryConfig(f)
+
+    def test_read_trajectory(self):
+        foo = at.CellLinkedList("foo")
 
 if __name__ == '__main__':
     unittest.main()

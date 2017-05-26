@@ -23,10 +23,10 @@
 /**
  * << detailed description >>
  *
- * @file cell_linked_list.h
+ * @file trajectory_reader.h
  * @brief << brief description >>
  * @author clonker
- * @date 10.05.17
+ * @date 26.05.17
  * @copyright GNU Lesser General Public License v3.0
  */
 
@@ -35,43 +35,55 @@
 #include <readdy/io/io.h>
 #include <readdy/model/observables/io/TrajectoryEntry.h>
 #include <readdy/model/observables/io/Types.h>
-#include "io/trajectory_reader.h"
-
 
 namespace analyze_tools {
-class cell_linked_list {
-public:
+namespace io {
 
-    cell_linked_list(const std::string& fname) {
-        readdy::io::File f("/home/mho/Development/readdy/readdy/readdy/test/simple_trajectory.h5", readdy::io::File::Action::OPEN, readdy::io::File::Flag::READ_ONLY);
-        auto& rootGroup = f.getRootGroup();
-        auto traj = rootGroup.subgroup("readdy/trajectory");
-        for(const auto ds : traj.contained_data_sets()) {
-            //readdy::log::error("ds: {}", ds);
-        }
-        // limits
-        std::vector<std::size_t> limits;
-        io::read(traj,"limits", limits, readdy::io::STDDataSetType<std::size_t>(), readdy::io::NativeDataSetType<std::size_t>());
-        // records
-        std::vector<readdy::model::observables::TrajectoryEntry> entries;
-        readdy::model::observables::util::TrajectoryEntryMemoryType memoryType;
-        readdy::model::observables::util::TrajectoryEntryFileType fileType;
-        traj.read("records", entries, memoryType, fileType);
+template<typename T>
+inline void read(readdy::io::Group& group, const std::string& ds_name, std::vector<T> &array, readdy::io::DataSetType memoryType, readdy::io::DataSetType fileType) {
+    auto name = readdy::log::console()->name();
+    readdy::log::debug("name: {}", name);
+    readdy::io::blosc_compression::initialize();
 
-        for(std::size_t i = 0; i < limits.size(); i += 2) {
-            auto begin = limits[i];
-            auto end = limits[i+1];
-            readdy::log::error("got n frames: {} = {} - {}", end - begin, end, begin);
-            readdy::log::error("last entry: {}", entries[end-1]);
-        }
+    const auto n_array_dims = 1 + readdy::io::util::n_dims<T>::value;
+    auto hid = H5Dopen2(group.hid(), ds_name.data(), H5P_DEFAULT);
 
-        std::vector<readdy::time_step_type> timesteps;
-        traj.read("time", timesteps);
-        for(auto t : timesteps) {
-            readdy::log::error("t = {}", t);
-        }
+    readdy::io::DataSpace memorySpace (H5Dget_space(hid));
+
+    const auto ndim = memorySpace.ndim();
+
+    //if(ndim != n_array_dims) {
+    //    log::error("wrong dimensionality: {} != {}", ndim, n_array_dims);
+    //    throw std::invalid_argument("wrong dimensionality when attempting to read a data set");
+    //}
+
+    const auto dims = memorySpace.dims();
+    std::size_t required_length = 1;
+    for(const auto dim : dims) {
+        readdy::log::error("dim len = {}", dim);
+        required_length *= dim;
+    }
+    readdy::log::error("required length = {}", required_length);
+    array.resize(required_length);
+
+    auto result = H5Dread(hid, memoryType.hid(), H5S_ALL, H5S_ALL, H5P_DEFAULT, array.data());
+
+    if(result < 0) {
+        readdy::log::error("Failed reading result!");
+        H5Eprint(H5Eget_current_stack(), stderr);
     }
 
+    H5Dclose(hid);
 
-};
+    //for(std::size_t d = 0; d < ndim-1; ++d) {
+    //    for(auto& sub_arr : array) {
+    //        sub_arr.resize(dims[1]);
+    //    }
+    //}
+
+    // todo reshape array to dims
+}
+
+
+}
 }
