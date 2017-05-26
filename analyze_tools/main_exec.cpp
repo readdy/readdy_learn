@@ -22,6 +22,7 @@
 
 
 #include <readdy/common/logging.h>
+#include "src/cell_linked_list.h"
 
 /**
  * << detailed description >>
@@ -34,7 +35,6 @@
  */
 
 int main() {
-    readdy::log::debug(5);
-   // analyze_tools::cell_linked_list cll ("foo");
+    analyze_tools::cell_linked_list cll ("foo");
     return 0;
 }

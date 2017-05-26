@@ -47,7 +47,7 @@ public:
         auto& rootGroup = f.getRootGroup();
         auto traj = rootGroup.subgroup("readdy/trajectory");
         for(const auto ds : traj.contained_data_sets()) {
-            //readdy::log::error("ds: {}", ds);
+            readdy::log::error("ds: {}", ds);
         }
         // limits
         std::vector<std::size_t> limits;
