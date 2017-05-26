@@ -33,10 +33,44 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
+#include <readdy/io/io.h>
+#include <readdy/model/observables/io/TrajectoryEntry.h>
+#include <readdy/model/observables/io/Types.h>
+
 
 namespace analyze_tools {
 class cell_linked_list {
 public:
+
+    cell_linked_list(const std::string& fname) {
+        readdy::io::File f("/home/mho/Development/readdy/readdy/readdy/test/simple_trajectory.h5", readdy::io::File::Action::OPEN, readdy::io::File::Flag::READ_ONLY);
+        auto& rootGroup = f.getRootGroup();
+        auto traj = rootGroup.subgroup("readdy/trajectory");
+        for(const auto ds : traj.contained_data_sets()) {
+            readdy::log::error("ds: {}", ds);
+        }
+        // limits
+        std::vector<std::size_t> limits;
+        traj.read("limits", limits, readdy::io::STDDataSetType<std::size_t>(), readdy::io::NativeDataSetType<std::size_t>());
+        // records
+        std::vector<readdy::model::observables::TrajectoryEntry> entries;
+        readdy::model::observables::util::TrajectoryEntryMemoryType memoryType;
+        readdy::model::observables::util::TrajectoryEntryFileType fileType;
+        traj.read("records", entries, memoryType, fileType);
+
+        for(std::size_t i = 0; i < limits.size(); i += 2) {
+            auto begin = limits[i];
+            auto end = limits[i+1];
+            readdy::log::error("got n frames: {} = {} - {}", end - begin, end, begin);
+            readdy::log::error("last entry: {}", entries[end-1]);
+        }
+
+        std::vector<readdy::time_step_type> timesteps;
+        traj.read("time", timesteps);
+        for(auto t : timesteps) {
+            readdy::log::error("t = {}", t);
+        }
+    }
 
     static void export_to_python(pybind11::module& module) {
         pybind11::class_<cell_linked_list>(module, "CellLinkedList");

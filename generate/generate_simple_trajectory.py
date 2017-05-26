@@ -74,7 +74,7 @@ def generate(n_timesteps, fname):
         sim.add_particle("B", Vec(x, y, z))
 
     # stride = 1
-    handle = sim.register_observable_trajectory(1)
+    handle = sim.register_observable_flat_trajectory(1)
     sim.register_observable_n_particles(1000, [], lambda n: print("currently %s particles" % n))
 
     with closing(io.File(fname, io.FileAction.CREATE, io.FileFlag.OVERWRITE)) as f:
@@ -83,4 +83,4 @@ def generate(n_timesteps, fname):
 
 
 if __name__ == '__main__':
-    generate(50000, "simple_trajectory.h5")
+    generate(10, "simple_trajectory.h5")
