@@ -25,8 +25,6 @@ inline static void export_to_python(py::module &m) {
 
 PYBIND11_PLUGIN(analyze_tools) {
     py::module module("analyze_tools", "analyze tools module");
-
-    pybind11::class_<analyze_tools::cell_linked_list>(module, "CellLinkedList").def(pybind11::init<std::string>());
     analyze_tools::opt::export_to_python(module);
     return module.ptr();
 }

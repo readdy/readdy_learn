@@ -22,18 +22,32 @@ macro (add_sources)
     endif()
 endmacro()
 
-find_package(ReaDDy REQUIRED)
+macro (add_experimental_sources)
+    file (RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+    foreach (_src ${ARGN})
+        if (_relPath)
+            list (APPEND experimental_sources_files "${_relPath}/${_src}")
+        else()
+            list (APPEND experimental_source_files "${_src}")
+        endif()
+    endforeach()
+    if (_relPath)
+        # propagate source_files to parent directory
+        set (experimental_source_files ${experimental_source_files} PARENT_SCOPE)
+    endif()
+endmacro()
 
+
+find_package(ReaDDy REQUIRED)
 
 add_subdirectory(src)
 
 find_package(HDF5 COMPONENTS C HL REQUIRED)
 find_package(Threads)
-add_executable(analyze_tools_exec main_exec.cpp ${source_files})
+add_executable(analyze_tools_exec main_exec.cpp ${source_files} ${experimental_source_files})
 target_include_directories(analyze_tools_exec PUBLIC libs/spdlog/include ${ReaDDy_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
 target_link_libraries(analyze_tools_exec PUBLIC ${ReaDDy_LIBRARIES} ${HDF5_LIBRARIES} Threads::Threads)
 
 add_subdirectory(libs/pybind11)
 pybind11_add_module(analyze_tools main.cpp ${source_files})
-target_include_directories(analyze_tools PRIVATE libs/spdlog/include ${ReaDDy_INCLUDE_DIRS})
-target_link_libraries(analyze_tools PRIVATE ${ReaDDy_LIBRARIES})
+target_include_directories(analyze_tools PRIVATE libs/spdlog/include)
