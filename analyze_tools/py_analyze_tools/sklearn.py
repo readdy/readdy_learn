@@ -91,10 +91,9 @@ class FissionReaction(object):
 
 
 class BasisFunctionConfiguration(object):
-    def __init__(self, trajectory):
+    def __init__(self, n_species):
         self._basis_functions = []
-        trajectory.update()
-        self._n_species = trajectory.n_species
+        self._n_species = n_species
 
     @property
     def functions(self):
@@ -164,6 +163,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             init_xi,
             bounds=bounds,
             callback=lambda x: iterations.append(x),
+            jac=False,
             tol=1e-16,
             method='L-BFGS-B')
 

@@ -62,8 +62,8 @@ class CMakeBuild(build_ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DCMAKE_C_COMPILER=/home/mho/miniconda2/envs/readdy_dev/bin/gcc',
-                      '-DCMAKE_CXX_COMPILER=/home/mho/miniconda2/envs/readdy_dev/bin/g++']
+                      '-DCMAKE_C_COMPILER=/usr/lib/ccache/gcc',
+                      '-DCMAKE_CXX_COMPILER=/usr/lib/ccache/g++']
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]

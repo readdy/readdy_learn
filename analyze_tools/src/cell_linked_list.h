@@ -35,6 +35,7 @@
 #include <readdy/io/io.h>
 #include <readdy/model/observables/io/TrajectoryEntry.h>
 #include <readdy/model/observables/io/Types.h>
+#include <iostream>
 #include "io/trajectory_reader.h"
 
 
@@ -43,6 +44,7 @@ class cell_linked_list {
 public:
 
     cell_linked_list(const std::string& fname) {
+        std::cout << "fname=" << fname << std::endl;
         readdy::io::File f("/home/mho/Development/readdy/readdy/readdy/test/simple_trajectory.h5", readdy::io::File::Action::OPEN, readdy::io::File::Flag::READ_ONLY);
         auto& rootGroup = f.getRootGroup();
         auto traj = rootGroup.subgroup("readdy/trajectory");
