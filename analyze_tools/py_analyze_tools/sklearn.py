@@ -25,8 +25,6 @@ Created on 19.05.17
 @author: clonker
 """
 
-import numbers
-
 import analyze_tools.opt as opt
 import numpy as np
 import scipy.optimize as so
@@ -114,7 +112,8 @@ class BasisFunctionConfiguration(object):
 
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
-    def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi = None):
+    def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi=None,
+                 verbose=False):
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -124,13 +123,14 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         else:
             self.trajs = trajs
         if init_xi is None:
-            self.init_xi = np.array([.5]*self.basis_function_configuration.n_basis_functions)
+            self.init_xi = np.array([.5] * self.basis_function_configuration.n_basis_functions)
         else:
             self.init_xi = init_xi
+        self.verbose = verbose
 
     def _get_slice(self, X):
         if X is not None:
-            if isinstance(X, tuple) and len(X)==2 and len(self.trajs) > 1:
+            if isinstance(X, tuple) and len(X) == 2 and len(self.trajs) > 1:
                 data = self.trajs[X[0]].counts[X[1]]
                 expected = self.trajs[X[0]].dcounts_dt[X[1]]
             else:
@@ -155,17 +155,15 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
         init_xi = self.init_xi
-        iterations = []
-        fun = lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
 
         result = so.minimize(
-            fun,
+            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
             init_xi,
             bounds=bounds,
-            callback=lambda x: iterations.append(x),
             jac=False,
             tol=1e-16,
-            method='L-BFGS-B')
+            method='L-BFGS-B',
+            options={'disp': self.verbose})
 
         self.coefficients_ = result.x
 
@@ -175,4 +173,4 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         data, _ = self._get_slice(X)
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.transpose(large_theta, axes=(1, 0, 2))
-        return -1.*opt.score(self.coefficients_, large_theta, y)
+        return -1. * opt.score(self.coefficients_, large_theta, y)
