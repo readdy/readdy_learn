@@ -15,6 +15,8 @@ inline static void export_to_python(py::module &m) {
                "prefactor"_a = -1.);
     module.def("elastic_net_objective_fun", &elastic_net_objective_function, "propensities"_a, "alpha"_a, "l1_ratio"_a,
                "theta"_a, "dX"_a, "prefactor"_a = -1.);
+    module.def("elastic_net_objective_fun_jac", &elastic_net_objective_function_jac, "propensities"_a, "alpha"_a,
+               "l1_ratio"_a, "theta"_a, "dX"_a, "prefactor"_a = -1.);
     module.def("theta_norm_squared", &theta_norm_squared);
     module.def("score", &score);
     module.def("least_squares_function", &least_squares_function);

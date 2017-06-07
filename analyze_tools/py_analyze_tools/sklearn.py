@@ -140,6 +140,8 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         else:
             data = self.trajs[0].counts
             expected = self.trajs[0].dcounts_dt
+        data = np.ascontiguousarray(data)
+        expected = np.ascontiguousarray(expected)
         return data, expected
 
     def fit(self, X, y=None):
@@ -152,7 +154,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         data, expected = self._get_slice(X)
 
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
-        large_theta = np.transpose(large_theta, axes=(1, 0, 2))
+        large_theta = np.ascontiguousarray(np.transpose(large_theta, axes=(1, 0, 2)))
 
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
         init_xi = self.init_xi
@@ -163,6 +165,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             bounds=bounds,
             tol=1e-16,
             method='L-BFGS-B',
+            jac=lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
             options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
 
         self.coefficients_ = result.x
