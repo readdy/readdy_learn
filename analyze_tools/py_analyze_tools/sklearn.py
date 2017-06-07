@@ -170,13 +170,14 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
         self.coefficients_ = result.x
 
-        if not result.success or self.verbose:
+        if self.verbose:
             if not result.success:
                 print("optimization problem did not exit successfully!")
             else:
                 print("optimization problem did exit successfully!")
             print("status %s: %s" % (result.status, result.message))
             print("%s / %s iterations" % (result.nit, self.maxiter))
+        self.result_ = result
 
         return self
 
