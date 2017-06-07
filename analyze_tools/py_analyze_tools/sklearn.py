@@ -113,7 +113,20 @@ class BasisFunctionConfiguration(object):
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
     def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi=None,
-                 verbose=False, maxiter=15000, approx_jac=False):
+                 verbose=False, maxiter=15000, approx_jac=False, method='SLSQP'):
+        """
+
+        :param trajs:
+        :param basis_function_configuration:
+        :param scale:
+        :param alpha:
+        :param l1_ratio:
+        :param init_xi:
+        :param verbose:
+        :param maxiter:
+        :param approx_jac:
+        :param method: one of SLSQP, L-BFGS-B, TNC
+        """
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -129,6 +142,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         self.verbose = verbose
         self.maxiter = maxiter
         self.approx_jac = approx_jac
+        self.method = method
 
     def _get_slice(self, X):
         if X is not None:
@@ -167,8 +181,8 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale) / 1e6,
             init_xi,
             bounds=bounds,
-            tol=1e-16, # method='SLSQP',
-            method='L-BFGS-B',
+            tol=1e-16,
+            method=self.method,
             jac=jac,
             options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
 
