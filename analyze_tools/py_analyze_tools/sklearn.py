@@ -25,10 +25,15 @@ Created on 19.05.17
 @author: clonker
 """
 
+import itertools
+
 import analyze_tools.opt as opt
 import numpy as np
 import scipy.optimize as so
+from pathos.multiprocessing import Pool
 from sklearn.linear_model.base import BaseEstimator
+from sklearn.model_selection import KFold
+from sklearn.model_selection import TimeSeriesSplit
 
 
 class ConversionReaction(object):
@@ -175,10 +180,12 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         init_xi = self.init_xi
 
         jac = False if self.approx_jac else \
-            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale) / 1e6
+            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected,
+                                                        self.scale) / 1e6
 
         result = so.minimize(
-            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale) / 1e6,
+            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected,
+                                                    self.scale) / 1e6,
             init_xi,
             bounds=bounds,
             tol=1e-16,
@@ -186,12 +193,12 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             jac=jac,
             options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
 
-
         self.coefficients_ = result.x
 
         if self.verbose:
             if not result.success:
-                print("optimization problem did not exit successfully (alpha=%s, lambda=%s)!" % (self.alpha, self.l1_ratio))
+                print("optimization problem did not exit successfully (alpha=%s, lambda=%s)!" % (
+                self.alpha, self.l1_ratio))
             else:
                 print("optimization problem did exit successfully (alpha=%s, lambda=%s)!" % (self.alpha, self.l1_ratio))
             print("status %s: %s" % (result.status, result.message))
@@ -205,3 +212,82 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.transpose(large_theta, axes=(1, 0, 2))
         return -1. * opt.score(self.coefficients_, large_theta, y)
+
+
+class CV(object):
+    def __init__(self, traj, bfc, scale, alphas, l1_ratios, n_splits, init_xi, n_jobs=8, show_progress=True,
+                 mode='k_fold', verbose=False, method='SLSQP'):
+        self.alphas = alphas
+        self.l1_ratios = l1_ratios
+        self.n_jobs = n_jobs
+        self.n_splits = n_splits
+        self.traj = traj
+        self.bfc = bfc
+        self.scale = scale
+        self.show_progress = show_progress
+        self.result = []
+        self.init_xi = init_xi
+        self.mode = mode
+        self.verbose = verbose
+        self.method = method
+
+    def compute_cv_result(self, params):
+        if self.mode == 'k_fold':
+            kf = KFold(n_splits=self.n_splits)
+        elif self.mode == 'time_series_split':
+            kf = TimeSeriesSplit(n_splits=self.n_splits)
+        else:
+            print("unknown mode: %s" % self.mode)
+            return
+        alpha, l1_ratio = params
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, self.scale, alpha=alpha,
+                                              l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                              method=self.method)
+        scores = []
+        for train_idx, test_idx in kf.split(range(0, self.traj.n_time_steps)):
+            estimator.fit(train_idx)
+            if estimator.result_.success:
+                scores.append(estimator.score(test_idx, self.traj.dcounts_dt[test_idx]))
+        return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
+
+    def fit(self):
+        params = itertools.product(self.alphas, self.l1_ratios)
+        result = []
+        if self.show_progress:
+            from ipywidgets import IntProgress
+            from IPython.display import display
+            f = IntProgress(min=0, max=len(self.alphas) * len(self.l1_ratios) - 1)
+            display(f)
+        with Pool(processes=self.n_jobs) as p:
+            for idx, res in enumerate(p.imap_unordered(self.compute_cv_result, params, 1)):
+                result.append(res)
+                if self.show_progress:
+                    f.value = idx
+        f.close()
+        self.result = result
+
+
+def get_dense_params(traj, bfc, scale, n_initial_values=16, n_jobs=8, initial_value=None):
+    from ipywidgets import IntProgress
+    from IPython.display import display
+    if initial_value is not None:
+        n_initial_values = 1
+        initial_values = [initial_value]
+    else:
+        initial_values = [np.random.random(bfc.n_basis_functions) for _ in range(n_initial_values)]
+
+    f = IntProgress(min=1, max=n_initial_values)
+    display(f)
+
+    def worker(init_xi):
+        est = ReaDDyElasticNetEstimator(traj, bfc, scale, alpha=0, l1_ratio=1.0, init_xi=init_xi, verbose=False)
+        est.fit(range(0, traj.n_time_steps))
+        return est.coefficients_
+
+    coeffs = []
+    with Pool(processes=n_jobs) as p:
+        for idx, coeff in enumerate(p.imap_unordered(worker, initial_values, 1)):
+            coeffs.append(coeff)
+            f.value = idx + 1
+    f.close()
+    return coeffs
