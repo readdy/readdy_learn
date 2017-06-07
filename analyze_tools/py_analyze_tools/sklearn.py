@@ -182,9 +182,10 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         jac = False if self.approx_jac else \
             lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected,
                                                         self.scale) / 1e6
-        options = {'disp': False, 'maxfun': self.maxiter}
+        options = {'disp': False}
         if self.method == 'L-BFGS-R':
             options['maxiter'] = self.maxiter
+            options['maxfun'] = self.maxiter
         result = so.minimize(
             lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected,
                                                     self.scale) / 1e6,
