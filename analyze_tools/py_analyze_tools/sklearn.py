@@ -170,7 +170,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             tol=1e-16,
             method='L-BFGS-B',
             jac=jac,
-            options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
+            options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter, 'factr': 10.0})
 
 
         self.coefficients_ = result.x
