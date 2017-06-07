@@ -161,25 +161,25 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         init_xi = self.init_xi
 
         jac = False if self.approx_jac else \
-            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
+            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale) / 1e6
 
         result = so.minimize(
-            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
+            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale) / 1e6,
             init_xi,
             bounds=bounds,
-            tol=1e-16,
+            tol=1e-16, # method='SLSQP',
             method='L-BFGS-B',
             jac=jac,
-            options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter, 'factr': 10.0})
+            options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
 
 
         self.coefficients_ = result.x
 
         if self.verbose:
             if not result.success:
-                print("optimization problem did not exit successfully!")
+                print("optimization problem did not exit successfully (alpha=%s, lambda=%s)!" % (self.alpha, self.l1_ratio))
             else:
-                print("optimization problem did exit successfully!")
+                print("optimization problem did exit successfully (alpha=%s, lambda=%s)!" % (self.alpha, self.l1_ratio))
             print("status %s: %s" % (result.status, result.message))
             print("%s / %s iterations" % (result.nit, self.maxiter))
         self.result_ = result
