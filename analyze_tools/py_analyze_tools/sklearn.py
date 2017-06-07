@@ -113,7 +113,7 @@ class BasisFunctionConfiguration(object):
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
     def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi=None,
-                 verbose=False):
+                 verbose=False, maxiter=15000):
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -127,6 +127,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         else:
             self.init_xi = init_xi
         self.verbose = verbose
+        self.maxiter = maxiter
 
     def _get_slice(self, X):
         if X is not None:
@@ -163,9 +164,17 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             jac=False,
             tol=1e-16,
             method='L-BFGS-B',
-            options={'disp': self.verbose})
+            options={'disp': False, 'maxiter': self.maxiter})
 
         self.coefficients_ = result.x
+
+        if not result.success or self.verbose:
+            if not result.success:
+                print("optimization problem did not exit successfully!")
+            else:
+                print("optimization problem did exit successfully!")
+            print("status %s: %s" % (result.status, result.message))
+            print("%s / %s iterations" % (result.nit, self.maxiter))
 
         return self
 
