@@ -161,10 +161,9 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
             init_xi,
             bounds=bounds,
-            jac=False,
             tol=1e-16,
             method='L-BFGS-B',
-            options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter, 'approx_grad': True})
+            options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
 
         self.coefficients_ = result.x
 
