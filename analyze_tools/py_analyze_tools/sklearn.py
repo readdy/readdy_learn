@@ -113,7 +113,7 @@ class BasisFunctionConfiguration(object):
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
     def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi=None,
-                 verbose=False, maxiter=15000):
+                 verbose=False, maxiter=15000, approx_jac=False):
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -128,6 +128,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             self.init_xi = init_xi
         self.verbose = verbose
         self.maxiter = maxiter
+        self.approx_jac = approx_jac
 
     def _get_slice(self, X):
         if X is not None:
@@ -159,14 +160,18 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
         init_xi = self.init_xi
 
+        jac = False if self.approx_jac else \
+            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
+
         result = so.minimize(
             lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
             init_xi,
             bounds=bounds,
             tol=1e-16,
             method='L-BFGS-B',
-            jac=lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
+            jac=jac,
             options={'disp': False, 'maxiter': self.maxiter, 'maxfun': self.maxiter})
+
 
         self.coefficients_ = result.x
 
