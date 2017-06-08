@@ -35,7 +35,7 @@ from readdy.util import platform_utils
 
 
 def generate(n_timesteps, fname):
-    common.set_logging_level("debug")
+    common.set_logging_level("warn")
     kernel_provider = KernelProvider.get()
     kernel_provider.load_from_dir(platform_utils.get_readdy_plugin_dir())
 
@@ -62,8 +62,8 @@ def generate(n_timesteps, fname):
     sim.register_reaction_conversion("A->D", "A", "D", .02)
     sim.register_reaction_conversion("D->A", "D", "A", .02)
 
-    n_a_particles = 9000
-    n_b_particles = 2000
+    n_a_particles = 6000
+    n_b_particles = 6000
 
     a_particles_coordinates_x = np.random.uniform(0., box_x, n_a_particles) - .5 * box_x
     a_particles_coordinates_y = np.random.uniform(0., box_y, n_a_particles) - .5 * box_y
@@ -78,12 +78,12 @@ def generate(n_timesteps, fname):
         sim.add_particle("B", Vec(x, y, z))
 
     # stride = 1
-   # handle = sim.register_observable_trajectory(1)
+    handle = sim.register_observable_trajectory(1)
     sim.register_observable_n_particles(500, [], lambda n: print("currently %s particles" % n))
     n_particles_handle = sim.register_observable_n_particles(1, ["A", "B", "C", "D"])
 
     with closing(io.File(fname, io.FileAction.CREATE, io.FileFlag.OVERWRITE)) as f:
-        #handle.enable_write_to_file(f, u"", int(3))
+        handle.enable_write_to_file(f, u"", int(3))
         n_particles_handle.enable_write_to_file(f, u"n_particles", int(5))
         sim.run_scheme_readdy(True)\
             .write_config_to_file(f)\
@@ -92,4 +92,4 @@ def generate(n_timesteps, fname):
 
 
 if __name__ == '__main__':
-    generate(50, "simple_trajectory_4.h5")
+    generate(100000, "slightly_more_complicated.h5")

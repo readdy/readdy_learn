@@ -138,9 +138,9 @@ inline input_array elastic_net_objective_function_jac(const input_array &propens
             }
         }
         if (prefactor >= 0) {
-            result.mutable_at(i) *= -2 * prefactor;
+            result.mutable_at(i) *= -2. * prefactor;
         } else {
-            result.mutable_at(i) *= -1. / (n_timesteps * n_species);
+	    result.mutable_at(i) *= -1. / (n_timesteps * n_species);
         }
 
         // now the l1 regularization
@@ -150,6 +150,7 @@ inline input_array elastic_net_objective_function_jac(const input_array &propens
         result.mutable_at(i) += alpha * (1. - l1_ratio) * propensities.at(i);
 
     }
+	
 
     return result;
 }
