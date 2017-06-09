@@ -94,22 +94,30 @@ class TrajectoryConfig(object):
 
 
 class Trajectory(object):
-    def __init__(self, fname):
+    def __init__(self, traj_config, counts):
+        self._counts = counts
+        self._box_size = [15., 15., 15.]
+        self._time_step = .01
+        self._thetas = []
+        self._thetas_ode = []
+        self._large_theta = None
+        self._large_theta_norm_squared = 0
+        self._n_basis_functions = 0
+        self._n_time_steps = 0
+        self._n_species = 0
+        self._dcounts_dt = None
+        self._xi = None
+        self._dirty = True
+        self._config = traj_config
+
+    @classmethod
+    def from_file_name(cls, fname):
         with h5py.File(fname) as f:
-            self._counts = f["readdy/observables/n_particles/data"][:].astype(np.double)
-            self._box_size = [15., 15., 15.]
-            self._time_step = .01
-            self._thetas = []
-            self._thetas_ode = []
-            self._large_theta = None
-            self._large_theta_norm_squared = 0
-            self._n_basis_functions = 0
-            self._n_time_steps = 0
-            self._n_species = 0
-            self._dcounts_dt = None
-            self._xi = None
-            self._dirty = True
-            self._config = TrajectoryConfig(f)
+            return Trajectory(TrajectoryConfig(f), f["readdy/observables/n_particles/data"][:].astype(np.double))
+
+    @classmethod
+    def from_counts(cls, traj_config, counts):
+        return Trajectory(traj_config, counts)
 
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
