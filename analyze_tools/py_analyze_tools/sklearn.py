@@ -203,7 +203,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         if self.verbose:
             if not result.success:
                 print("optimization problem did not exit successfully (alpha=%s, lambda=%s)!" % (
-                self.alpha, self.l1_ratio))
+                    self.alpha, self.l1_ratio))
             else:
                 print("optimization problem did exit successfully (alpha=%s, lambda=%s)!" % (self.alpha, self.l1_ratio))
             print("status %s: %s" % (result.status, result.message))
@@ -219,9 +219,14 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         return -1. * opt.score(self.coefficients_, large_theta, y)
 
 
+class CrossTrajSplit(object):
+    def split(self, range):
+        return range, None
+
+
 class CV(object):
     def __init__(self, traj, bfc, scale, alphas, l1_ratios, n_splits, init_xi, n_jobs=8, show_progress=True,
-                 mode='k_fold', verbose=False, method='SLSQP'):
+                 mode='k_fold', verbose=False, method='SLSQP', test_traj=None):
         self.alphas = alphas
         self.l1_ratios = l1_ratios
         self.n_jobs = n_jobs
@@ -235,12 +240,15 @@ class CV(object):
         self.mode = mode
         self.verbose = verbose
         self.method = method
+        self.test_traj = test_traj
 
     def compute_cv_result(self, params):
         if self.mode == 'k_fold':
             kf = KFold(n_splits=self.n_splits)
         elif self.mode == 'time_series_split':
             kf = TimeSeriesSplit(n_splits=self.n_splits)
+        elif self.mode == 'full_cross_traj':
+            kf = CrossTrajSplit()
         else:
             print("unknown mode: %s" % self.mode)
             return
@@ -248,11 +256,19 @@ class CV(object):
         estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, self.scale, alpha=alpha,
                                               l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                               method=self.method)
+        if self.test_traj is not None:
+            test_estimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, self.scale, alpha=alpha,
+                                                       l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                                       method=self.method)
         scores = []
         for train_idx, test_idx in kf.split(range(0, self.traj.n_time_steps)):
             estimator.fit(train_idx)
             if estimator.result_.success:
-                scores.append(estimator.score(test_idx, self.traj.dcounts_dt[test_idx]))
+                if self.test_traj is not None:
+                    scores.append(
+                        test_estimator.score(range(0, test_estimator.n_time_steps), test_estimator.dcounts_dt))
+                else:
+                    scores.append(estimator.score(test_idx, self.traj.dcounts_dt[test_idx]))
         return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
 
     def fit(self):
