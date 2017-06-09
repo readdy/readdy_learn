@@ -260,6 +260,7 @@ class CV(object):
             test_estimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, self.scale, alpha=alpha,
                                                        l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                        method=self.method)
+            test_estimator.coefficients_ = estimator.coefficients_
         scores = []
         for train_idx, test_idx in kf.split(range(0, self.traj.n_time_steps)):
             estimator.fit(train_idx)
