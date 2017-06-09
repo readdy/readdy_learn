@@ -266,7 +266,7 @@ class CV(object):
             if estimator.result_.success:
                 if self.test_traj is not None:
                     scores.append(
-                        test_estimator.score(range(0, test_estimator.n_time_steps), test_estimator.dcounts_dt))
+                        test_estimator.score(range(0, self.test_traj.n_time_steps), self.test_traj.dcounts_dt))
                 else:
                     scores.append(estimator.score(test_idx, self.traj.dcounts_dt[test_idx]))
         return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
