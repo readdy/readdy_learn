@@ -37,7 +37,7 @@ def example_system_conversions():
     diffusivity_0 = np.array([[0., 0.3], [0.4, 0.]])  # species 0
     diffusivity_1 = np.array([[0., 0.5], [0.9, 0.]])  # species 1
     diffusivity = np.array([diffusivity_0, diffusivity_1])
-    reactions = [kmc.Conversion(0, 1, 4., n_species), kmc.Conversion(1, 0, 0.5, n_species)]
+    reactions = [kmc.Conversion(0, 1, np.array([4., 4.]), n_species, n_boxes), kmc.Conversion(1, 0, np.array([0.5, 0.5]), n_species, n_boxes)]
     init_state = np.array([[1, 1], [2, 2]], dtype=np.int)
     system = kmc.ReactionDiffusionSystem(diffusivity, reactions, n_species, n_boxes, init_state)
     system.simulate(50)
@@ -69,8 +69,7 @@ class TestKineticMonteCarlo(unittest.TestCase):
 
     def test_conservation_of_particles_after_converting(self):
         system = example_system_conversions()
-        #print("\nstate_list\n", system.sequence[2])
-        time_series = system.convert_to_time_series(n_frames=500)
+        time_series, times = system.convert_to_time_series(n_frames=500)
         n_particles = np.sum(time_series[0])
         all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, time_series), dtype=np.bool)
         np.testing.assert_equal(np.all(all_correct), True)

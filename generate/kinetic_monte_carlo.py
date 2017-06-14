@@ -22,14 +22,22 @@
 """Produce realisations of the reaction-diffusion-master-equation
 
 This algorithm is known as: kinetic Monte Carlo, stochastic simulation algorithm, Gillespie algorithm.
+A proper description of such an algorithm is given by
+
+    R. Erban, J. Chapman, and P. Maini, "A practical guide to stochastic simulations of reaction-diffusion processes", pp. 24–29, Apr. 2007.
 """
 
 import numpy as np
 import bisect
 import math
+import logging
+import logutil
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"
+
+logging.basicConfig(format='[KMC] [%(asctime)s] [%(levelname)s] %(message)s', level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
+log = logutil.StyleAdapter(logging.getLogger(__name__))
 
 
 class Event:
@@ -78,30 +86,33 @@ class DiffusionEvent(Event):
     def perform(self, state):
         state[:, self._species_idx] += self._stoichiometric_delta
 
-
+# @todo
+# this shares a lot of information with ReactionDiffusionSystem, namely n_species, n_boxes, that have to be
+# mentioned many times. So gather them in a ReactionConfiguration that will be given to the System
 class Reaction:
     """Reactions behave like structs, that carry the rates and stoichiometric information for all possible reactions"""
 
-    def __init__(self, rate, n_species):
+    def __init__(self, rate, n_species, n_boxes):
+        assert len(rate)==n_boxes
         self.rate = rate
         self.stoichiometric_delta = np.zeros(n_species, dtype=np.int)
 
 
 class Conversion(Reaction):
-    def __init__(self, species_from, species_to, rate, n_species):
-        super(Conversion, self).__init__(rate, n_species)
+    def __init__(self, species_from, species_to, rate, n_species, n_boxes):
+        super(Conversion, self).__init__(rate, n_species, n_boxes)
         self.species_from = species_from
         self.species_to = species_to
         self.stoichiometric_delta[self.species_from] = -1
         self.stoichiometric_delta[self.species_to] = +1
 
-    def propensity(self, box_state):
-        return self.rate * box_state[self.species_from]
+    def propensity(self, box_state, box_idx):
+        return self.rate[box_idx] * box_state[self.species_from]
 
 
 class Fusion(Reaction):
-    def __init__(self, species_from1, species_from2, species_to, rate, n_species):
-        super(Fusion, self).__init__(rate, n_species)
+    def __init__(self, species_from1, species_from2, species_to, rate, n_species, n_boxes):
+        super(Fusion, self).__init__(rate, n_species, n_boxes)
         self.species_from1 = species_from1
         self.species_from2 = species_from2
         self.species_to = species_to
@@ -109,13 +120,13 @@ class Fusion(Reaction):
         self.stoichiometric_delta[self.species_from2] = -1
         self.stoichiometric_delta[self.species_to] = +1
 
-    def propensity(self, box_state):
-        return self.rate * box_state[self.species_from1] * box_state[self.species_from2]
+    def propensity(self, box_state, box_idx):
+        return self.rate[box_idx] * box_state[self.species_from1] * box_state[self.species_from2]
 
 
 class Fission(Reaction):
-    def __init__(self, species_from, species_to1, species_to2, rate, n_species):
-        super(Fission, self).__init__(rate, n_species)
+    def __init__(self, species_from, species_to1, species_to2, rate, n_species, n_boxes):
+        super(Fission, self).__init__(rate, n_species, n_boxes)
         self.species_from = species_from
         self.species_to1 = species_to1
         self.species_to2 = species_to2
@@ -123,28 +134,28 @@ class Fission(Reaction):
         self.stoichiometric_delta[self.species_to1] = +1
         self.stoichiometric_delta[self.species_to2] = +1
 
-    def propensity(self, box_state):
-        return self.rate * box_state[self.species_from]
+    def propensity(self, box_state, box_idx):
+        return self.rate[box_idx] * box_state[self.species_from]
 
 
 class Decay(Reaction):
-    def __init__(self, species_from, rate, n_species):
-        super(Decay, self).__init__(rate, n_species)
+    def __init__(self, species_from, rate, n_species, n_boxes):
+        super(Decay, self).__init__(rate, n_species, n_boxes)
         self.species_from = species_from
         self.stoichiometric_delta[self.species_from] = -1
 
-    def propensity(self, box_state):
-        return self.rate * box_state[self.species_from]
+    def propensity(self, box_state, box_idx):
+        return self.rate[box_idx] * box_state[self.species_from]
 
 
 class Creation(Reaction):
-    def __init__(self, species_to, rate, n_species):
-        super(Creation, self).__init__(rate, n_species)
+    def __init__(self, species_to, rate, n_species, n_boxes):
+        super(Creation, self).__init__(rate, n_species, n_boxes)
         self.species_to = species_to
         self.stoichiometric_delta[self.species_to] = +1
 
-    def propensity(self, box_state):
-        return self.rate
+    def propensity(self, box_state, box_idx):
+        return self.rate[box_idx]
 
 
 class ReactionDiffusionSystem:
@@ -182,13 +193,15 @@ class ReactionDiffusionSystem:
         return string
 
     def simulate(self, n_steps):
+        log.info("Simulate for {} steps", n_steps)
         for t in range(n_steps):
+            log.debug("Step {}, system {}", t, self)
             possible_events = []
             cumulative = 0.
             # gather reaction events
             for i in range(self._n_boxes):
                 for r in range(self._n_reactions):
-                    propensity = self._reactions[r].propensity(self._state[i])
+                    propensity = self._reactions[r].propensity(self._state[i], i)
                     if propensity > 0.:
                         cumulative += propensity
                         delta = self._reactions[r].stoichiometric_delta
@@ -205,20 +218,28 @@ class ReactionDiffusionSystem:
                                 delta[i] = -1
                                 delta[j] = +1
                                 possible_events.append(DiffusionEvent(s, delta, cumulative))
+
             # draw time and cumulative value
             event_time = (1. / cumulative) * np.log(1. / np.random.random())
             rnd = np.random.random() * cumulative
+
             # find event corresponding to rnd, that shall be performed
             cumulative_list = [x.cumulative_propensity for x in possible_events]
-            event_idx = bisect.bisect_right(cumulative_list, rnd) - 1
+            event_idx = bisect.bisect_right(cumulative_list, rnd)
             event = possible_events[event_idx]
+            log.debug("Cumulative list {}", cumulative_list)
+            log.debug("Random number {}", rnd)
+            log.debug("Event index for random number {}", event_idx)
+            log.debug("Performing event {}", event)
+
             # save event and time to sequence
             self._event_list.append(event)
             self._time_list.append(self._time + event_time)
+
             # update system and save state
             self._time += event_time
             event.perform(self._state)
-            self._state_list.append(self._state)
+            self._state_list.append(np.copy(self._state))
 
     @property
     def sequence(self):
@@ -236,6 +257,7 @@ class ReactionDiffusionSystem:
             n_frames = math.ceil((self._time_list[-1] - self._time_list[0]) / time_step)
 
         result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.int)
+        times = np.linspace(self._time_list[0], self._time_list[-1], n_frames)
         current_t = self._time_list[0]
         last_passed_event_time_idx = 0
         result[0, :, :] = self._init_state
@@ -249,7 +271,7 @@ class ReactionDiffusionSystem:
                     n_passed_events += 1
             last_passed_event_time_idx += n_passed_events
             result[t] = self._state_list[last_passed_event_time_idx]
-        return result
+        return result, times
 
 
 def generate_event_sequence(n_steps, init_state, diffusivity, reactions, n_species, n_boxes):
