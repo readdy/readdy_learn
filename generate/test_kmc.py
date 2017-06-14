@@ -30,14 +30,14 @@ __license__ = "LGPL"
 __author__ = "chrisfroe"
 
 
-def example_system():
+def example_system_conversions():
+    """Produce realisations of system with only conversions"""
     n_species = 2
     n_boxes = 2
     diffusivity_0 = np.array([[0., 0.3], [0.4, 0.]])  # species 0
     diffusivity_1 = np.array([[0., 0.5], [0.9, 0.]])  # species 1
     diffusivity = np.array([diffusivity_0, diffusivity_1])
     reactions = [kmc.Conversion(0, 1, 4., n_species), kmc.Conversion(1, 0, 0.5, n_species)]
-    print("reactions[1].stoichiometric_delta", reactions[1].stoichiometric_delta)
     init_state = np.array([[1, 1], [2, 2]], dtype=np.int)
     system = kmc.ReactionDiffusionSystem(diffusivity, reactions, n_species, n_boxes, init_state)
     system.simulate(50)
@@ -45,28 +45,32 @@ def example_system():
 
 
 class TestKineticMonteCarlo(unittest.TestCase):
-    # @classmethod
-    # def setUpClass(cls):
-    #    cls.dir = tempfile.mkdtemp("test-kmc")
+    def test_always_positive_number_of_particles(self):
+        event_list, time_list, state_list = example_system_conversions().sequence
+        state_array = np.asarray(state_list, dtype=np.int)
+        all_positive = state_array >= 0
+        np.testing.assert_equal(np.all(all_positive), True)
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #    shutil.rmtree(cls.dir, ignore_errors=True)
+    def test_conservation_of_particles(self):
+        """In the system of only Conversion reactions, the total number of particles is conserved."""
+        event_list, time_list, state_list = example_system_conversions().sequence
+        n_particles = np.sum(state_list[0])
+        all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, state_list), dtype=np.bool)
+        np.testing.assert_equal(np.all(all_correct), True)
 
-    def test_sanity(self):
-        print("\nEreignisse", example_system().sequence)
-
-    def test_conversion_args(self):
+    def test_convert_to_time_series_args(self):
         with np.testing.assert_raises(Exception):
-            system = example_system()
+            system = example_system_conversions()
             system.convert_to_time_series([])
 
         with np.testing.assert_raises(Exception):
-            system = example_system()
+            system = example_system_conversions()
             system.convert_to_time_series([], time_step=0.1, n_frames=10)
 
-    def test_conversion_sanity(self):
-        system = example_system()
-
+    def test_conservation_of_particles_after_converting(self):
+        system = example_system_conversions()
+        #print("\nstate_list\n", system.sequence[2])
         time_series = system.convert_to_time_series(n_frames=500)
-        print("time_series", time_series)
+        n_particles = np.sum(time_series[0])
+        all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, time_series), dtype=np.bool)
+        np.testing.assert_equal(np.all(all_correct), True)

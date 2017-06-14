@@ -52,6 +52,13 @@ class ReactionEvent(Event):
         super(ReactionEvent, self).__init__(stoichiometric_delta, cumulative_propensity)
         self._box_idx = box_idx
 
+    def __str__(self):
+        string = "ReactionEvent\n"
+        string += "box_idx " + str(self._box_idx) + "\n"
+        string += "stoichiometric_delta (within one box, across species) " + str(self._stoichiometric_delta) + "\n"
+        string += "cumulative_propensity " + str(self.cumulative_propensity)
+        return string
+
     def perform(self, state):
         state[self._box_idx] += self._stoichiometric_delta
 
@@ -60,6 +67,13 @@ class DiffusionEvent(Event):
     def __init__(self, species_idx, stoichiometric_delta, cumulative_propensity):
         super(DiffusionEvent, self).__init__(stoichiometric_delta, cumulative_propensity)
         self._species_idx = species_idx
+
+    def __str__(self):
+        string = "DiffusionEvent\n"
+        string += "species_idx " + str(self._species_idx) + "\n"
+        string += "stoichiometric_delta (within one species, across boxes) " + str(self._stoichiometric_delta) + "\n"
+        string += "cumulative_propensity " + str(self.cumulative_propensity)
+        return string
 
     def perform(self, state):
         state[:, self._species_idx] += self._stoichiometric_delta
@@ -82,7 +96,55 @@ class Conversion(Reaction):
         self.stoichiometric_delta[self.species_to] = +1
 
     def propensity(self, box_state):
-        return box_state[self.species_from]
+        return self.rate * box_state[self.species_from]
+
+
+class Fusion(Reaction):
+    def __init__(self, species_from1, species_from2, species_to, rate, n_species):
+        super(Fusion, self).__init__(rate, n_species)
+        self.species_from1 = species_from1
+        self.species_from2 = species_from2
+        self.species_to = species_to
+        self.stoichiometric_delta[self.species_from1] = -1
+        self.stoichiometric_delta[self.species_from2] = -1
+        self.stoichiometric_delta[self.species_to] = +1
+
+    def propensity(self, box_state):
+        return self.rate * box_state[self.species_from1] * box_state[self.species_from2]
+
+
+class Fission(Reaction):
+    def __init__(self, species_from, species_to1, species_to2, rate, n_species):
+        super(Fission, self).__init__(rate, n_species)
+        self.species_from = species_from
+        self.species_to1 = species_to1
+        self.species_to2 = species_to2
+        self.stoichiometric_delta[self.species_from] = -1
+        self.stoichiometric_delta[self.species_to1] = +1
+        self.stoichiometric_delta[self.species_to2] = +1
+
+    def propensity(self, box_state):
+        return self.rate * box_state[self.species_from]
+
+
+class Decay(Reaction):
+    def __init__(self, species_from, rate, n_species):
+        super(Decay, self).__init__(rate, n_species)
+        self.species_from = species_from
+        self.stoichiometric_delta[self.species_from] = -1
+
+    def propensity(self, box_state):
+        return self.rate * box_state[self.species_from]
+
+
+class Creation(Reaction):
+    def __init__(self, species_to, rate, n_species):
+        super(Creation, self).__init__(rate, n_species)
+        self.species_to = species_to
+        self.stoichiometric_delta[self.species_to] = +1
+
+    def propensity(self, box_state):
+        return self.rate
 
 
 class ReactionDiffusionSystem:
@@ -102,8 +164,22 @@ class ReactionDiffusionSystem:
         self._init_state = np.copy(init_state)
         self._time = init_time
         self._event_list = []
-        self._times_list = [init_time]
+        self._time_list = [init_time]
         self._state_list = [init_state]
+
+    def __str__(self):
+        string = "ReactionDiffusionSystem\n"
+        string += "--- n_species " + str(self._n_species) + "\n"
+        string += "--- n_boxes " + str(self._n_boxes) + "\n"
+        string += "--- diffusivity\n" + str(self._diffusivity) + "\n"
+        string += "--- reactions\n" + str(self._reactions) + "\n"
+        string += "--- state\n" + str(self._state) + "\n"
+        # string += "--- init_state\n" + str(self._init_state) + "\n"
+        string += "--- time " + str(self._time) + "\n"
+        # string += "--- event_list\n" + str(self._event_list) + "\n"
+        # string += "--- time_list\n" + str(self._time_list) + "\n"
+        # string += "--- state_list\n" + str(self._state_list) + "\n"
+        return string
 
     def simulate(self, n_steps):
         for t in range(n_steps):
@@ -113,19 +189,22 @@ class ReactionDiffusionSystem:
             for i in range(self._n_boxes):
                 for r in range(self._n_reactions):
                     propensity = self._reactions[r].propensity(self._state[i])
-                    cumulative += propensity
-                    delta = self._reactions[r].stoichiometric_delta
-                    possible_events.append(ReactionEvent(i, delta, cumulative))
+                    if propensity > 0.:
+                        cumulative += propensity
+                        delta = self._reactions[r].stoichiometric_delta
+                        possible_events.append(ReactionEvent(i, delta, cumulative))
             # gather diffusion events
             for s in range(self._n_species):
                 for i in range(self._n_boxes):
                     for j in range(self._n_boxes):
-                        propensity = self._diffusivity[s][i, j] * self._state[i, s]
-                        cumulative += propensity
-                        delta = np.zeros(self._n_boxes, dtype=np.int)
-                        delta[i] = -1
-                        delta[j] = +1
-                        possible_events.append(DiffusionEvent(s, delta, cumulative))
+                        if i != j:
+                            propensity = self._diffusivity[s][i, j] * self._state[i, s]
+                            if propensity > 0.:
+                                cumulative += propensity
+                                delta = np.zeros(self._n_boxes, dtype=np.int)
+                                delta[i] = -1
+                                delta[j] = +1
+                                possible_events.append(DiffusionEvent(s, delta, cumulative))
             # draw time and cumulative value
             event_time = (1. / cumulative) * np.log(1. / np.random.random())
             rnd = np.random.random() * cumulative
@@ -135,7 +214,7 @@ class ReactionDiffusionSystem:
             event = possible_events[event_idx]
             # save event and time to sequence
             self._event_list.append(event)
-            self._times_list.append(self._time + event_time)
+            self._time_list.append(self._time + event_time)
             # update system and save state
             self._time += event_time
             event.perform(self._state)
@@ -143,32 +222,30 @@ class ReactionDiffusionSystem:
 
     @property
     def sequence(self):
-        return self._event_list, self._times_list, self._state_list
+        return self._event_list, self._time_list, self._state_list
 
     # @todo move this into a result(event sequence)-object
     def convert_to_time_series(self, time_step=None, n_frames=None):
         if not ((time_step is not None) ^ (n_frames is not None)):
             raise RuntimeError("Either time_step (x)or n_frames must be given")
-        if len(self._times_list) < 2:
+        if len(self._time_list) < 2:
             raise RuntimeError("Sample some events first")
         if n_frames:
-            time_step = (self._times_list[-1] - self._times_list[0]) / float(n_frames)
+            time_step = (self._time_list[-1] - self._time_list[0]) / float(n_frames)
         else:
-            n_frames = math.ceil((self._times_list[-1] - self._times_list[0]) / time_step)
+            n_frames = math.ceil((self._time_list[-1] - self._time_list[0]) / time_step)
 
         result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.int)
-        current_t = self._times_list[0]
+        current_t = self._time_list[0]
         last_passed_event_time_idx = 0
-        print("\nresult.shape\n", result.shape)
-        print("\nself._init_state\n", self._init_state)
-        result[0,:,:] = self._init_state
+        result[0, :, :] = self._init_state
         for t in range(1, n_frames):
             current_t += time_step
             n_passed_events = 0
-            if current_t > self._times_list[last_passed_event_time_idx + 1]:
+            if current_t > self._time_list[last_passed_event_time_idx + 1]:
                 n_passed_events = 1
                 # if we have skipped one event we might have skipped another
-                while current_t > self._times_list[last_passed_event_time_idx + n_passed_events + 1]:
+                while current_t > self._time_list[last_passed_event_time_idx + n_passed_events + 1]:
                     n_passed_events += 1
             last_passed_event_time_idx += n_passed_events
             result[t] = self._state_list[last_passed_event_time_idx]
