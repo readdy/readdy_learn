@@ -30,7 +30,9 @@ A proper description of such an algorithm is given by
 import numpy as np
 import bisect
 import math
+import copy
 import logging
+
 import logutil
 
 __license__ = "LGPL"
@@ -86,14 +88,12 @@ class DiffusionEvent(Event):
     def perform(self, state):
         state[:, self._species_idx] += self._stoichiometric_delta
 
-# @todo
-# this shares a lot of information with ReactionDiffusionSystem, namely n_species, n_boxes, that have to be
-# mentioned many times. So gather them in a ReactionConfiguration that will be given to the System
+
 class Reaction:
     """Reactions behave like structs, that carry the rates and stoichiometric information for all possible reactions"""
 
     def __init__(self, rate, n_species, n_boxes):
-        assert len(rate)==n_boxes
+        assert len(rate) == n_boxes
         self.rate = rate
         self.stoichiometric_delta = np.zeros(n_species, dtype=np.int)
 
@@ -159,7 +159,7 @@ class Creation(Reaction):
 
 
 class ReactionDiffusionSystem:
-    def __init__(self, diffusivity, reactions, n_species, n_boxes, init_state, init_time=0.):
+    def __init__(self, diffusivity, n_species, n_boxes, init_state, init_time=0.):
         assert n_species > 0
         assert n_boxes > 0
         # diffusivity can be a list of sparse matrices or a rank 3 tensor
@@ -168,15 +168,16 @@ class ReactionDiffusionSystem:
         assert init_state.shape == (n_boxes, n_species)
         self._n_species = n_species
         self._n_boxes = n_boxes
-        self._n_reactions = len(reactions)
         self._diffusivity = diffusivity
-        self._reactions = reactions
+        self._reactions = []
+        self._n_reactions = 0
         self._state = np.copy(init_state)
         self._init_state = np.copy(init_state)
         self._time = init_time
         self._event_list = []
         self._time_list = [init_time]
         self._state_list = [init_state]
+        self._is_finalized = False
 
     def __str__(self):
         string = "ReactionDiffusionSystem\n"
@@ -192,8 +193,66 @@ class ReactionDiffusionSystem:
         # string += "--- state_list\n" + str(self._state_list) + "\n"
         return string
 
+    def _assure_not_finalized(self):
+        if not self._is_finalized:
+            return
+        else:
+            raise RuntimeError("System has already been finalized")
+
+    def add_conversion(self, species_from, species_to, rate):
+        self._assure_not_finalized()
+        conversion = Conversion(species_from, species_to, rate, self._n_species, self._n_boxes)
+        self._reactions.append(conversion)
+        self._n_reactions = len(self._reactions)
+
+    def add_fusion(self, species_from1, species_from2, species_to, rate):
+        self._assure_not_finalized()
+        fusion = Fusion(species_from1, species_from2, species_to, rate, self._n_species, self._n_boxes)
+        self._reactions.append(fusion)
+        self._n_reactions = len(self._reactions)
+
+    def add_fission(self, species_from, species_to1, species_to2, rate):
+        self._assure_not_finalized()
+        fission = Fission(species_from, species_to1, species_to2, rate, self._n_species, self._n_boxes)
+        self._reactions.append(fission)
+        self._n_reactions = len(self._reactions)
+
+    def add_decay(self, species_from, rate):
+        self._assure_not_finalized()
+        decay = Decay(species_from, rate, self._n_species, self._n_boxes)
+        self._reactions.append(decay)
+        self._n_reactions = len(self._reactions)
+
+    def add_creation(self, species_to, rate):
+        self._assure_not_finalized()
+        creation = Creation(species_to, rate, self._n_species, self._n_boxes)
+        self._reactions.append(creation)
+        self._n_reactions = len(self._reactions)
+
+    @property
+    def n_species(self):
+        return self._n_species
+
+    @property
+    def n_boxes(self):
+        return self.n_boxes
+
+    @property
+    def n_reactions(self):
+        return self._n_reactions
+
+    @property
+    def reactions(self):
+        return copy.deepcopy(self._reactions)
+
+    @property
+    def diffusivity(self):
+        return copy.deepcopy(self._diffusivity)
+
     def simulate(self, n_steps):
         log.info("Simulate for {} steps", n_steps)
+        self._n_reactions = len(self._reactions)
+        self._is_finalized = True
         for t in range(n_steps):
             log.debug("Step {}, system {}", t, self)
             possible_events = []
@@ -246,7 +305,7 @@ class ReactionDiffusionSystem:
         return self._event_list, self._time_list, self._state_list
 
     # @todo move this into a result(event sequence)-object
-    def convert_to_time_series(self, time_step=None, n_frames=None):
+    def convert_events_to_time_series(self, time_step=None, n_frames=None):
         if not ((time_step is not None) ^ (n_frames is not None)):
             raise RuntimeError("Either time_step (x)or n_frames must be given")
         if len(self._time_list) < 2:
@@ -262,6 +321,7 @@ class ReactionDiffusionSystem:
         last_passed_event_time_idx = 0
         result[0, :, :] = self._init_state
         for t in range(1, n_frames):
+            # increment the time and find out how many events we have passed
             current_t += time_step
             n_passed_events = 0
             if current_t > self._time_list[last_passed_event_time_idx + 1]:
@@ -272,9 +332,3 @@ class ReactionDiffusionSystem:
             last_passed_event_time_idx += n_passed_events
             result[t] = self._state_list[last_passed_event_time_idx]
         return result, times
-
-
-def generate_event_sequence(n_steps, init_state, diffusivity, reactions, n_species, n_boxes):
-    system = ReactionDiffusionSystem(diffusivity, reactions, n_species, n_boxes, init_state)
-    system.simulate(n_steps)
-    return system.sequence

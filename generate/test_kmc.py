@@ -20,8 +20,6 @@
 # <http://www.gnu.org/licenses/>.
 
 import unittest
-import tempfile
-import shutil
 import numpy as np
 
 import kinetic_monte_carlo as kmc
@@ -37,14 +35,26 @@ def example_system_conversions():
     diffusivity_0 = np.array([[0., 0.3], [0.4, 0.]])  # species 0
     diffusivity_1 = np.array([[0., 0.5], [0.9, 0.]])  # species 1
     diffusivity = np.array([diffusivity_0, diffusivity_1])
-    reactions = [kmc.Conversion(0, 1, np.array([4., 4.]), n_species, n_boxes), kmc.Conversion(1, 0, np.array([0.5, 0.5]), n_species, n_boxes)]
     init_state = np.array([[1, 1], [2, 2]], dtype=np.int)
-    system = kmc.ReactionDiffusionSystem(diffusivity, reactions, n_species, n_boxes, init_state)
+    system = kmc.ReactionDiffusionSystem(diffusivity, n_species, n_boxes, init_state)
+    system.add_conversion(0, 1, np.array([4., 4.]))
+    system.add_conversion(1, 0, np.array([0.5, 0.5]))
     system.simulate(50)
     return system
 
 
 class TestKineticMonteCarlo(unittest.TestCase):
+    def test_raise_if_finalized(self):
+        with np.testing.assert_raises(RuntimeError):
+            n_species, n_boxes = 2, 2
+            diffusivity_0 = np.array([[0., 0.3], [0.4, 0.]])  # species 0
+            diffusivity_1 = np.array([[0., 0.5], [0.9, 0.]])  # species 1
+            diffusivity = np.array([diffusivity_0, diffusivity_1])
+            init_state = np.array([[1, 1], [2, 2]], dtype=np.int)
+            system = kmc.ReactionDiffusionSystem(diffusivity, n_species, n_boxes, init_state)
+            system.simulate(5)
+            system.add_creation(1, 1.)
+
     def test_always_positive_number_of_particles(self):
         event_list, time_list, state_list = example_system_conversions().sequence
         state_array = np.asarray(state_list, dtype=np.int)
@@ -61,15 +71,15 @@ class TestKineticMonteCarlo(unittest.TestCase):
     def test_convert_to_time_series_args(self):
         with np.testing.assert_raises(Exception):
             system = example_system_conversions()
-            system.convert_to_time_series([])
+            system.convert_events_to_time_series([])
 
         with np.testing.assert_raises(Exception):
             system = example_system_conversions()
-            system.convert_to_time_series([], time_step=0.1, n_frames=10)
+            system.convert_events_to_time_series([], time_step=0.1, n_frames=10)
 
     def test_conservation_of_particles_after_converting(self):
         system = example_system_conversions()
-        time_series, times = system.convert_to_time_series(n_frames=500)
+        time_series, times = system.convert_events_to_time_series(n_frames=500)
         n_particles = np.sum(time_series[0])
         all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, time_series), dtype=np.bool)
         np.testing.assert_equal(np.all(all_correct), True)
