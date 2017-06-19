@@ -278,6 +278,10 @@ class ReactionDiffusionSystem:
                                 delta[j] = +1
                                 possible_events.append(DiffusionEvent(s, delta, cumulative))
 
+            if cumulative == 0.:
+                log.info("No events possible / system is frustrated, at step {}", t)
+                return
+
             # draw time and cumulative value
             event_time = (1. / cumulative) * np.log(1. / np.random.random())
             rnd = np.random.random() * cumulative
