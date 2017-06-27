@@ -221,7 +221,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
 class CrossTrajSplit(object):
     def split(self, range):
-        return range, None
+        return [(range, None)]
 
 
 class CV(object):
@@ -253,11 +253,11 @@ class CV(object):
             print("unknown mode: %s" % self.mode)
             return
         alpha, l1_ratio = params
-        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, self.scale, alpha=alpha,
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha,
                                               l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                               method=self.method)
         if self.test_traj is not None:
-            test_estimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, self.scale, alpha=alpha,
+            test_estimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, -1, alpha=alpha,
                                                        l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                        method=self.method)
         scores = []
