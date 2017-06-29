@@ -158,8 +158,14 @@ class Creation(Reaction):
         return self.rate[box_idx]
 
 
+class TrajectoryConfig(object):
+    def __init__(self, types, reactions):
+        self.types = types
+        self.reactions = reactions
+
+
 class ReactionDiffusionSystem:
-    def __init__(self, diffusivity, n_species, n_boxes, init_state, init_time=0.):
+    def __init__(self, diffusivity, n_species, n_boxes, init_state, init_time=0., species_names=None):
         assert n_species > 0
         assert n_boxes > 0
         # diffusivity can be a list of sparse matrices or a rank 3 tensor
@@ -178,6 +184,22 @@ class ReactionDiffusionSystem:
         self._time_list = [init_time]
         self._state_list = [init_state]
         self._is_finalized = False
+        if species_names:
+            assert len(species_names) == n_species
+        else:
+            species_names = [str(x) for x in range(n_species)]
+        self._species_names = species_names
+
+    def get_trajectory_config(self):
+        """Generate a TrajectoryConfig object for interoperability with readdy_learn
+
+        :return: TrajectoryConfig object
+        """
+        types = dict()
+        for idx, name in enumerate(self._species_names):
+            types[name] = idx
+        traj_config = TrajectoryConfig(types, self._reactions)
+        return traj_config
 
     def __str__(self):
         string = "ReactionDiffusionSystem\n"
@@ -310,6 +332,16 @@ class ReactionDiffusionSystem:
 
     # @todo move this into a result(event sequence)-object
     def convert_events_to_time_series(self, time_step=None, n_frames=None):
+        """
+        Convert to an equidistant time series. Therefore either a time_step or
+        a number of frames must be give.
+
+        For usage with readdy_learn (w/o diffusion as of 2017-06-29), do: counts = np.sum(result, axis=1)
+
+        :param time_step: the temporal difference between each frame
+        :param n_frames: the number of frames
+        :return: a trajectory of shape (n_frames, n_boxes, n_species)
+        """
         if not ((time_step is not None) ^ (n_frames is not None)):
             raise RuntimeError("Either time_step (x)or n_frames must be given")
         if len(self._time_list) < 2:

@@ -63,8 +63,8 @@ def generate(n_timesteps, fname):
     sim.register_reaction_conversion("A->D", "A", "D", .02)
     sim.register_reaction_conversion("D->A", "D", "A", .02)
 
-    n_a_particles = 4
-    n_b_particles = 7
+    n_a_particles = 10
+    n_b_particles = 12
 
     a_particles_coordinates_x = np.random.uniform(0., box_x, n_a_particles) - .5 * box_x
     a_particles_coordinates_y = np.random.uniform(0., box_y, n_a_particles) - .5 * box_y

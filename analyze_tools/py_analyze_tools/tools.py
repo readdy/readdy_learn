@@ -34,6 +34,7 @@ import numpy as np
 import os
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
+import readdy.util.io_utils as ioutils
 
 
 def get_count_trajectory(fname, cache_fname=None):
@@ -76,21 +77,9 @@ def frobenius_l1_regression(alpha, n_basis_functions, theta, dcounts_dt, scale=-
 
 
 class TrajectoryConfig(object):
-    def __init__(self, f):
-        self.types = {}
-        self.reactions = []
-        if "config" in f["readdy"]:
-            if "particle_types" in f["readdy/config"]:
-                for t in f["readdy/config/particle_types"].keys():
-                    self.types[t] = f["readdy/config/particle_types"][t].value
-            if "registered_reactions" in f["readdy/config"]:
-                group = f["readdy/config/registered_reactions"]
-                if "order1" in group:
-                    for type_from in group["order1"].keys():
-                        self.reactions.append(group["order1"][type_from].value)
-                if "order2" in group:
-                    for types_from in group["order2"].keys():
-                        self.reactions.append(group["order2"][types_from].value)
+    def __init__(self, file_path):
+        self.types = ioutils.get_particle_types(file_path)
+        self.reactions = ioutils.get_reactions(file_path)
 
 
 class Trajectory(object):
@@ -113,7 +102,7 @@ class Trajectory(object):
     @classmethod
     def from_file_name(cls, fname):
         with h5py.File(fname) as f:
-            return Trajectory(TrajectoryConfig(f), f["readdy/observables/n_particles/data"][:].astype(np.double))
+            return Trajectory(TrajectoryConfig(fname), f["readdy/observables/n_particles/data"][:].astype(np.double))
 
     @classmethod
     def from_counts(cls, traj_config, counts):
