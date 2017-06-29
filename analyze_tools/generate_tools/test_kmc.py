@@ -22,7 +22,7 @@
 import unittest
 import numpy as np
 
-import kinetic_monte_carlo as kmc
+import generate_tools.kinetic_monte_carlo as kmc
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"

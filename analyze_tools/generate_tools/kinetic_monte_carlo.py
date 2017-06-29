@@ -33,7 +33,7 @@ import math
 import copy
 import logging
 
-import logutil
+import generate_tools.logutil as logutil
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"
