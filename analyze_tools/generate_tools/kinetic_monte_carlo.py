@@ -97,6 +97,9 @@ class Reaction:
         self.rate = rate
         self.stoichiometric_delta = np.zeros(n_species, dtype=np.int)
 
+    def __repr__(self):
+        return str(self)
+
 
 class Conversion(Reaction):
     def __init__(self, species_from, species_to, rate, n_species, n_boxes):
@@ -108,6 +111,11 @@ class Conversion(Reaction):
 
     def propensity(self, box_state, box_idx):
         return self.rate[box_idx] * box_state[self.species_from]
+
+    def __str__(self):
+        string = "kmc.Conversion"
+        string += "(from " + str(self.species_from) + ", to " + str(self.species_to) + ", rate " + str(self.rate) + ")"
+        return string
 
 
 class Fusion(Reaction):
@@ -123,6 +131,12 @@ class Fusion(Reaction):
     def propensity(self, box_state, box_idx):
         return self.rate[box_idx] * box_state[self.species_from1] * box_state[self.species_from2]
 
+    def __str__(self):
+        string = "kmc.Fusion"
+        string += "(from1 " + str(self.species_from1) + ", from2 " + str(self.species_from2)
+        string += ", to " + str(self.species_to) + ", rate " + str(self.rate) + ")"
+        return string
+
 
 class Fission(Reaction):
     def __init__(self, species_from, species_to1, species_to2, rate, n_species, n_boxes):
@@ -137,6 +151,12 @@ class Fission(Reaction):
     def propensity(self, box_state, box_idx):
         return self.rate[box_idx] * box_state[self.species_from]
 
+    def __str__(self):
+        string = "kmc.Fission"
+        string += "(from " + str(self.species_from) + ", to1 " + str(self.species_to1)
+        string += ", to2 " + str(self.species_to2) + ", rate " + str(self.rate) + ")"
+        return string
+
 
 class Decay(Reaction):
     def __init__(self, species_from, rate, n_species, n_boxes):
@@ -146,6 +166,11 @@ class Decay(Reaction):
 
     def propensity(self, box_state, box_idx):
         return self.rate[box_idx] * box_state[self.species_from]
+
+    def __str__(self):
+        string = "kmc.Decay"
+        string += "(from " + str(self.species_from) + ", rate " + str(self.rate) + ")"
+        return string
 
 
 class Creation(Reaction):
@@ -157,11 +182,25 @@ class Creation(Reaction):
     def propensity(self, box_state, box_idx):
         return self.rate[box_idx]
 
+    def __str__(self):
+        string = "kmc.Creation"
+        string += "(to " + str(self.species_to) + ", rate " + str(self.rate) + ")"
+        return string
+
 
 class TrajectoryConfig(object):
     def __init__(self, types, reactions):
         self.types = types
         self.reactions = reactions
+
+    def __str__(self):
+        string = "TrajectoryConfig from kinetic_monte_carlo module\n"
+        string += "  - particle types " + str(self.types) + "\n"
+        string += "  - reactions\n"
+        reactions_strings = map(str, self.reactions)
+        for rs in reactions_strings:
+            string += "      " + rs + "\n"
+        return string
 
 
 class ReactionDiffusionSystem:
@@ -189,16 +228,17 @@ class ReactionDiffusionSystem:
         else:
             species_names = [str(x) for x in range(n_species)]
         self._species_names = species_names
+        self._names_to_ids = dict()
+        for idx, name in enumerate(self._species_names):
+            self._names_to_ids[name] = idx
 
     def get_trajectory_config(self):
         """Generate a TrajectoryConfig object for interoperability with readdy_learn
 
         :return: TrajectoryConfig object
         """
-        types = dict()
-        for idx, name in enumerate(self._species_names):
-            types[name] = idx
-        traj_config = TrajectoryConfig(types, self._reactions)
+
+        traj_config = TrajectoryConfig(self._names_to_ids, self._reactions)
         return traj_config
 
     def __str__(self):
@@ -221,32 +261,45 @@ class ReactionDiffusionSystem:
         else:
             raise RuntimeError("System has already been finalized")
 
+    def _id_from_name(self, type_name):
+        return self._names_to_ids[type_name]
+
     def add_conversion(self, species_from, species_to, rate):
         self._assure_not_finalized()
+        species_from = self._id_from_name(species_from)
+        species_to = self._id_from_name(species_to)
         conversion = Conversion(species_from, species_to, rate, self._n_species, self._n_boxes)
         self._reactions.append(conversion)
         self._n_reactions = len(self._reactions)
 
     def add_fusion(self, species_from1, species_from2, species_to, rate):
         self._assure_not_finalized()
+        species_from1 = self._id_from_name(species_from1)
+        species_from2 = self._id_from_name(species_from2)
+        species_to = self._id_from_name(species_to)
         fusion = Fusion(species_from1, species_from2, species_to, rate, self._n_species, self._n_boxes)
         self._reactions.append(fusion)
         self._n_reactions = len(self._reactions)
 
     def add_fission(self, species_from, species_to1, species_to2, rate):
         self._assure_not_finalized()
+        species_from = self._id_from_name(species_from)
+        species_to1 = self._id_from_name(species_to1)
+        species_to2 = self._id_from_name(species_to2)
         fission = Fission(species_from, species_to1, species_to2, rate, self._n_species, self._n_boxes)
         self._reactions.append(fission)
         self._n_reactions = len(self._reactions)
 
     def add_decay(self, species_from, rate):
         self._assure_not_finalized()
+        species_from = self._id_from_name(species_from)
         decay = Decay(species_from, rate, self._n_species, self._n_boxes)
         self._reactions.append(decay)
         self._n_reactions = len(self._reactions)
 
     def add_creation(self, species_to, rate):
         self._assure_not_finalized()
+        species_to = self._id_from_name(species_to)
         creation = Creation(species_to, rate, self._n_species, self._n_boxes)
         self._reactions.append(creation)
         self._n_reactions = len(self._reactions)

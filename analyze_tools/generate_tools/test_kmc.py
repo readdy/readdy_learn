@@ -36,9 +36,10 @@ def example_system_conversions():
     diffusivity_1 = np.array([[0., 0.5], [0.9, 0.]])  # species 1
     diffusivity = np.array([diffusivity_0, diffusivity_1])
     init_state = np.array([[1, 1], [2, 2]], dtype=np.int)
-    system = kmc.ReactionDiffusionSystem(diffusivity, n_species, n_boxes, init_state)
-    system.add_conversion(0, 1, np.array([4., 4.]))
-    system.add_conversion(1, 0, np.array([0.5, 0.5]))
+    species_names = ["A", "B"]
+    system = kmc.ReactionDiffusionSystem(diffusivity, n_species, n_boxes, init_state, species_names=species_names)
+    system.add_conversion("A", "B", np.array([4., 4.]))
+    system.add_conversion("B", "A", np.array([0.5, 0.5]))
     system.simulate(50)
     return system
 
@@ -53,7 +54,7 @@ class TestKineticMonteCarlo(unittest.TestCase):
             init_state = np.array([[1, 1], [2, 2]], dtype=np.int)
             system = kmc.ReactionDiffusionSystem(diffusivity, n_species, n_boxes, init_state)
             system.simulate(5)
-            system.add_creation(1, 1.)
+            system.add_creation("1", 1.)
 
     def test_always_positive_number_of_particles(self):
         event_list, time_list, state_list = example_system_conversions().sequence

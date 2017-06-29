@@ -83,10 +83,10 @@ class TrajectoryConfig(object):
 
 
 class Trajectory(object):
-    def __init__(self, traj_config, counts):
+    def __init__(self, traj_config, counts, time_step):
         self._counts = counts
         self._box_size = [15., 15., 15.]
-        self._time_step = .01
+        self._time_step = time_step
         self._thetas = []
         self._thetas_ode = []
         self._large_theta = None
@@ -100,13 +100,13 @@ class Trajectory(object):
         self._config = traj_config
 
     @classmethod
-    def from_file_name(cls, fname):
+    def from_file_name(cls, fname, time_step):
         with h5py.File(fname) as f:
-            return Trajectory(TrajectoryConfig(fname), f["readdy/observables/n_particles/data"][:].astype(np.double))
+            return Trajectory(TrajectoryConfig(fname), f["readdy/observables/n_particles/data"][:].astype(np.double), time_step)
 
     @classmethod
-    def from_counts(cls, traj_config, counts):
-        return Trajectory(traj_config, counts)
+    def from_counts(cls, traj_config, counts, time_step):
+        return Trajectory(traj_config, counts, time_step)
 
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
