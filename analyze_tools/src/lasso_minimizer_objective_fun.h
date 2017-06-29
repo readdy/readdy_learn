@@ -100,7 +100,7 @@ inline void least_squares_function(input_array &result, const input_array &prope
 
     {
         // apply prefactor
-        const auto c = prefactor ? prefactor >= 0 : 1. / (2. * n_timesteps * n_species);
+        const auto c = prefactor ? prefactor >= 0 : 1. / (2. * n_timesteps);
         for (std::size_t i = 0; i < n_timesteps * n_species; ++i) {
             data[i] *= c;
         }
@@ -140,7 +140,7 @@ inline input_array elastic_net_objective_function_jac(const input_array &propens
         if (prefactor >= 0) {
             result.mutable_at(i) *= -2. * prefactor;
         } else {
-	    result.mutable_at(i) *= -1. / (n_timesteps * n_species);
+	        result.mutable_at(i) *= -1. / n_timesteps;
         }
 
         // now the l1 regularization
@@ -177,7 +177,7 @@ inline double elastic_net_objective_function(const input_array &propensities, co
     if (prefactor >= 0) {
         result *= prefactor;
     } else {
-        result *= 1. / (2. * n_timesteps * n_species);
+        result *= 1. / (2. * n_timesteps);
     }
     double regulator = 0;
     {
