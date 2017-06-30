@@ -90,21 +90,24 @@ $$$
 \mathbf{\dot{X}} = \Theta(\mathbf{X})\,\Xi
 $$$
 
-### Minimize matrix norm with l1 penalty
-We want to find the propensities $$\hat{\Xi}$$ that minimize the residual in the above equation with respect to a Frobenius norm. We enforce sparsity in the reactions that generate the system by introducing an L1 penalty term with the hyperparameter $$\alpha$$.
+### Minimize matrix norm with l1 penalty and/or l2 penalty (elastic net)
+We want to find the propensities $$\hat{\Xi}$$ that minimize the residual in the above equation with respect to a Frobenius norm. We enforce sparsity in the reactions that generate the system by introducing an L1 penalty term with the hyperparameter $$\alpha$$. Optionally we introduce an L2 penalty with the same hyperparameter. The switching parameter $$\lambda \in[0,1]$$ allows to transition between the two penalties.
 $$$
 \begin{aligned}
-  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(\frac{1}{2ST}\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 + \alpha\lVert\Xi\rVert_1\right) \\\\
-  \hat{\Xi} &= \mathrm{argmin}_{\Xi}\left(\frac{1}{2ST}
-    \left\lVert \mathbf{\dot{X}} - \Theta(\mathbf{X})\Xi \right\rVert^2_F 
-    + \alpha\lVert\Xi\rVert_1
-  \right)
+\hat{\Xi} = 
+\mathrm{argmin}_{\Xi}  &\Biggl(
+  \frac{1}{2T}\sum_{t=1}^{T}\sum_{s=1}^{S} \left\lVert \dot{X}_{t,s} - \sum_{r=1}^{R}\Theta(\mathbf{X})_{t,s,r} \right\rVert^2 
+  + \alpha\lambda\lVert\Xi\rVert_1 + \alpha(1-\lambda)\lVert\Xi\rVert_2
+\Biggr) \\\\
+\hat{\Xi} = \mathrm{argmin}_{\Xi} &\left(
+  \frac{1}{2T}
+  \left\lVert \mathbf{\dot{X}} - \Theta(\mathbf{X})\Xi \right\rVert^2_F 
+  + \alpha\lambda\lVert\Xi\rVert_1 + \alpha(1-\lambda)\lVert\Xi\rVert_2
+\right)
 \end{aligned}
 $$$
 
-__Simon:__ Consider averaging over multiple realisations and consider fiting time-correlations
-
-__Insert example image here: Reproducing the ODE behavior (probablity overfitted)__
+__Simon:__ Consider fiting time-correlations
 
 ### Cross validation
 Aim is to find the hyperparameter $$\hat{\alpha}$$ that produces best fits without overfitting the noise. The procedure is:
