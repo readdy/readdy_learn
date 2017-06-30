@@ -150,14 +150,14 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         self.method = method
         self.options = options
 
-    def _get_slice(self, X):
-        if X is not None:
-            if isinstance(X, tuple) and len(X) == 2 and len(self.trajs) > 1:
-                data = self.trajs[X[0]].counts[X[1]]
-                expected = self.trajs[X[0]].dcounts_dt[X[1]]
+    def _get_slice(self, traj_range):
+        if traj_range is not None:
+            if isinstance(traj_range, tuple) and len(traj_range) == 2 and len(self.trajs) > 1:
+                data = self.trajs[traj_range[0]].counts[traj_range[1]]
+                expected = self.trajs[traj_range[0]].dcounts_dt[traj_range[1]]
             else:
-                data = self.trajs[0].counts[X]
-                expected = self.trajs[0].dcounts_dt[X]
+                data = self.trajs[0].counts[traj_range]
+                expected = self.trajs[0].dcounts_dt[traj_range]
         else:
             data = self.trajs[0].counts
             expected = self.trajs[0].dcounts_dt
@@ -167,12 +167,22 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
     def fit(self, X, y=None):
         """
-        :param X: the counts
-        :param y: counts time derivative
-        :param kwargs:
-        :return:
+        sklearn compatibility
+
+        :param X: Usually data matrix. In this context a temporal range of the trajectories, to be fitted.
+        :param y: Usually the expected vector. In this context unused.
         """
-        data, expected = self._get_slice(X)
+        return self.fit_trajs(X)
+
+    def fit_trajs(self, traj_range):
+        """
+        We hand in the data on construction, thus the fit method only requires the range of the trajectories to be fitted.
+
+        :param traj_range: either a sequence of time indices if self.trajs is a single trajectory,
+        or a tuple of trajectory index and time indices if multiple trajectories are available
+        :return: self
+        """
+        data, expected = self._get_slice(traj_range)
 
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.ascontiguousarray(np.transpose(large_theta, axes=(1, 0, 2)))
@@ -181,16 +191,14 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         init_xi = self.init_xi
 
         jac = False if self.approx_jac else \
-            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected,
-                                                        self.scale)
+            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
         options = {'disp': False}
         if self.method == 'L-BFGS-B':
             options['maxiter'] = self.maxiter
             options['maxfun'] = self.maxiter
         options.update(self.options)
         result = so.minimize(
-            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected,
-                                                    self.scale),
+            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
             init_xi,
             bounds=bounds,
             tol=1e-16,
