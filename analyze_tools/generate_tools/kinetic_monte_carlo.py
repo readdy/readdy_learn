@@ -56,6 +56,9 @@ class Event:
     def perform(self, state):
         pass
 
+    def __repr__(self):
+        return str(self)
+
 
 class ReactionEvent(Event):
     def __init__(self, box_idx, stoichiometric_delta, cumulative_propensity):
