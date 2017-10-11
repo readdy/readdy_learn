@@ -39,9 +39,9 @@ using input_array = py::array_t<double, py::array::c_style>;
 
 inline double theta_norm_squared(const input_array &theta) {
     double result = 0;
-    const auto n_timesteps = theta.shape()[0];
-    const auto n_reactions = theta.shape()[1];
-    const auto n_species = theta.shape()[2];
+    const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
+    const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
+    const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
 
     for (std::size_t t = 0; t < n_timesteps; ++t) {
         for (std::size_t s = 0; s < n_species; ++s) {
@@ -59,9 +59,9 @@ inline double score(const input_array &propensities, const input_array &theta, c
     if (theta.ndim() != 3) {
         throw std::invalid_argument("invalid dims");
     }
-    const auto n_timesteps = theta.shape()[0];
-    const auto n_reactions = theta.shape()[1];
-    const auto n_species = theta.shape()[2];
+    const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
+    const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
+    const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
     for (std::size_t t = 0; t < n_timesteps; ++t) {
         for (std::size_t s = 0; s < n_species; ++s) {
             auto x = dX.at(t, s);
@@ -76,15 +76,15 @@ inline double score(const input_array &propensities, const input_array &theta, c
 
 inline void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
                                    const input_array &dX, const double prefactor = -1) {
-    const auto n_timesteps = theta.shape()[0];
-    const auto n_reactions = theta.shape()[1];
-    const auto n_species = theta.shape()[2];
+    const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
+    const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
+    const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
     auto data = result.mutable_data();
 
     if(result.ndim() != 1) {
         throw std::invalid_argument("invalid result dims! (got ndim=" + std::to_string(result.ndim()) + ")");
     }
-    if(result.shape()[0] != n_timesteps * n_species) {
+    if(static_cast<std::size_t>(result.shape()[0]) != n_timesteps * n_species) {
         throw std::invalid_argument("invalid shape of result! (got shape[0]=" + std::to_string(n_reactions) + ")");
     }
 
@@ -111,9 +111,9 @@ inline input_array elastic_net_objective_function_jac(const input_array &propens
                                                  const double alpha, const double l1_ratio, const input_array &theta,
                                                  const input_array &dX, const double prefactor = -1) {
     input_array result;
-    const auto n_timesteps = theta.shape()[0];
-    const auto n_reactions = theta.shape()[1];
-    const auto n_species = theta.shape()[2];
+    const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
+    const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
+    const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
 
     {
         std::vector<std::size_t> shape;
@@ -162,9 +162,9 @@ inline double elastic_net_objective_function(const input_array &propensities, co
     if (theta.ndim() != 3) {
         throw std::invalid_argument("invalid dims");
     }
-    const auto n_timesteps = theta.shape()[0];
-    const auto n_reactions = theta.shape()[1];
-    const auto n_species = theta.shape()[2];
+    const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
+    const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
+    const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
     for (std::size_t t = 0; t < n_timesteps; ++t) {
         for (std::size_t s = 0; s < n_species; ++s) {
             auto x = dX.at(t, s);

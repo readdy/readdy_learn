@@ -27,13 +27,14 @@ Created on 19.05.17
 
 import itertools
 
-import analyze_tools.opt as opt
 import numpy as np
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 from sklearn.linear_model.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.model_selection import TimeSeriesSplit
+
+from readdy_learn import analyze_tools as opt
 
 
 class ConversionReaction(object):

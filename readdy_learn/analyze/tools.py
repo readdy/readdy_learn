@@ -27,14 +27,15 @@ Created on 17.05.17
 
 import functools
 import operator
+import os
 
-import analyze_tools.opt as opt
 import h5py
 import numpy as np
-import os
+import readdy.util.io_utils as ioutils
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
-import readdy.util.io_utils as ioutils
+
+from readdy_learn import analyze_tools as opt
 
 
 def get_count_trajectory(fname, cache_fname=None):

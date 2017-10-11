@@ -26,10 +26,12 @@ Created on 23.05.17
 """
 
 import unittest
-import h5py
-from analyze_tools.py_analyze_tools.tools import TrajectoryConfig
 
 import analyze_tools.analyze_tools as at
+import h5py
+
+from readdy_learn.analyze import TrajectoryConfig
+
 
 class Tests(unittest.TestCase):
 

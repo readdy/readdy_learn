@@ -20,9 +20,10 @@
 # <http://www.gnu.org/licenses/>.
 
 import unittest
+
 import numpy as np
 
-import generate_tools.kinetic_monte_carlo as kmc
+import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"
