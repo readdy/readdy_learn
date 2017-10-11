@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-#include "src/lasso_minimizer_objective_fun.h"
+#include "lasso_minimizer_objective_fun.h"
 
 namespace py = pybind11;
 
@@ -25,8 +25,6 @@ inline static void export_to_python(py::module &m) {
 }
 }
 
-PYBIND11_PLUGIN(analyze_tools) {
-    py::module module("analyze_tools", "analyze tools module");
-    analyze_tools::opt::export_to_python(module);
-    return module.ptr();
+PYBIND11_MODULE(analyze_tools, m) {
+    analyze_tools::opt::export_to_python(m);
 }

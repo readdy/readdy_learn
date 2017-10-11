@@ -27,13 +27,14 @@ A proper description of such an algorithm is given by
     R. Erban, J. Chapman, and P. Maini, "A practical guide to stochastic simulations of reaction-diffusion processes", pp. 24–29, Apr. 2007.
 """
 
-import numpy as np
 import bisect
-import math
 import copy
 import logging
+import math
 
-import generate_tools.logutil as logutil
+import numpy as np
+
+from readdy_learn.generate import generate_tools as logutil
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"
