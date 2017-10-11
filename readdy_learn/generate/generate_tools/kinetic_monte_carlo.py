@@ -209,6 +209,9 @@ class TrajectoryConfig(object):
 
 class ReactionDiffusionSystem:
     def __init__(self, diffusivity, n_species, n_boxes, init_state, init_time=0., species_names=None):
+        diffusivity = np.asarray(diffusivity)
+        init_state = np.asarray(init_state)
+
         assert n_species > 0
         assert n_boxes > 0
         # diffusivity can be a list of sparse matrices or a rank 3 tensor

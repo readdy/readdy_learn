@@ -34,7 +34,7 @@ from sklearn.linear_model.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.model_selection import TimeSeriesSplit
 
-from readdy_learn import analyze_tools as opt
+from readdy_learn.analyze_tools import opt
 
 
 class ConversionReaction(object):
