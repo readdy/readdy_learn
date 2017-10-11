@@ -34,13 +34,13 @@ import math
 
 import numpy as np
 
-from readdy_learn.generate import generate_tools as logutil
+from readdy_learn.generate.generate_tools.logutil import StyleAdapter
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"
 
 logging.basicConfig(format='[KMC] [%(asctime)s] [%(levelname)s] %(message)s', level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
-log = logutil.StyleAdapter(logging.getLogger(__name__))
+log = StyleAdapter(logging.getLogger(__name__))
 
 
 class Event:
