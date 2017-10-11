@@ -248,6 +248,14 @@ class ReactionDiffusionSystem:
         traj_config = TrajectoryConfig(self._names_to_ids, self._reactions)
         return traj_config
 
+    def get_counts_config(self, n_frames=None, timestep=None):
+        assert n_frames is not None or timestep is not None
+        counts, times = self.convert_events_to_time_series(n_frames=n_frames, time_step=timestep)
+        # flatten out spatial dimension and convert to float
+        counts = np.sum(counts, axis=1, dtype=np.float64)
+        config = self.get_trajectory_config()
+        return counts, times, config
+
     def __str__(self):
         string = "ReactionDiffusionSystem\n"
         string += "--- n_species " + str(self._n_species) + "\n"
@@ -394,7 +402,7 @@ class ReactionDiffusionSystem:
     def convert_events_to_time_series(self, time_step=None, n_frames=None):
         """
         Convert to an equidistant time series. Therefore either a time_step or
-        a number of frames must be give.
+        a number of frames must be given.
 
         For usage with readdy_learn (w/o diffusion as of 2017-06-29), do: counts = np.sum(result, axis=1)
 
@@ -410,6 +418,7 @@ class ReactionDiffusionSystem:
             time_step = (self._time_list[-1] - self._time_list[0]) / float(n_frames)
         else:
             n_frames = math.ceil((self._time_list[-1] - self._time_list[0]) / time_step)
+        log.info("got time step {} and n_frames {}".format(time_step, n_frames))
 
         result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.int)
         times = np.linspace(self._time_list[0], self._time_list[-1], n_frames)

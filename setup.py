@@ -26,7 +26,7 @@ def get_project_include():
 ext_modules = [
     Extension(
         'readdy_learn.analyze_tools',
-        sources=['cpp/src/main.cpp'],
+        sources=['cpp/src/main.cpp', 'cpp/src/lasso_minimizer_objective_fun.cpp'],
         language='c++',
         include_dirs=[
             get_pybind_include(), get_spdlog_include(), get_project_include(), get_numpy_include()

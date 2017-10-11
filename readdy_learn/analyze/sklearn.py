@@ -135,7 +135,7 @@ class BasisFunctionConfiguration(object):
 
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
-    def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi=None,
+    def __init__(self, trajs, basis_function_configuration, scale=-1, alpha=1.0, l1_ratio=1.0, init_xi=None,
                  verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options=None):
         """
 
@@ -215,8 +215,12 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             options['maxiter'] = self.maxiter
             options['maxfun'] = self.maxiter
         options.update(self.options)
+        def objective(x):
+            obj = opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
+            # print("got {}".format(obj))
+            return obj
         result = so.minimize(
-            lambda x: opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale),
+            objective,
             init_xi,
             bounds=bounds,
             tol=1e-16,
