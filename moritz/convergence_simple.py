@@ -1,10 +1,12 @@
 import numpy as np
+import os
 import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 import readdy_learn.analyze.tools as pat
 from readdy_learn.analyze.sklearn import BasisFunctionConfiguration
 from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 import matplotlib.pyplot as plt
+
 
 def run(n_steps, n_frames=None, timestep=None):
     system = kmc.ReactionDiffusionSystem(n_species=2, n_boxes=1, diffusivity=[[[0.]], [[0.]]], init_state=[[70, 0]],
@@ -22,20 +24,28 @@ def run(n_steps, n_frames=None, timestep=None):
     bfc.add_conversion(0, 1)  # A -> B
     bfc.add_conversion(1, 0)  # B -> A
     est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=0., l1_ratio=1., method='SLSQP',
-                                    verbose=False, approx_jac=False, options={'ftol': 1e-6})
+                                    verbose=True, approx_jac=False, options={'ftol': 1e-16})
     est.fit(None)
     coefficients = est.coefficients_
     return coefficients
 
+
 if __name__ == '__main__':
+
+    outfile = "convergence_simple.npy"
+
+    if os.path.exists(outfile):
+        raise ValueError("File already existed: {}".format(outfile))
+
     allrates = []
-    timesteps = [.02, .01, .007, .003, .002, .001]
+    timesteps = [.000001, .00001, .0001] + [x for x in np.arange(.001, .5, step=.005)]
     for dt in timesteps:
         rates = []
-        for n in range(100):
-            rates.append(run(500, timestep=dt))
+        for n in range(10):
+            rates.append(run(300, timestep=dt))
+            print(rates)
         rates = np.asarray(rates).squeeze()
         allrates.append(rates)
-        # print(rates)
+    np.save(outfile, allrates)
     for rates, dt in zip(allrates, timesteps):
         print("got {} and {} for timestep={}".format(np.mean(rates[:, 0]), np.mean(rates[:, 1]), dt))
