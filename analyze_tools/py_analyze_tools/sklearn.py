@@ -73,6 +73,20 @@ class FusionReaction(object):
         return result.squeeze()
 
 
+class Intercept(object):
+
+    def __init__(self, type, n_species):
+        self.n_species = n_species
+        self.type = type
+
+    def __call__(self, concentration):
+        if len(concentration.shape) == 1:
+            result = np.zeros((1, self.n_species))
+        else:
+            result = np.zeros((concentration.shape[0], self.n_species))
+        result[:, self.type] = 0.
+        return result.squeeze()
+
 class FissionReaction(object):
     def __init__(self, type_from, type_to1, type_to2, n_species):
         self.type_from = type_from
@@ -115,10 +129,13 @@ class BasisFunctionConfiguration(object):
     def add_fission(self, type_from, type_to1, type_to2):
         self._basis_functions.append(FissionReaction(type_from, type_to1, type_to2, self._n_species))
 
+    def add_intercept(self, type):
+        self._basis_functions.append(Intercept(type, self._n_species))
+
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
     def __init__(self, trajs, basis_function_configuration, scale, alpha=1.0, l1_ratio=1.0, init_xi=None,
-                 verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options={}):
+                 verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options=None):
         """
 
         :param trajs:
@@ -148,7 +165,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         self.maxiter = maxiter
         self.approx_jac = approx_jac
         self.method = method
-        self.options = options
+        self.options = options if options is not None else {}
 
     def _get_slice(self, traj_range):
         if traj_range is not None:
