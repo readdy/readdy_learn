@@ -9,16 +9,16 @@ import matplotlib.pyplot as plt
 
 
 def simulate(n_steps):
-    system = kmc.ReactionDiffusionSystem(n_species=2, n_boxes=1, diffusivity=[[[0.]], [[0.]]], init_state=[[70, 0]],
-                                         species_names=["A", "B"])
-    system.add_conversion("A", "B", np.array([4.]))
-    system.add_conversion("B", "A", np.array([0.5]))
-    system.simulate(n_steps)
-    return system
+    sys = kmc.ReactionDiffusionSystem(n_species=2, n_boxes=1, diffusivity=[[[0.]], [[0.]]], init_state=[[70, 0]],
+                                      species_names=["A", "B"])
+    sys.add_conversion("A", "B", np.array([4.]))
+    sys.add_conversion("B", "A", np.array([0.5]))
+    sys.simulate(n_steps)
+    return sys
 
 
-def run(system, n_frames=None, timestep=None):
-    counts, times, config = system.get_counts_config(n_frames=n_frames, timestep=timestep)
+def run(sys, n_frames=None, timestep=None):
+    counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
     traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0])
     traj.update()
@@ -33,12 +33,32 @@ def run(system, n_frames=None, timestep=None):
     return coefficients
 
 
-if __name__ == '__main__':
+def plot(file):
+    data = np.load(file).item()
+    xs = np.asarray([k for k in data.keys()])
+    ys1, yerr1 = [], []
+    ys2, yerr2 = [], []
+    for time_step in data.keys():
+        rates = data[time_step]
+        ys1.append(np.mean(rates[:, 0]))
+        yerr1.append(np.std(rates[:, 0]))
+        ys2.append(np.mean(rates[:, 1]))
+        yerr2.append(np.std(rates[:, 1]))
 
-    outfile = "convergence_simple.npy"
+    plt.figure()
+    plt.errorbar(xs, ys1, yerr=yerr1, label='estimated A->B')
+    plt.plot(xs, 4.*np.ones_like(xs), "--", label="expected A->B")
+    plt.errorbar(xs, ys2, yerr=yerr2, label='estimated B->A')
+    plt.plot(xs, .5* np.ones_like(xs), "--", label="expected B->A")
+    plt.xlabel("time step")
+    plt.ylabel("rate")
+    plt.legend(loc="best")
+    plt.show()
 
-    if os.path.exists(outfile):
-        raise ValueError("File already existed: {}".format(outfile))
+
+def calculate(file):
+    if os.path.exists(file):
+        raise ValueError("File already existed: {}".format(file))
 
     allrates = {}
     timesteps = [.000001, .00001, .0001] + [x for x in np.arange(.001, .5, step=.005)]
@@ -52,9 +72,14 @@ if __name__ == '__main__':
             allrates[dt].append(rates)
     for k in allrates.keys():
         allrates[k] = np.asarray(allrates[k])
-    np.save(outfile, allrates)
+    np.save(file, allrates)
     for dt in timesteps:
         rates = allrates[dt]
         print("got {:.3f}±{:.3f}  and {:.3f}±{:.3f} for timestep={}".format(
             np.mean(rates[:, 0]), np.std(rates[:, 0]),
             np.mean(rates[:, 1]), np.std(rates[:, 1]), dt))
+
+
+if __name__ == '__main__':
+    outfile = "/home/mho/platypus/Development/readdy_learn/convergence_simple.npy"
+    plot(outfile)
