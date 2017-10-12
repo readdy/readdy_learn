@@ -51,7 +51,11 @@ def plot(file):
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
     ax1.set_title('Concentration curves')
-    smallest_timestep = min(data.keys())
+    ax1.plot(times, counts[:, 0], label='Counts A')
+    ax1.plot(times, counts[:, 1], label='Counts B')
+    ax1.set_xlabel('time')
+    ax1.set_ylabel('counts')
+    ax1.legend(loc='best')
 
     ax2.set_title('Estimated rates')
     ax2.errorbar(xs, ys1, yerr=yerr1, label='estimated A->B')
@@ -62,8 +66,8 @@ def plot(file):
     ax2.set_ylabel("rate")
     ax2.legend(loc="best")
 
-
     fig.show()
+    plt.show()
 
 
 def calculate(file, write_concentrations_for_time_step=None):
@@ -71,7 +75,7 @@ def calculate(file, write_concentrations_for_time_step=None):
         raise ValueError("File already existed: {}".format(file))
 
     allrates = {}
-    timesteps = [x for x in np.arange(.001, .5, step=.005)] #[.000001, .00001, .0001]
+    timesteps = [.000001, .00001, .0001] + [x for x in np.arange(.001, .5, step=.005)]
     for k in timesteps:
         allrates[k] = []
 
@@ -98,5 +102,9 @@ def calculate(file, write_concentrations_for_time_step=None):
 
 
 if __name__ == '__main__':
-    outfile = "/home/mho/platypus/Development/readdy_learn/convergence_simple.npy"
-    plot(outfile)
+    outfile = 'convergence_simple.npz'
+    #if os.path.exists(outfile):
+    #    os.remove(outfile)
+    calculate(outfile)
+    # outfile = "/home/mho/platypus/Development/readdy_learn/convergence_simple.npy"
+    # plot(outfile)
