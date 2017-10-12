@@ -281,9 +281,8 @@ class CV(object):
         alpha, l1_ratio = params
         scores = []
         trajs = [self.traj] + list(self.test_traj)
-        # todo ?!
+        # todo this is actually vice versa, how do i train on multiple trajectories?
         for test_idx, train_idx in splitter.split(trajs):
-            print("got train index {}, test index {}".format(train_idx, test_idx))
             assert len(train_idx) == 1
             estimator = ReaDDyElasticNetEstimator(trajs[train_idx[0]], self.bfc, -1, alpha=alpha,
                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
