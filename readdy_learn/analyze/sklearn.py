@@ -282,7 +282,8 @@ class CV(object):
         scores = []
         trajs = [self.traj] + list(self.test_traj)
         for train_idx, test_idx in splitter.split(trajs):
-            estimator = ReaDDyElasticNetEstimator(trajs[train_idx], self.bfc, -1, alpha=alpha,
+            assert len(train_idx) == 0
+            estimator = ReaDDyElasticNetEstimator(trajs[train_idx[0]], self.bfc, -1, alpha=alpha,
                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                   method=self.method)
             # fit the whole thing
