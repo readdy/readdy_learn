@@ -9,8 +9,8 @@ from readdy_learn.sample_tools import Suite
 
 
 def set_up_system():
-    sys = kmc.ReactionDiffusionSystem(n_species=4, n_boxes=1, diffusivity=[[[0.]], [[0.]]], init_state=[[70, 0]],
-                                      species_names=["A", "B", "C", "D"])
+    sys = kmc.ReactionDiffusionSystem(n_species=4, n_boxes=1, diffusivity=[[[0.]], [[0.]], [[0.]], [[0.]]],
+                                      init_state=[[70, 0]], species_names=["A", "B", "C", "D"])
     sys.add_conversion("A", "D", np.array([4.]))
     sys.add_conversion("D", "A", np.array([0.5]))
     sys.add_fusion("A", "B", "C", np.array([2]))
