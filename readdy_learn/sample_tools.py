@@ -24,13 +24,12 @@ class Suite(object):
         coefficients = est.coefficients_
         return coefficients
 
-    def estimated_behavior(self, coefficients, bfc, initial_counts, time_step, n_time_steps):
+    def estimated_behavior(self, coefficients, bfc, initial_counts, times):
         def fun(data, _):
             theta = np.array([f(data) for f in bfc.functions])
             return np.matmul(coefficients, theta)
 
-        estimated_realisation = odeint(fun, initial_counts,
-                                       np.arange(0., n_time_steps * time_step, time_step))
+        estimated_realisation = odeint(fun, initial_counts, times)
         return estimated_realisation
 
     def plot(self, file):
@@ -44,10 +43,9 @@ class Suite(object):
         xs = np.asarray([k for k in data.keys()])
         smallest_time_step = min(data.keys())
 
-        fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+        estimated = self.estimated_behavior(np.mean(data[smallest_time_step], axis=0), bfc, counts[0], times)
 
-        estimated = self.estimated_behavior(np.mean(data[smallest_time_step], axis=0), bfc, counts[0],
-                                            smallest_time_step, len(times))
+        fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
         for t in config.types.keys():
             type_id = config.types[t]
