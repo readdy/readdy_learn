@@ -11,14 +11,14 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 
 
-def run(sys, bfc, n_frames=None, timestep=None):
+def run(sys, bfc, verbose=True, n_frames=None, timestep=None):
     counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
     traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0])
     traj.update()
 
     est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=0., l1_ratio=1., method='SLSQP',
-                                    verbose=True, approx_jac=False, options={'ftol': 1e-16})
+                                    verbose=verbose, approx_jac=False, options={'ftol': 1e-16})
     est.fit(None)
     coefficients = est.coefficients_
     return coefficients
@@ -75,7 +75,7 @@ def plot(file):
     plt.show()
 
 
-def calculate(file, timesteps, n_steps, write_concentrations_for_time_step=None):
+def calculate(file, timesteps, n_steps, write_concentrations_for_time_step=None, verbose=True):
     if os.path.exists(file):
         raise ValueError("File already existed: {}".format(file))
 
@@ -92,7 +92,7 @@ def calculate(file, timesteps, n_steps, write_concentrations_for_time_step=None)
         system, bfc = set_up_system()
         system.simulate(n_steps)
         for dt in timesteps:
-            rates = run(system, bfc, timestep=dt)
+            rates = run(system, bfc, timestep=dt, verbose=verbose)
             allrates[dt].append(rates)
             if dt == write_concentrations_for_time_step:
                 counts, times, config = system.get_counts_config(timestep=dt)
@@ -102,9 +102,10 @@ def calculate(file, timesteps, n_steps, write_concentrations_for_time_step=None)
     np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
     for dt in timesteps:
         rates = allrates[dt]
-        print("got {:.3f}±{:.3f}  and {:.3f}±{:.3f} for timestep={}".format(
-            np.mean(rates[:, 0]), np.std(rates[:, 0]),
-            np.mean(rates[:, 1]), np.std(rates[:, 1]), dt))
+        if verbose:
+            print("got {:.3f}±{:.3f}  and {:.3f}±{:.3f} for timestep={}".format(
+                np.mean(rates[:, 0]), np.std(rates[:, 0]),
+                np.mean(rates[:, 1]), np.std(rates[:, 1]), dt))
 
 
 def set_up_system():
@@ -125,6 +126,7 @@ if __name__ == '__main__':
     parser.add_argument("-f", "--force", help="perform it already!", action="store_true")
     parser.add_argument("-p", "--plot", help="just plot the data", action="store_true")
     parser.add_argument("--n_steps", help="the number of gillespie steps", type=int)
+    parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     args = parser.parse_args()
     if not args.outfile:
         outfile = 'convergence_simple.npz'
@@ -149,4 +151,4 @@ if __name__ == '__main__':
 
         print("---> running analysis for n_steps={}".format(n_steps))
         timesteps = [.000001, .00001, .0001] + [x for x in np.arange(.001, .5, step=.005)]
-        calculate(outfile, timesteps=timesteps, n_steps=n_steps)
+        calculate(outfile, timesteps=timesteps, n_steps=n_steps, verbose=args.verbose)
