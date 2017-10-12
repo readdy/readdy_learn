@@ -63,7 +63,7 @@ class Suite(object):
             ax2.errorbar(xs, ys, yerr=yerr, label='estimated ' + str(reaction))
             ax2.plot(xs, reaction.rate * np.ones_like(xs), "--", label="expected " + str(reaction))
 
-        # ax2.set_xscale('log')
+        ax2.set_xscale('log')
         ax2.set_xlabel("time step")
         ax2.set_ylabel("rate")
         ax2.legend(loc="best")
@@ -72,7 +72,7 @@ class Suite(object):
         plt.show()
 
     def calculate(self, file, timesteps, n_steps, n_realizations=20, write_concentrations_for_time_step=None,
-                  verbose=True):
+                  verbose=True, save=True):
         if os.path.exists(file):
             raise ValueError("File already existed: {}".format(file))
 
@@ -96,10 +96,12 @@ class Suite(object):
                     concentrations = counts.squeeze(), times.squeeze()
         for k in allrates.keys():
             allrates[k] = np.asarray(allrates[k])
-        np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
+        if save:
+            np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
         for dt in timesteps:
             rates = allrates[dt]
             if verbose:
                 print("got {:.3f}±{:.3f}  and {:.3f}±{:.3f} for timestep={}".format(
                     np.mean(rates[:, 0]), np.std(rates[:, 0]),
                     np.mean(rates[:, 1]), np.std(rates[:, 1]), dt))
+        return np.mean(allrates[min(timesteps)], axis=0)
