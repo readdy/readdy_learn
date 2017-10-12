@@ -93,7 +93,7 @@ class Suite(object):
             system.simulate(n_steps)
             for dt in timesteps:
                 rates = self.run(system, bfc, timestep=dt, verbose=verbose)
-                if rates:
+                if rates is not None:
                     allrates[dt].append(rates)
                     if dt == write_concentrations_for_time_step:
                         counts, times, config = system.get_counts_config(timestep=dt)
