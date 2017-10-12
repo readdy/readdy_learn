@@ -31,7 +31,7 @@ import numpy as np
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 from sklearn.linear_model.base import BaseEstimator
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, LeaveOneOut
 from sklearn.model_selection import TimeSeriesSplit
 
 from readdy_learn.analyze_tools import opt
@@ -231,7 +231,6 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         self.coefficients_ = result.x
 
         self.success_ = result.success
-
         if self.verbose:
             if not result.success:
                 print("optimization problem did not exit successfully (alpha=%s, lambda=%s)!" % (
@@ -273,6 +272,47 @@ class CV(object):
         self.verbose = verbose
         self.method = method
         self.test_traj = test_traj
+
+    def compute_cv_result_cross_trajs(self, params):
+        splitter = LeaveOneOut()
+
+        assert isinstance(self.test_traj, (list, tuple)), "test traj must be list or tuple"
+
+        alpha, l1_ratio = params
+        scores = []
+        trajs = [self.traj] + list(self.test_traj)
+        for train_idx, test_idx in splitter.split(trajs):
+            estimator = ReaDDyElasticNetEstimator(trajs[train_idx], self.bfc, -1, alpha=alpha,
+                                                  l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                                  method=self.method)
+            # fit the whole thing
+            estimator.fit(None)
+            if estimator.success_:
+                for idx in test_idx:
+                    testimator = ReaDDyElasticNetEstimator(trajs[idx], self.bfc, -1, alpha=alpha,
+                                                           l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                                           method=self.method)
+                    testimator.coefficients_ = estimator.coefficients_
+                    scores.append(
+                        testimator.score(range(0, trajs[idx].n_time_steps), trajs[idx].dcounts_dt)
+                    )
+        return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
+
+    def fit_cross_trajs(self):
+        params = itertools.product(self.alphas, self.l1_ratios)
+        result = []
+        if self.show_progress:
+            from ipywidgets import IntProgress
+            from IPython.display import display
+            f = IntProgress(min=0, max=len(self.alphas) * len(self.l1_ratios) - 1)
+            display(f)
+        with Pool(processes=self.n_jobs) as p:
+            for idx, res in enumerate(p.imap_unordered(self.compute_cv_result_cross_trajs, params, 1)):
+                result.append(res)
+                if self.show_progress:
+                    f.value = idx
+        f.close()
+        self.result = result
 
     def compute_cv_result(self, params):
         if self.mode == 'k_fold':
