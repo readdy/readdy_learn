@@ -84,7 +84,7 @@ class TrajectoryConfig(object):
 
 
 class Trajectory(object):
-    def __init__(self, traj_config, counts, time_step):
+    def __init__(self, traj_config, counts, time_step, verbose=True):
         self._counts = counts
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
@@ -99,15 +99,17 @@ class Trajectory(object):
         self._xi = None
         self._dirty = True
         self._config = traj_config
+        self._verbose = verbose
 
     @classmethod
-    def from_file_name(cls, fname, time_step):
+    def from_file_name(cls, fname, time_step, verbose=True):
         with h5py.File(fname) as f:
-            return Trajectory(TrajectoryConfig(fname), f["readdy/observables/n_particles/data"][:].astype(np.double), time_step)
+            return Trajectory(TrajectoryConfig(fname),
+                              f["readdy/observables/n_particles/data"][:].astype(np.double), time_step, verbose=verbose)
 
     @classmethod
-    def from_counts(cls, traj_config, counts, time_step):
-        return Trajectory(traj_config, counts, time_step)
+    def from_counts(cls, traj_config, counts, time_step, verbose=True):
+        return Trajectory(traj_config, counts, time_step, verbose=verbose)
 
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
@@ -115,17 +117,19 @@ class Trajectory(object):
         rate_chapman = 4. * np.pi * diffusion_coefficient * reaction_radius * (1. - np.tanh(tmp) / tmp)
         rate_per_volume = xi * functools.reduce(operator.mul, self._box_size, 1)
 
-        print("erban chapman rate (per volume): {}".format(rate_chapman))
-        print("lasso fitted rate (per counts): {}".format(xi))
-        print("lasso fitted rate (per volume): {}".format(rate_per_volume))
+        if self._verbose:
+            print("erban chapman rate (per volume): {}".format(rate_chapman))
+            print("lasso fitted rate (per counts): {}".format(xi))
+            print("lasso fitted rate (per volume): {}".format(rate_per_volume))
 
         return rate_chapman, xi, rate_per_volume
 
     def update(self):
         if self._dirty:
             self._dirty = False
-            print("max counts = {}, min nonzero counts = {}".format(np.max(self.counts),
-                                                                    np.min(self.counts[np.nonzero(self.counts)])))
+            if self._verbose:
+                print("max counts = {}, min nonzero counts = {}".format(np.max(self.counts),
+                                                                        np.min(self.counts[np.nonzero(self.counts)])))
             self._xi = None
             self._n_basis_functions = len(self._thetas)
             self._n_time_steps = self.counts.shape[0]

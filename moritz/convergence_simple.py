@@ -1,20 +1,20 @@
 import argparse
-
-import numpy as np
 import os
-import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
-import readdy_learn.analyze.tools as pat
-from readdy_learn.analyze.sklearn import BasisFunctionConfiguration
-from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
-from scipy.integrate import odeint
 
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import odeint
+
+import readdy_learn.analyze.tools as pat
+import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
+from readdy_learn.analyze.sklearn import BasisFunctionConfiguration
+from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 
 def run(sys, bfc, verbose=True, n_frames=None, timestep=None):
     counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
-    traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0])
+    traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
     traj.update()
 
     est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=0., l1_ratio=1., method='SLSQP',
