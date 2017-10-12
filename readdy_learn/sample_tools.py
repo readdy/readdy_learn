@@ -21,8 +21,11 @@ class Suite(object):
         est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=0., l1_ratio=1., method='SLSQP',
                                         verbose=verbose, approx_jac=False, options={'ftol': 1e-16})
         est.fit(None)
-        coefficients = est.coefficients_
-        return coefficients
+        if est.success_:
+            coefficients = est.coefficients_
+            return coefficients
+        else:
+            return None
 
     def estimated_behavior(self, coefficients, bfc, initial_counts, times):
         def fun(data, _):
@@ -90,10 +93,11 @@ class Suite(object):
             system.simulate(n_steps)
             for dt in timesteps:
                 rates = self.run(system, bfc, timestep=dt, verbose=verbose)
-                allrates[dt].append(rates)
-                if dt == write_concentrations_for_time_step:
-                    counts, times, config = system.get_counts_config(timestep=dt)
-                    concentrations = counts.squeeze(), times.squeeze()
+                if rates:
+                    allrates[dt].append(rates)
+                    if dt == write_concentrations_for_time_step:
+                        counts, times, config = system.get_counts_config(timestep=dt)
+                        concentrations = counts.squeeze(), times.squeeze()
         for k in allrates.keys():
             allrates[k] = np.asarray(allrates[k])
         if save:

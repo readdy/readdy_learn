@@ -230,6 +230,8 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
         self.coefficients_ = result.x
 
+        self.success_ = result.success
+
         if self.verbose:
             if not result.success:
                 print("optimization problem did not exit successfully (alpha=%s, lambda=%s)!" % (
