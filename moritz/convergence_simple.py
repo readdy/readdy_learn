@@ -5,7 +5,7 @@ import numpy as np
 
 import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 from readdy_learn.analyze.sklearn import BasisFunctionConfiguration
-from .sample_tools import Suite
+from readdy_learn.sample_tools import Suite
 
 
 def set_up_system():
@@ -62,4 +62,4 @@ if __name__ == '__main__':
         print("---> running analysis for n_steps={} with n_realizations={}".format(n_steps, n_realizations))
         timesteps = [.000001, .00001, .0001] + [x for x in np.arange(.001, .5, step=.005)]
         suite.calculate(outfile, timesteps=timesteps, n_steps=n_steps, n_realizations=n_realizations,
-                        verbose=args.verbose)
+                        verbose=args.verbose, write_concentrations_for_time_step=.001)
