@@ -281,8 +281,9 @@ class CV(object):
         alpha, l1_ratio = params
         scores = []
         trajs = [self.traj] + list(self.test_traj)
-        for train_idx, test_idx in splitter.split(trajs):
-            print("got train index {}, test index {}", train_idx, test_idx)
+        # todo ?!
+        for test_idx, train_idx in splitter.split(trajs):
+            print("got train index {}, test index {}".format(train_idx, test_idx))
             assert len(train_idx) == 0
             estimator = ReaDDyElasticNetEstimator(trajs[train_idx[0]], self.bfc, -1, alpha=alpha,
                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
