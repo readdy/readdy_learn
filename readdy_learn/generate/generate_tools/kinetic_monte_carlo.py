@@ -96,18 +96,19 @@ class DiffusionEvent(Event):
 class Reaction:
     """Reactions behave like structs, that carry the rates and stoichiometric information for all possible reactions"""
 
-    def __init__(self, rate, n_species, n_boxes):
+    def __init__(self, rate, n_species, n_boxes, species_names):
         assert len(rate) == n_boxes
         self.rate = rate
         self.stoichiometric_delta = np.zeros(n_species, dtype=np.int)
+        self.species_names = species_names
 
     def __repr__(self):
         return str(self)
 
 
 class Conversion(Reaction):
-    def __init__(self, species_from, species_to, rate, n_species, n_boxes):
-        super(Conversion, self).__init__(rate, n_species, n_boxes)
+    def __init__(self, species_from, species_to, rate, n_species, n_boxes, species_names):
+        super(Conversion, self).__init__(rate, n_species, n_boxes, species_names)
         self.species_from = species_from
         self.species_to = species_to
         self.stoichiometric_delta[self.species_from] = -1
@@ -117,14 +118,17 @@ class Conversion(Reaction):
         return self.rate[box_idx] * box_state[self.species_from]
 
     def __str__(self):
+        return "{} -> {}".format(self.species_names[self.species_from], self.species_names[self.species_to])
+
+    def __repr__(self):
         string = "kmc.Conversion"
         string += "(from " + str(self.species_from) + ", to " + str(self.species_to) + ", rate " + str(self.rate) + ")"
         return string
 
 
 class Fusion(Reaction):
-    def __init__(self, species_from1, species_from2, species_to, rate, n_species, n_boxes):
-        super(Fusion, self).__init__(rate, n_species, n_boxes)
+    def __init__(self, species_from1, species_from2, species_to, rate, n_species, n_boxes, species_names):
+        super(Fusion, self).__init__(rate, n_species, n_boxes, species_names)
         self.species_from1 = species_from1
         self.species_from2 = species_from2
         self.species_to = species_to
@@ -136,6 +140,10 @@ class Fusion(Reaction):
         return self.rate[box_idx] * box_state[self.species_from1] * box_state[self.species_from2]
 
     def __str__(self):
+        return "{} + {} -> {}".format(self.species_names[self.species_from1], self.species_names[self.species_from2],
+                                      self.species_names[self.species_to])
+
+    def __repr__(self):
         string = "kmc.Fusion"
         string += "(from1 " + str(self.species_from1) + ", from2 " + str(self.species_from2)
         string += ", to " + str(self.species_to) + ", rate " + str(self.rate) + ")"
@@ -143,8 +151,8 @@ class Fusion(Reaction):
 
 
 class Fission(Reaction):
-    def __init__(self, species_from, species_to1, species_to2, rate, n_species, n_boxes):
-        super(Fission, self).__init__(rate, n_species, n_boxes)
+    def __init__(self, species_from, species_to1, species_to2, rate, n_species, n_boxes, species_names):
+        super(Fission, self).__init__(rate, n_species, n_boxes, species_names)
         self.species_from = species_from
         self.species_to1 = species_to1
         self.species_to2 = species_to2
@@ -156,6 +164,10 @@ class Fission(Reaction):
         return self.rate[box_idx] * box_state[self.species_from]
 
     def __str__(self):
+        return "{} -> {} + {}".format(self.species_names[self.species_from], self.species_names[self.species_to1],
+                                      self.species_names[self.species_to2])
+
+    def __repr__(self):
         string = "kmc.Fission"
         string += "(from " + str(self.species_from) + ", to1 " + str(self.species_to1)
         string += ", to2 " + str(self.species_to2) + ", rate " + str(self.rate) + ")"
@@ -163,8 +175,8 @@ class Fission(Reaction):
 
 
 class Decay(Reaction):
-    def __init__(self, species_from, rate, n_species, n_boxes):
-        super(Decay, self).__init__(rate, n_species, n_boxes)
+    def __init__(self, species_from, rate, n_species, n_boxes, species_names):
+        super(Decay, self).__init__(rate, n_species, n_boxes, species_names)
         self.species_from = species_from
         self.stoichiometric_delta[self.species_from] = -1
 
@@ -172,14 +184,17 @@ class Decay(Reaction):
         return self.rate[box_idx] * box_state[self.species_from]
 
     def __str__(self):
+        return "{} -> Ø".format(self.species_names[self.species_from])
+
+    def __repr__(self):
         string = "kmc.Decay"
         string += "(from " + str(self.species_from) + ", rate " + str(self.rate) + ")"
         return string
 
 
 class Creation(Reaction):
-    def __init__(self, species_to, rate, n_species, n_boxes):
-        super(Creation, self).__init__(rate, n_species, n_boxes)
+    def __init__(self, species_to, rate, n_species, n_boxes, species_names):
+        super(Creation, self).__init__(rate, n_species, n_boxes, species_names)
         self.species_to = species_to
         self.stoichiometric_delta[self.species_to] = +1
 
@@ -187,6 +202,9 @@ class Creation(Reaction):
         return self.rate[box_idx]
 
     def __str__(self):
+        return "Ø -> {}".format(self.species_names[self.species_to])
+
+    def __repr__(self):
         string = "kmc.Creation"
         string += "(to " + str(self.species_to) + ", rate " + str(self.rate) + ")"
         return string
@@ -283,7 +301,7 @@ class ReactionDiffusionSystem:
         self._assure_not_finalized()
         species_from = self._id_from_name(species_from)
         species_to = self._id_from_name(species_to)
-        conversion = Conversion(species_from, species_to, rate, self._n_species, self._n_boxes)
+        conversion = Conversion(species_from, species_to, rate, self._n_species, self._n_boxes, self._species_names)
         self._reactions.append(conversion)
         self._n_reactions = len(self._reactions)
 
@@ -292,7 +310,7 @@ class ReactionDiffusionSystem:
         species_from1 = self._id_from_name(species_from1)
         species_from2 = self._id_from_name(species_from2)
         species_to = self._id_from_name(species_to)
-        fusion = Fusion(species_from1, species_from2, species_to, rate, self._n_species, self._n_boxes)
+        fusion = Fusion(species_from1, species_from2, species_to, rate, self._n_species, self._n_boxes, self._species_names)
         self._reactions.append(fusion)
         self._n_reactions = len(self._reactions)
 
@@ -301,21 +319,21 @@ class ReactionDiffusionSystem:
         species_from = self._id_from_name(species_from)
         species_to1 = self._id_from_name(species_to1)
         species_to2 = self._id_from_name(species_to2)
-        fission = Fission(species_from, species_to1, species_to2, rate, self._n_species, self._n_boxes)
+        fission = Fission(species_from, species_to1, species_to2, rate, self._n_species, self._n_boxes, self._species_names)
         self._reactions.append(fission)
         self._n_reactions = len(self._reactions)
 
     def add_decay(self, species_from, rate):
         self._assure_not_finalized()
         species_from = self._id_from_name(species_from)
-        decay = Decay(species_from, rate, self._n_species, self._n_boxes)
+        decay = Decay(species_from, rate, self._n_species, self._n_boxes, self._species_names)
         self._reactions.append(decay)
         self._n_reactions = len(self._reactions)
 
     def add_creation(self, species_to, rate):
         self._assure_not_finalized()
         species_to = self._id_from_name(species_to)
-        creation = Creation(species_to, rate, self._n_species, self._n_boxes)
+        creation = Creation(species_to, rate, self._n_species, self._n_boxes, self._species_names)
         self._reactions.append(creation)
         self._n_reactions = len(self._reactions)
 

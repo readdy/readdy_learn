@@ -164,6 +164,7 @@ fabric.properties
 # data
 *.h5
 *.npy
+*.npz
 
 # Prerequisites
 *.d
