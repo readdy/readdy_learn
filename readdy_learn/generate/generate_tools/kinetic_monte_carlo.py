@@ -233,7 +233,7 @@ class ReactionDiffusionSystem:
         assert n_species > 0
         assert n_boxes > 0
         # diffusivity can be a list of sparse matrices or a rank 3 tensor
-        assert len(diffusivity) == n_species
+        assert len(diffusivity) == n_species, "len diffusivity: {} != {}".format(n_species, len(diffusivity))
         assert diffusivity[0].shape == (n_boxes, n_boxes,)
         assert init_state.shape == (n_boxes, n_species)
         self._n_species = n_species
