@@ -34,7 +34,10 @@ def run(sys, n_frames=None, timestep=None):
 
 
 def plot(file):
-    data = np.load(file).item()
+    f = np.load(file)
+    data = f['rates'].item()
+    counts = f['counts']
+    times = f['times']
     xs = np.asarray([k for k in data.keys()])
     ys1, yerr1 = [], []
     ys2, yerr2 = [], []
@@ -45,34 +48,48 @@ def plot(file):
         ys2.append(np.mean(rates[:, 1]))
         yerr2.append(np.std(rates[:, 1]))
 
-    plt.figure()
-    plt.errorbar(xs, ys1, yerr=yerr1, label='estimated A->B')
-    plt.plot(xs, 4.*np.ones_like(xs), "--", label="expected A->B")
-    plt.errorbar(xs, ys2, yerr=yerr2, label='estimated B->A')
-    plt.plot(xs, .5* np.ones_like(xs), "--", label="expected B->A")
-    plt.xlabel("time step")
-    plt.ylabel("rate")
-    plt.legend(loc="best")
-    plt.show()
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+
+    ax1.set_title('Concentration curves')
+    smallest_timestep = min(data.keys())
+
+    ax2.set_title('Estimated rates')
+    ax2.errorbar(xs, ys1, yerr=yerr1, label='estimated A->B')
+    ax2.plot(xs, 4.*np.ones_like(xs), "--", label="expected A->B")
+    ax2.errorbar(xs, ys2, yerr=yerr2, label='estimated B->A')
+    ax2.plot(xs, .5* np.ones_like(xs), "--", label="expected B->A")
+    ax2.set_xlabel("time step")
+    ax2.set_ylabel("rate")
+    ax2.legend(loc="best")
 
 
-def calculate(file):
+    fig.show()
+
+
+def calculate(file, write_concentrations_for_time_step=None):
     if os.path.exists(file):
         raise ValueError("File already existed: {}".format(file))
 
     allrates = {}
-    timesteps = [.000001, .00001, .0001] + [x for x in np.arange(.001, .5, step=.005)]
+    timesteps = [x for x in np.arange(.001, .5, step=.005)] #[.000001, .00001, .0001]
     for k in timesteps:
         allrates[k] = []
+
+    if write_concentrations_for_time_step is None:
+        write_concentrations_for_time_step = min(timesteps)
+    concentrations = None
 
     for n in range(20):
         system = simulate(300)
         for dt in timesteps:
             rates = run(system, timestep=dt)
             allrates[dt].append(rates)
+            if dt == write_concentrations_for_time_step:
+                counts, times, config = system.get_counts_config(timestep=dt)
+                concentrations = counts.squeeze(), times.squeeze()
     for k in allrates.keys():
         allrates[k] = np.asarray(allrates[k])
-    np.save(file, allrates)
+    np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
     for dt in timesteps:
         rates = allrates[dt]
         print("got {:.3f}±{:.3f}  and {:.3f}±{:.3f} for timestep={}".format(
