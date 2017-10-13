@@ -37,7 +37,8 @@ double score(const input_array &propensities, const input_array &theta, const in
             result += x * x;
         }
     }
-    return std::sqrt(result);
+    result *= (-1. / (2.*n_timesteps));
+    return result;
 }
 
 void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
@@ -106,7 +107,7 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
         if (prefactor >= 0) {
             result.mutable_at(i) *= -2. * prefactor;
         } else {
-	        result.mutable_at(i) *= -1. / n_timesteps;
+	        result.mutable_at(i) *= -1. / (2.*n_timesteps);
         }
 
         // now the l1 regularization
