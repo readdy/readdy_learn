@@ -20,6 +20,9 @@ double theta_norm_squared(const input_array &theta) {
     return result;
 }
 
+/**
+ * RMSD
+ */
 double score(const input_array &propensities, const input_array &theta, const input_array &dX) {
     double result = 0;
     if (theta.ndim() != 3) {
@@ -37,8 +40,8 @@ double score(const input_array &propensities, const input_array &theta, const in
             result += x * x;
         }
     }
-    result *= (-1. / (2.*n_timesteps));
-    return result;
+    result *= (-1. / (n_timesteps));
+    return std::sqrt(result);
 }
 
 void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
