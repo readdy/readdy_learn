@@ -9,11 +9,12 @@ from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 
 class Suite(object):
-    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000):
+    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12):
         self._set_up_system = set_up_system
         self._alpha = alpha
         self._l1_ratio = l1_ratio
         self._maxiter = maxiter
+        self._tol = tol
 
     def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
         counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
@@ -23,7 +24,7 @@ class Suite(object):
 
         est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
-                                        options={'ftol': 1e-16})
+                                        options={'ftol': self._tol})
         est.fit(None)
         if est.success_:
             coefficients = est.coefficients_
