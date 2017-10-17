@@ -20,7 +20,7 @@ class Suite(object):
         traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
         traj.update()
 
-        est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=self._alpha, l1_ratio=self._l1_ratio,
+        est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=self._alpha, l1_ratio=self._l1_ratio, maxiter=30000,
                                         method='SLSQP', verbose=verbose, approx_jac=False, options={'ftol': 1e-16})
         est.fit(None)
         if est.success_:
