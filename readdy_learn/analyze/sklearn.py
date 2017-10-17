@@ -281,17 +281,19 @@ class CV(object):
         alpha, l1_ratio = params
         scores = []
 
+        test_traj = self.test_traj[0]
+
         estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha,
                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                   method=self.method)
         # fit the whole thing
         estimator.fit(None)
         if estimator.success_:
-            testimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, -1, alpha=alpha,
+            testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, -1, alpha=alpha,
                                                    l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                    method=self.method)
             testimator.coefficients_ = estimator.coefficients_
-            scores.append(testimator.score(range(0, self.test_traj.n_time_steps), self.test_traj.dcounts_dt))
+            scores.append(testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt))
 
         # trajs = [self.traj] + list(self.test_traj)
         # for train_idx, test_idx in splitter.split(trajs):
