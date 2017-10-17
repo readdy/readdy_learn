@@ -75,7 +75,6 @@ class FusionReaction(object):
 
 
 class Intercept(object):
-
     def __init__(self, type, n_species):
         self.n_species = n_species
         self.type = type
@@ -87,6 +86,7 @@ class Intercept(object):
             result = np.zeros((concentration.shape[0], self.n_species))
         result[:, self.type] = 0.
         return result.squeeze()
+
 
 class FissionReaction(object):
     def __init__(self, type_from, type_to1, type_to2, n_species):
@@ -215,10 +215,12 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             options['maxiter'] = self.maxiter
             options['maxfun'] = self.maxiter
         options.update(self.options)
+
         def objective(x):
             obj = opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
             # print("got {}".format(obj))
             return obj
+
         result = so.minimize(
             objective,
             init_xi,
@@ -257,7 +259,7 @@ class CrossTrajSplit(object):
 
 class CV(object):
     def __init__(self, traj, bfc, scale, alphas, l1_ratios, n_splits, init_xi, n_jobs=8, show_progress=True,
-                 mode='k_fold', verbose=False, method='SLSQP', test_traj=None):
+                 mode='k_fold', verbose=False, method='SLSQP', test_traj=None, maxiter=300000):
         self.alphas = alphas
         self.l1_ratios = l1_ratios
         self.n_jobs = n_jobs
@@ -272,6 +274,7 @@ class CV(object):
         self.verbose = verbose
         self.method = method
         self.test_traj = test_traj
+        self.maxiter = maxiter
 
     def compute_cv_result_cross_trajs(self, params):
         splitter = LeaveOneOut()
@@ -283,9 +286,9 @@ class CV(object):
 
         test_traj = self.test_traj[0]
 
-        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha,
-                                                  l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-                                                  method=self.method)
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha, maxiter=self.maxiter,
+                                              l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                              method=self.method)
         # fit the whole thing
         estimator.fit(None)
         if estimator.success_:
@@ -340,7 +343,7 @@ class CV(object):
             print("unknown mode: %s" % self.mode)
             return
         alpha, l1_ratio = params
-        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha,
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha, maxiter=self.maxiter,
                                               l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                               method=self.method)
         if self.test_traj is not None:
