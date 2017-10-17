@@ -333,5 +333,9 @@ It can be noted that for
  the problem reduces to Ridge regression.
 \end_layout
 
+\begin_layout Subsection*
+Derivation of hyper parameters
+\end_layout
+
 \end_body
 \end_document
