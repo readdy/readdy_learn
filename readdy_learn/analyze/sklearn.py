@@ -280,22 +280,35 @@ class CV(object):
 
         alpha, l1_ratio = params
         scores = []
-        trajs = [self.traj] + list(self.test_traj)
-        for train_idx, test_idx in splitter.split(trajs):
-            estimator = ReaDDyElasticNetEstimator([trajs[ix] for ix in train_idx], self.bfc, -1, alpha=alpha,
+
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha,
                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                   method=self.method)
-            # fit the whole thing
-            estimator.fit(None)
-            if estimator.success_:
-                for idx in test_idx:
-                    testimator = ReaDDyElasticNetEstimator(trajs[idx], self.bfc, -1, alpha=alpha,
-                                                           l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-                                                           method=self.method)
-                    testimator.coefficients_ = estimator.coefficients_
-                    scores.append(
-                        testimator.score(range(0, trajs[idx].n_time_steps), trajs[idx].dcounts_dt)
-                    )
+        # fit the whole thing
+        estimator.fit(None)
+        if estimator.success_:
+            testimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, -1, alpha=alpha,
+                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                                   method=self.method)
+            testimator.coefficients_ = estimator.coefficients_
+            scores.append(testimator.score(range(0, self.test_traj.n_time_steps), self.test_traj.dcounts_dt))
+
+        # trajs = [self.traj] + list(self.test_traj)
+        # for train_idx, test_idx in splitter.split(trajs):
+        #     estimator = ReaDDyElasticNetEstimator([trajs[ix] for ix in train_idx], self.bfc, -1, alpha=alpha,
+        #                                           l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+        #                                           method=self.method)
+        #     # fit the whole thing
+        #     estimator.fit(None)
+        #     if estimator.success_:
+        #         for idx in test_idx:
+        #             testimator = ReaDDyElasticNetEstimator(trajs[idx], self.bfc, -1, alpha=alpha,
+        #                                                    l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+        #                                                    method=self.method)
+        #             testimator.coefficients_ = estimator.coefficients_
+        #             scores.append(
+        #                 testimator.score(range(0, trajs[idx].n_time_steps), trajs[idx].dcounts_dt)
+        #             )
         return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
 
     def fit_cross_trajs(self):
