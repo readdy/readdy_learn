@@ -145,13 +145,9 @@ class Trajectory(object):
         self.update()
         string = "Trajectory("
         string += "counts.shape={}, box_size={}, time_step={}, n_basis_functions={}, large_theta.shape={}, " \
-                  "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}".format(self.counts.shape,
-                                                                                        self._box_size, self.time_step,
-                                                                                        self.n_basis_functions,
-                                                                                        self._large_theta.shape,
-                                                                                        self._n_time_steps,
-                                                                                        self._n_species, self._dirty,
-                                                                                        self._dcounts_dt.shape)
+                  "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}"\
+            .format(self.counts.shape,self._box_size, self.time_step, self.n_basis_functions, self._large_theta.shape,
+                    self._n_time_steps, self._n_species, self._dirty, self._dcounts_dt.shape)
         string += ")"
         return string
 

@@ -296,7 +296,13 @@ class CV(object):
                                                    l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                    method=self.method)
             testimator.coefficients_ = estimator.coefficients_
-            scores.append(testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt))
+            score = testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt)
+            scores.append(score)
+        else:
+            print("no success for alpha={}, l1_ratio={}".format(alpha, l1_ratio))
+            print("status %s: %s" % (estimator.result_.status, estimator.result_.message))
+            print("%s / %s iterations" % (estimator.result_.nit, self.maxiter))
+
 
         # trajs = [self.traj] + list(self.test_traj)
         # for train_idx, test_idx in splitter.split(trajs):
