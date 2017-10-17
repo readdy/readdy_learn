@@ -1,0 +1,337 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation 0bp
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section*
+Discover governing reactions from concentrations
+\end_layout
+
+\begin_layout Standard
+Following SINDy ...
+ etc etc
+\end_layout
+
+\begin_layout Subsection*
+The Ansatz (Law of mass action)
+\end_layout
+
+\begin_layout Standard
+The problem is formulated in terms of the law of mass action (LMA), i.e.,
+ as system of ordinary differential equations.
+\end_layout
+
+\begin_layout Standard
+\noindent
+Let there be 
+\begin_inset Formula $S$
+\end_inset
+
+ particle species.
+ The concentration of them at a fixed time is given by a vector
+\begin_inset Formula 
+\[
+\bm{x}(t)=\begin{pmatrix}x_{1}(t)\\
+\vdots\\
+x_{S}(t)
+\end{pmatrix}\in\mathbb{R}^{S}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+Further, there are 
+\begin_inset Formula $R$
+\end_inset
+
+ reactions, represented by rates 
+\begin_inset Formula $\xi_{r}\geq0$
+\end_inset
+
+ and a reaction function
+\begin_inset Formula 
+\[
+\theta_{r}(\bm{x}(t))=\begin{pmatrix}\theta_{r,1}\\
+\vdots\\
+\theta_{r,S}
+\end{pmatrix}(\bm{x}(t)),
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+so that the change of species 
+\begin_inset Formula $i$
+\end_inset
+
+ at time 
+\begin_inset Formula $t$
+\end_inset
+
+ is represented by the ordinary differential equation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dot{x}_{i}(t)=\sum_{r=1}^{R}\theta_{r,i}(\bm{x}(t))\xi_{r}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+
+\series bold
+Example: 
+\series default
+Let 
+\begin_inset Formula $A+B\to C$
+\end_inset
+
+ and 
+\begin_inset Formula $C\to A$
+\end_inset
+
+ be given reactions with macroscopic rates 
+\begin_inset Formula $\xi_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\xi_{2}$
+\end_inset
+
+, respectively, then the representing system of ordinary differential equations
+ is
+\begin_inset Formula 
+\[
+\dot{\bm{x}}(t)=\begin{pmatrix}\dot{x}_{A}(t)\\
+\dot{x}_{B}(t)\\
+\dot{x}_{C}(t)
+\end{pmatrix}=\begin{pmatrix}-x_{A}(t)x_{B}(t) & x_{C}(t)\\
+-x_{A}(t)x_{B}(t) & 0\\
+x_{A}(t)x_{B}(t) & -x_{C}(t)
+\end{pmatrix}\begin{pmatrix}\xi_{1}\\
+\xi_{2}
+\end{pmatrix}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Learn rates from data
+\end_layout
+
+\begin_layout Standard
+Let 
+\begin_inset Formula $\bm{X}\in\mathbb{R}^{T\times S}$
+\end_inset
+
+ be a trajectory containing concentrations of particles per time and species
+ in 
+\begin_inset Formula $T$
+\end_inset
+
+ time steps.
+ Propose 
+\begin_inset Formula $R$
+\end_inset
+
+ reactions with corresponding reaction functions 
+\begin_inset Formula $\theta_{r}(\cdot)$
+\end_inset
+
+ and at this point unknown rates 
+\begin_inset Formula $\xi_{r}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Application of the trajectory to the LMA yields a data tensor 
+\begin_inset Formula $\Theta(\bm{X})\in\mathbb{R}^{T\times S\times R}$
+\end_inset
+
+ with a corresponding rates vector 
+\begin_inset Formula $\Xi\in\mathbb{R}^{R}$
+\end_inset
+
+, so that
+\begin_inset Formula 
+\[
+\dot{\bm{X}}=\Theta(\bm{X})\Xi.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In particular,
+\begin_inset Formula 
+\begin{eqnarray*}
+\Theta(\bm{X})\Xi & = & \sum_{r=1}^{R}\theta_{r}(\bm{X})\xi_{r}\\
+ & = & \begin{pmatrix}\theta_{1,1}(\bm{X})\\
+\vdots\\
+\theta_{1,S}(\bm{X})
+\end{pmatrix}\xi_{1}+\ldots+\begin{pmatrix}\theta_{R,1}(\bm{X})\\
+\vdots\\
+\theta_{R,S}(\bm{X})
+\end{pmatrix}\xi_{R},
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+i.e., the system of equations is linear in the rates 
+\begin_inset Formula $\xi_{i}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Goal is to find the rates 
+\begin_inset Formula $\hat{\Xi}$
+\end_inset
+
+ that minimize the residual in the above equation with respect to the Frobenius
+ norm.
+ Sparsity in the solution can be enforced by Lasso, i.e., introducing an 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ penalty term with hyperparameter 
+\begin_inset Formula $\alpha$
+\end_inset
+
+.
+ Additionally one can introduce an 
+\begin_inset Formula $L_{2}$
+\end_inset
+
+penalty, i.e.
+ Elastic Net, with weighting 
+\begin_inset Formula $\lambda\in[0,1]$
+\end_inset
+
+.
+ The problem reads
+\begin_inset Formula 
+\begin{equation}
+\hat{\Xi}=\text{argmin}_{\Xi}(\frac{1}{2T}\|\dot{\bm{X}}-\Theta(\bm{X})\Xi\|_{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}).
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It can be noted that for 
+\begin_inset Formula $\lambda=1$
+\end_inset
+
+ the problem reduces to Lasso and for 
+\begin_inset Formula $\lambda=0$
+\end_inset
+
+ the problem reduces to Ridge regression.
+\end_layout
+
+\end_body
+\end_document

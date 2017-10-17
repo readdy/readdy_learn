@@ -168,3 +168,7 @@ fabric.properties
 
 # Prerequisites
 *.d
+
+# lyx backup and autosave files
+*.lyx~
+*.lyx#

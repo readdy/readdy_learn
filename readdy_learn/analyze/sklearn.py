@@ -207,14 +207,8 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.ascontiguousarray(np.transpose(large_theta, axes=(1, 0, 2)))
 
-        scaler = MinMaxScaler(feature_range=(0, 100))
-        scaler.fit(large_theta)
-
-        large_theta = scaler.transform(large_theta)
-        expected = scaler.transform(expected)
-
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
-        init_xi = scaler.transform(self.init_xi)
+        init_xi = self.init_xi
 
 
         jac = False if self.approx_jac else \
@@ -239,7 +233,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             jac=jac,
             options=options)
 
-        self.coefficients_ = scaler.inverse_transform(result.x)
+        self.coefficients_ = result.x
 
         self.success_ = result.success
         if self.verbose:
@@ -251,7 +245,6 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             print("status %s: %s" % (result.status, result.message))
             print("%s / %s iterations" % (result.nit, self.maxiter))
         self.result_ = result
-        self.scaler_ = scaler
         return self
 
     def score(self, X, y):
