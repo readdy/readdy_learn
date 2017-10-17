@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import odeint
+from pathos.multiprocessing import Pool
 
 import readdy_learn.analyze.tools as pat
 from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
@@ -28,7 +29,7 @@ class Suite(object):
         est.fit(None)
         if est.success_:
             coefficients = est.coefficients_
-            return coefficients
+            return timestep, coefficients
         else:
             return None
 
@@ -80,7 +81,7 @@ class Suite(object):
         plt.show()
 
     def calculate(self, file, timesteps, n_steps, n_realizations=20, write_concentrations_for_time_step=None,
-                  verbose=True, save=True):
+                  verbose=True, save=True, njobs=8):
         if os.path.exists(file):
             raise ValueError("File already existed: {}".format(file))
 
@@ -93,16 +94,34 @@ class Suite(object):
             write_concentrations_for_time_step = min(timesteps)
         concentrations = None
 
-        for n in range(n_realizations):
-            system, bfc = self._set_up_system()
-            system.simulate(n_steps)
-            for dt in timesteps:
-                rates = self.run(system, bfc, timestep=dt, verbose=verbose)
-                if rates is not None:
-                    allrates[dt].append(rates)
+        if njobs > 1:
+            def run_wrapper(args):
+                return self.run(**args)
+
+            params = []
+            for n in range(n_realizations):
+                system, bfc = self._set_up_system()
+                system.simulate(n_steps)
+                for dt in timesteps:
+                    params.append({'sys': system, 'bfc': bfc, 'timestep': dt, 'verbose': verbose})
                     if dt == write_concentrations_for_time_step:
                         counts, times, config = system.get_counts_config(timestep=dt)
                         concentrations = counts.squeeze(), times.squeeze()
+            with Pool(processes=njobs) as p:
+                for dt, rates in p.imap_unordered(run_wrapper, params, chunksize=1):
+                    if rates is not None:
+                        allrates[dt].append(rates)
+        else:
+            for n in range(n_realizations):
+                system, bfc = self._set_up_system()
+                system.simulate(n_steps)
+                for dt in timesteps:
+                    _, rates = self.run(system, bfc, timestep=dt, verbose=verbose)
+                    if rates is not None:
+                        allrates[dt].append(rates)
+                        if dt == write_concentrations_for_time_step:
+                            counts, times, config = system.get_counts_config(timestep=dt)
+                            concentrations = counts.squeeze(), times.squeeze()
         for k in allrates.keys():
             allrates[k] = np.asarray(allrates[k])
         if save:
