@@ -9,8 +9,10 @@ from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 
 class Suite(object):
-    def __init__(self, set_up_system):
+    def __init__(self, set_up_system, alpha=0., l1_ratio=1.):
         self._set_up_system = set_up_system
+        self._alpha = alpha
+        self._l1_ratio = l1_ratio
 
     def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
         counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
@@ -18,8 +20,8 @@ class Suite(object):
         traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
         traj.update()
 
-        est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=0., l1_ratio=1., method='SLSQP',
-                                        verbose=verbose, approx_jac=False, options={'ftol': 1e-16})
+        est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=self._alpha, l1_ratio=self._l1_ratio,
+                                        method='SLSQP', verbose=verbose, approx_jac=False, options={'ftol': 1e-16})
         est.fit(None)
         if est.success_:
             coefficients = est.coefficients_
