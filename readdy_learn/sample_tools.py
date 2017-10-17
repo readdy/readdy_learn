@@ -31,7 +31,7 @@ class Suite(object):
             coefficients = est.coefficients_
             return timestep, coefficients
         else:
-            return None
+            return timestep, None
 
     def estimated_behavior(self, coefficients, bfc, initial_counts, times):
         def fun(data, _):
