@@ -42,8 +42,8 @@ double score(const input_array &propensities, const input_array &theta, const in
             result += x * x;
         }
     }
-    std::cout << "curr result: " << result << ", n_timesteps= " << n_timesteps << std::endl;
-    result *= (-1. / (n_timesteps));
+    // std::cout << "curr result: " << result << ", n_timesteps= " << n_timesteps << std::endl;
+    result *= (1. / (n_timesteps));
     return std::sqrt(result);
 }
 
