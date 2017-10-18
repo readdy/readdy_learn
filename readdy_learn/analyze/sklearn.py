@@ -208,8 +208,8 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
         if self.rescale:
             xmax = np.max(data)
-            data /= xmax
-            expected /= xmax
+            data /= xmax / 100.
+            expected /= xmax / 100.
 
         large_theta = self.get_theta(data)
 
@@ -283,8 +283,6 @@ class CV(object):
         self.maxiter = maxiter
 
     def compute_cv_result_cross_trajs(self, params):
-        splitter = LeaveOneOut()
-
         assert isinstance(self.test_traj, (list, tuple)), "test traj must be list or tuple"
 
         alpha, l1_ratio = params
