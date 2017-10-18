@@ -207,6 +207,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         data, expected = self._get_slice(traj_range)
 
         if self.rescale:
+            # confine values in data to [0, 100]
             xmax = np.max(data)
             data /= xmax / 100.
             expected /= xmax / 100.
