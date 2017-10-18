@@ -42,6 +42,16 @@ class Suite(object):
         estimated_realisation = odeint(fun, initial_counts, times)
         return estimated_realisation
 
+    def plot_concentrations(self, system, timestep):
+        counts, times, config = system.get_counts_config(timestep=timestep)
+
+        fig, ax1 = plt.subplots(nrows=1, ncols=1)
+        for t in config.types.keys():
+            type_id = config.types[t]
+            # ax1.plot(times, estimated[:, type_id], "k--")
+            ax1.plot(times, counts[:, type_id], label="counts " + t)
+        ax1.legend(loc="best")
+
     def plot(self, file):
         system, bfc = self._set_up_system()
         config = system.get_trajectory_config()
