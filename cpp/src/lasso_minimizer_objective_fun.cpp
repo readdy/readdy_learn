@@ -66,7 +66,8 @@ double score(const input_array &propensities, const input_array &theta, const in
     // result *= (1. / (n_timesteps));
     // return std::sqrt(result);
 
-    return 1. - result / v;
+    // return 1. - result / v;
+    return result;
 }
 
 void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
