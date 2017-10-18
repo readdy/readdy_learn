@@ -30,11 +30,10 @@ import itertools
 import numpy as np
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
+from readdy_learn.analyze_tools import opt
 from sklearn.linear_model.base import BaseEstimator
 from sklearn.model_selection import KFold, LeaveOneOut
 from sklearn.model_selection import TimeSeriesSplit
-
-from readdy_learn.analyze_tools import opt
 
 
 class ConversionReaction(object):
@@ -191,6 +190,11 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         """
         return self.fit_trajs(X)
 
+    def get_theta(self, data):
+        large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
+        large_theta = np.ascontiguousarray(np.transpose(large_theta, axes=(1, 0, 2)))
+        return large_theta
+
     def fit_trajs(self, traj_range):
         """
         We hand in the data on construction, thus the fit method only requires the range of the trajectories to be fitted.
@@ -199,7 +203,6 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         or a tuple of trajectory index and time indices if multiple trajectories are available
         :return: self
         """
-        from sklearn.preprocessing import MinMaxScaler
 
         data, expected = self._get_slice(traj_range)
 
@@ -208,8 +211,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             data /= xmax
             expected /= xmax
 
-        large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
-        large_theta = np.ascontiguousarray(np.transpose(large_theta, axes=(1, 0, 2)))
+        large_theta = self.get_theta(data)
 
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
         init_xi = self.init_xi
