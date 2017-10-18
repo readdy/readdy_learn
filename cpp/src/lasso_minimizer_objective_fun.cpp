@@ -1,6 +1,7 @@
 #include "lasso_minimizer_objective_fun.h"
 
 #include <iostream>
+#include <vector>
 
 namespace analyze_tools {
 namespace opt {
@@ -23,7 +24,10 @@ double theta_norm_squared(const input_array &theta) {
 }
 
 /**
- * RMSD
+ * coefficient of determination R^2
+ * returns 1-u/v, where u is the residual sum of squares, i.e.,
+ *     u = ((y_true - y_pred)**2).sum() = result
+ *     v = ((y_true - y_true.mean())**2).sum()
  */
 double score(const input_array &propensities, const input_array &theta, const input_array &dX) {
     double result = 0;
@@ -33,18 +37,36 @@ double score(const input_array &propensities, const input_array &theta, const in
     const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
     const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
     const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
+
+    // mean of dX
+    std::vector<double> dXMean;
+    dXMean.resize(n_species);
+
     for (std::size_t t = 0; t < n_timesteps; ++t) {
         for (std::size_t s = 0; s < n_species; ++s) {
             auto x = dX.at(t, s);
+            dXMean[s] += x;
             for (std::size_t r = 0; r < n_reactions; ++r) {
                 x -= propensities.at(r) * theta.at(t, r, s);
             }
             result += x * x;
         }
     }
+
+    for(std::size_t s = 0; s < n_species; ++s) {
+        dXMean[s] /= 1. * n_timesteps;
+    }
+
+    double v = 0;
+    for (auto&& dxm : dXMean) {
+        v += dxm*dxm;
+    }
+
     // std::cout << "curr result: " << result << ", n_timesteps= " << n_timesteps << std::endl;
-    result *= (1. / (n_timesteps));
-    return std::sqrt(result);
+    // result *= (1. / (n_timesteps));
+    // return std::sqrt(result);
+
+    return 1. - result / v;
 }
 
 void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
