@@ -23,7 +23,7 @@ class Suite(object):
         traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
         traj.update()
 
-        est = ReaDDyElasticNetEstimator(traj, bfc, scale=-1, alpha=self._alpha, l1_ratio=self._l1_ratio,
+        est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
                                         options={'ftol': self._tol})
         est.fit(None)
@@ -33,7 +33,8 @@ class Suite(object):
         else:
             return timestep, None
 
-    def estimated_behavior(self, coefficients, bfc, initial_counts, times):
+    @staticmethod
+    def estimated_behavior(coefficients, bfc, initial_counts, times):
         def fun(data, _):
             theta = np.array([f(data) for f in bfc.functions])
             return np.matmul(coefficients, theta)
