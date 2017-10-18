@@ -135,13 +135,12 @@ class BasisFunctionConfiguration(object):
 
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
-    def __init__(self, trajs, basis_function_configuration, scale=-1, alpha=1.0, l1_ratio=1.0, init_xi=None,
-                 verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options=None):
+    def __init__(self, trajs, basis_function_configuration, alpha=1.0, l1_ratio=1.0, init_xi=None,
+                 verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options=None, rescale=True):
         """
 
         :param trajs:
         :param basis_function_configuration:
-        :param scale:
         :param alpha:
         :param l1_ratio:
         :param init_xi:
@@ -153,7 +152,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         self.basis_function_configuration = basis_function_configuration
         self.alpha = alpha
         self.l1_ratio = l1_ratio
-        self.scale = scale
+        self.rescale = rescale
         if not isinstance(trajs, (list, tuple)):
             self.trajs = [trajs]
         else:
@@ -204,15 +203,19 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
         data, expected = self._get_slice(traj_range)
 
+        if self.rescale:
+            xmax = np.max(data)
+            data /= xmax
+            expected /= xmax
+
         large_theta = np.array([f(data) for f in self.basis_function_configuration.functions])
         large_theta = np.ascontiguousarray(np.transpose(large_theta, axes=(1, 0, 2)))
 
         bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
         init_xi = self.init_xi
 
-
         jac = False if self.approx_jac else \
-            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
+            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected)
         options = {'disp': False}
         options['maxiter'] = self.maxiter
         if self.method == 'L-BFGS-B':
@@ -220,7 +223,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         options.update(self.options)
 
         def objective(x):
-            obj = opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected, self.scale)
+            obj = opt.elastic_net_objective_fun(x, self.alpha, self.l1_ratio, large_theta, expected)
             # print("got {}".format(obj))
             return obj
 
@@ -260,7 +263,7 @@ class CrossTrajSplit(object):
 
 
 class CV(object):
-    def __init__(self, traj, bfc, scale, alphas, l1_ratios, n_splits, init_xi, n_jobs=8, show_progress=True,
+    def __init__(self, traj, bfc, alphas, l1_ratios, n_splits, init_xi, n_jobs=8, show_progress=True,
                  mode='k_fold', verbose=False, method='SLSQP', test_traj=None, maxiter=300000):
         self.alphas = alphas
         self.l1_ratios = l1_ratios
@@ -268,7 +271,6 @@ class CV(object):
         self.n_splits = n_splits
         self.traj = traj
         self.bfc = bfc
-        self.scale = scale
         self.show_progress = show_progress
         self.result = []
         self.init_xi = init_xi
@@ -288,13 +290,13 @@ class CV(object):
 
         test_traj = self.test_traj[0]
 
-        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha, maxiter=self.maxiter,
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, alpha=alpha, maxiter=self.maxiter,
                                               l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                               method=self.method)
         # fit the whole thing
         estimator.fit(None)
         if estimator.success_:
-            testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, -1, alpha=alpha,
+            testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, alpha=alpha,
                                                    l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                    method=self.method)
             testimator.coefficients_ = estimator.coefficients_
@@ -304,7 +306,6 @@ class CV(object):
             print("no success for alpha={}, l1_ratio={}".format(alpha, l1_ratio))
             print("status %s: %s" % (estimator.result_.status, estimator.result_.message))
             print("%s / %s iterations" % (estimator.result_.nit, self.maxiter))
-
 
         # trajs = [self.traj] + list(self.test_traj)
         # for train_idx, test_idx in splitter.split(trajs):
@@ -351,11 +352,11 @@ class CV(object):
             print("unknown mode: %s" % self.mode)
             return
         alpha, l1_ratio = params
-        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, -1, alpha=alpha, maxiter=self.maxiter,
+        estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, alpha=alpha, maxiter=self.maxiter,
                                               l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                               method=self.method)
         if self.test_traj is not None:
-            test_estimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, -1, alpha=alpha,
+            test_estimator = ReaDDyElasticNetEstimator(self.test_traj, self.bfc, alpha=alpha,
                                                        l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                                        method=self.method)
         scores = []
@@ -387,7 +388,7 @@ class CV(object):
         self.result = result
 
 
-def get_dense_params(traj, bfc, scale, n_initial_values=16, n_jobs=8, initial_value=None):
+def get_dense_params(traj, bfc, n_initial_values=16, n_jobs=8, initial_value=None):
     from ipywidgets import IntProgress
     from IPython.display import display
     if initial_value is not None:
@@ -400,7 +401,7 @@ def get_dense_params(traj, bfc, scale, n_initial_values=16, n_jobs=8, initial_va
     display(f)
 
     def worker(init_xi):
-        est = ReaDDyElasticNetEstimator(traj, bfc, scale, alpha=0, l1_ratio=1.0, init_xi=init_xi, verbose=False)
+        est = ReaDDyElasticNetEstimator(traj, bfc, alpha=0, l1_ratio=1.0, init_xi=init_xi, verbose=False)
         est.fit(range(0, traj.n_time_steps))
         return est.coefficients_
 

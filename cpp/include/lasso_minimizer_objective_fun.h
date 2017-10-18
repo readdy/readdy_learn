@@ -45,17 +45,17 @@ double theta_norm_squared(const input_array &theta);
 double score(const input_array &propensities, const input_array &theta, const input_array &dX);
 
 void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
-                            const input_array &dX, const double prefactor = -1);
+                            const input_array &dX);
 
 input_array elastic_net_objective_function_jac(const input_array &propensities,
                                                const double alpha, const double l1_ratio, const input_array &theta,
-                                               const input_array &dX, const double prefactor = -1);
+                                               const input_array &dX);
 
 double elastic_net_objective_function(const input_array &propensities, const double alpha, const double l1_ratio,
-                                      const input_array &theta, const input_array &dX, const double prefactor = -1);
+                                      const input_array &theta, const input_array &dX);
 
 double lasso_cost_fun(const input_array &propensities, const double alpha,
-                      const input_array &theta, const input_array &dX, const double prefactor = -1);
+                      const input_array &theta, const input_array &dX);
 
 
 }

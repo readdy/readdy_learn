@@ -45,7 +45,7 @@ double score(const input_array &propensities, const input_array &theta, const in
 }
 
 void least_squares_function(input_array &result, const input_array &propensities, const input_array &theta,
-                            const input_array &dX, const double prefactor) {
+                            const input_array &dX) {
     const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
     const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
     const auto n_species = static_cast<std::size_t>(theta.shape()[2]);
@@ -70,16 +70,15 @@ void least_squares_function(input_array &result, const input_array &propensities
 
     {
         // apply prefactor
-        const auto c = prefactor ? prefactor >= 0 : 1. / (2. * n_timesteps);
         for (std::size_t i = 0; i < n_timesteps * n_species; ++i) {
-            data[i] *= c;
+            data[i] *= 1. / (2. * n_timesteps);
         }
     }
 }
 
 input_array elastic_net_objective_function_jac(const input_array &propensities,
                                                const double alpha, const double l1_ratio, const input_array &theta,
-                                               const input_array &dX, const double prefactor) {
+                                               const input_array &dX) {
     input_array result;
     const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
     const auto n_reactions = static_cast<std::size_t>(theta.shape()[1]);
@@ -107,11 +106,7 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
                 result.mutable_at(i) += theta_t_i_s * x;
             }
         }
-        if (prefactor >= 0) {
-            result.mutable_at(i) *= -2. * prefactor;
-        } else {
-	        result.mutable_at(i) *= -1. / (2.*n_timesteps);
-        }
+        result.mutable_at(i) *= -1. / (2.*n_timesteps);
 
         // now the l1 regularization
         result.mutable_at(i) += alpha * l1_ratio;
@@ -126,7 +121,7 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
 }
 
 double elastic_net_objective_function(const input_array &propensities, const double alpha, const double l1_ratio,
-                                      const input_array &theta, const input_array &dX, const double prefactor) {
+                                      const input_array &theta, const input_array &dX) {
     double result = 0;
     if (theta.ndim() != 3) {
         throw std::invalid_argument("invalid dims");
@@ -143,11 +138,7 @@ double elastic_net_objective_function(const input_array &propensities, const dou
             result += x * x;
         }
     }
-    if (prefactor >= 0) {
-        result *= prefactor;
-    } else {
-        result *= 1. / (2. * n_timesteps);
-    }
+    result *= 1. / (2. * n_timesteps);
     double regulator = 0;
     {
         double regulator_l1 = 0;
@@ -169,8 +160,8 @@ double elastic_net_objective_function(const input_array &propensities, const dou
 }
 
 double lasso_cost_fun(const input_array &propensities, const double alpha,
-                      const input_array &theta, const input_array &dX, const double prefactor) {
-    return elastic_net_objective_function(propensities, alpha, 1.0, theta, dX, prefactor);
+                      const input_array &theta, const input_array &dX) {
+    return elastic_net_objective_function(propensities, alpha, 1.0, theta, dX);
 }
 
 }

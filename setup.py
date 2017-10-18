@@ -66,6 +66,6 @@ setup(
     long_description='some more description',
     ext_modules=ext_modules,
     packages=find_packages(),
-    # cmdclass={'build_ext': BuildExt},
     zip_safe=False,
+    install_requires=['numpy', 'scipy', 'pathos', 'scikit-learn', 'h5py']
 )
