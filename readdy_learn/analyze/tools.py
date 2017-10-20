@@ -132,6 +132,8 @@ class Trajectory(object):
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
 
+        is_gradient = False
+
         dt = self.time_step
         X = np.linspace(0, 1, num=self.n_time_steps) * dt
         interpolated = np.empty_like(self.counts)
@@ -160,7 +162,9 @@ class Trajectory(object):
                 copt, _ = optimize.curve_fit(fun, X, counts, maxfev=300000, jac=jac)
 
                 ff = lambda t: fun(t, *copt)
+                dff = lambda t: jac(t, *copt)
                 interpolated[:, s] = ff(X)
+                # is_gradient = True
             else:
                 poly_feat = PolynomialFeatures(degree=self._interpolation_degree)
                 regression = interp()
@@ -170,7 +174,10 @@ class Trajectory(object):
                 ys = pipeline.predict(X[:, np.newaxis])
                 interpolated[:, s] = ys
 
-        return np.gradient(interpolated, axis=0) / self._time_step
+        if not is_gradient:
+            return np.gradient(interpolated, axis=0) / self._time_step
+        else:
+            return interpolated
 
     def update(self):
         if self._dirty:
