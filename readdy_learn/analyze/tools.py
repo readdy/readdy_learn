@@ -124,7 +124,7 @@ class Trajectory(object):
 
         return rate_chapman, xi, rate_per_volume
 
-    def calculate_dX(self, interp_degree=30):
+    def calculate_dX(self, interp_degree=5):
         from sklearn.pipeline import Pipeline
         from sklearn.preprocessing import PolynomialFeatures
         from sklearn.linear_model import LinearRegression as interp
