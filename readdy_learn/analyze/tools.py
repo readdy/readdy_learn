@@ -124,6 +124,29 @@ class Trajectory(object):
 
         return rate_chapman, xi, rate_per_volume
 
+    def calculate_dX(self, interp_degree=30):
+        from sklearn.pipeline import Pipeline
+        from sklearn.preprocessing import PolynomialFeatures
+        from sklearn.linear_model import LinearRegression as interp
+        dt = self.time_step
+        X = np.linspace(0, 1, num=self.n_time_steps) * dt
+        interpolated = np.empty_like(self.counts)
+        for s in range(self.n_species):
+            counts = self.counts[:, s]
+            indices = 1 + np.where(counts[:-1] != counts[1:])[0]
+            indices = np.insert(indices, 0, 0)
+            indices = np.append(indices, len(counts) - 1)
+
+            poly_feat = PolynomialFeatures(degree=interp_degree)
+            regression = interp()
+            pipeline = Pipeline([("poly", poly_feat), ("regression", regression)])
+            pipeline.fit(X[indices, np.newaxis], counts[indices])
+
+            ys = pipeline.predict(X[:, np.newaxis])
+            interpolated[:, s] = ys
+
+        return np.gradient(interpolated, axis=0) / self._time_step
+
     def update(self):
         if self._dirty:
             self._dirty = False
@@ -134,7 +157,9 @@ class Trajectory(object):
             self._n_basis_functions = len(self._thetas)
             self._n_time_steps = self.counts.shape[0]
             self._n_species = self.counts.shape[1]
-            self._dcounts_dt = np.gradient(self.counts, axis=0) / self._time_step
+
+            # todo this is garbage: np.gradient(self.counts, axis=0) / self._time_step
+            self._dcounts_dt = self.calculate_dX()
             if len(self._thetas) > 0:
                 self._last_alpha = .01
                 self._large_theta = np.array([f(self._counts) for f in self._thetas])
@@ -145,8 +170,8 @@ class Trajectory(object):
         self.update()
         string = "Trajectory("
         string += "counts.shape={}, box_size={}, time_step={}, n_basis_functions={}, large_theta.shape={}, " \
-                  "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}"\
-            .format(self.counts.shape,self._box_size, self.time_step, self.n_basis_functions, self._large_theta.shape,
+                  "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}" \
+            .format(self.counts.shape, self._box_size, self.time_step, self.n_basis_functions, self._large_theta.shape,
                     self._n_time_steps, self._n_species, self._dirty, self._dcounts_dt.shape)
         string += ")"
         return string
