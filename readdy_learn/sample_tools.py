@@ -17,6 +17,19 @@ class Suite(object):
         self._maxiter = maxiter
         self._tol = tol
 
+
+    def get_estimator(self, sys, bfc, timestep, verbose=False):
+        counts, times, config = sys.get_counts_config(timestep=timestep)
+
+        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
+        traj.update()
+
+        est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
+                                        maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
+                                        options={'ftol': self._tol})
+        return est
+
+
     def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
         counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
