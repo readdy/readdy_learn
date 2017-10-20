@@ -10,18 +10,20 @@ from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 
 class Suite(object):
-    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12):
+    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12, interp_degree=10):
         self._set_up_system = set_up_system
         self._alpha = alpha
         self._l1_ratio = l1_ratio
         self._maxiter = maxiter
         self._tol = tol
+        self._interp_degree = interp_degree
 
 
-    def get_estimator(self, sys, bfc, timestep, verbose=False):
+    def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
 
-        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
+        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], interp_degree=interp_degree,
+                                          verbose=verbose)
         traj.update()
 
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
@@ -33,7 +35,8 @@ class Suite(object):
     def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
         counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
-        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
+        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose,
+                                          interp_degree=self._interp_degree)
         traj.update()
 
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
