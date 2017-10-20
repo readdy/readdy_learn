@@ -146,17 +146,16 @@ class Trajectory(object):
             if self._interpolation_degree == 'pw_linear':
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
             elif self._interpolation_degree < 0:
-                fun = lambda t, a, b, c, d, e, g: a + b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
-                dfun_da = lambda t, a, b, c, d, e, g: 0 * t
-                dfun_db = lambda t, a, b, c, d, e, g: np.exp(c * t)
-                dfun_dc = lambda t, a, b, c, d, e, g: t * b * np.exp(c * t)
-                dfun_dd = lambda t, a, b, c, d, e, g: t
-                dfun_de = lambda t, a, b, c, d, e, g: t * t
-                dfun_dg = lambda t, a, b, c, d, e, g: t * t * t
-                derivatives = [dfun_da, dfun_db, dfun_dc, dfun_dd, dfun_de, dfun_dg]
+                fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
+                dfun_db = lambda t, b, c, d, e, g: np.exp(c * t)
+                dfun_dc = lambda t, b, c, d, e, g: t * b * np.exp(c * t)
+                dfun_dd = lambda t, b, c, d, e, g: t
+                dfun_de = lambda t, b, c, d, e, g: t * t
+                dfun_dg = lambda t, b, c, d, e, g: t * t * t
+                derivatives = [dfun_db, dfun_dc, dfun_dd, dfun_de, dfun_dg]
 
-                def jac(t, a, b, c, d, e, g):
-                    result = np.array([np.array(f(t, a, b, c, d, e, g)) for f in derivatives])
+                def jac(t, b, c, d, e, g):
+                    result = np.array([np.array(f(t, b, c, d, e, g)) for f in derivatives])
                     return result.T
 
                 copt, _ = optimize.curve_fit(fun, X, counts, maxfev=300000, jac=jac)
