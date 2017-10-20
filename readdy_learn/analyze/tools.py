@@ -145,7 +145,7 @@ class Trajectory(object):
                 fun = lambda t, a, b, c, d, e, g, h: \
                     a + b * np.exp(c * t) + d * t + e * t * t + g * np.sqrt(np.abs(h * t))
 
-                copt, _ = optimize.curve_fit(fun, X[indices], counts[indices], maxfev=30000)
+                copt, _ = optimize.curve_fit(fun, X[indices], counts[indices], maxfev=300000)
 
                 ff = lambda t: fun(t, *copt)
                 interpolated[:, s] = ff(X)
