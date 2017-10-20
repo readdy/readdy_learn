@@ -141,7 +141,9 @@ class Trajectory(object):
             indices = np.insert(indices, 0, 0)
             indices = np.append(indices, len(counts) - 1)
 
-            if self._interpolation_degree < 0:
+            if self._interpolation_degree == 'pw_linear':
+                interpolated[:, s] = np.interp(X, X[indices], counts[indices])
+            elif self._interpolation_degree < 0:
                 fun = lambda t, a, b, c, d, e, g: a + b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
                 dfun_da = lambda t, a, b, c, d, e, g: 0 * t
                 dfun_db = lambda t, a, b, c, d, e, g: np.exp(c * t)
