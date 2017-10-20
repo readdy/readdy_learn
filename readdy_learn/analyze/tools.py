@@ -130,7 +130,7 @@ class Trajectory(object):
         from sklearn.pipeline import Pipeline
         from sklearn.preprocessing import PolynomialFeatures
         from sklearn.linear_model import LinearRegression as interp
-        from scipy import interpolate
+        from scipy import optimize
 
         dt = self.time_step
         X = np.linspace(0, 1, num=self.n_time_steps) * dt
@@ -142,9 +142,13 @@ class Trajectory(object):
             indices = np.append(indices, len(counts) - 1)
 
             if self._interpolation_degree < 0:
-                splrep = interpolate.splrep(X[indices], counts[indices])
-                yder = interpolate.splev(X, splrep, der=0)
-                interpolated[:, s] = yder
+                fun = lambda t, a, b, c, d, e, g, h: \
+                    a + b * np.exp(c * t) + d * t + e * t * t + g * np.sqrt(np.abs(h * t))
+
+                copt, _ = optimize.curve_fit(fun, X[indices], counts[indices], maxfev=30000)
+
+                ff = lambda t: fun(t, *copt)
+                interpolated[:, s] = ff(X)
             else:
                 poly_feat = PolynomialFeatures(degree=self._interpolation_degree)
                 regression = interp()
@@ -154,10 +158,7 @@ class Trajectory(object):
                 ys = pipeline.predict(X[:, np.newaxis])
                 interpolated[:, s] = ys
 
-        if self._interpolation_degree >= 0:
-            return np.gradient(interpolated, axis=0) / self._time_step
-        else:
-            return interpolated
+        return np.gradient(interpolated, axis=0) / self._time_step
 
     def update(self):
         if self._dirty:
