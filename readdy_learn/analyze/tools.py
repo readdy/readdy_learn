@@ -143,7 +143,7 @@ class Trajectory(object):
 
             if self._interpolation_degree < 0:
                 splrep = interpolate.splrep(X[indices], counts[indices])
-                yder = interpolate.splev(X, splrep, der=1)
+                yder = interpolate.splev(X, splrep, der=0)
                 interpolated[:, s] = yder
             else:
                 poly_feat = PolynomialFeatures(degree=self._interpolation_degree)
