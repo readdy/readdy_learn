@@ -3,7 +3,7 @@ import numpy as np
 import scipy.integrate as integrate
 from scipy import sparse
 from scipy.sparse import linalg as splin
-import itertools
+import collections
 import matplotlib.pyplot as plt
 
 
@@ -123,16 +123,16 @@ def fd_coeff(xbar, x, k=1):
     c = C[:, -1]
     return c
 
-
-from collections import deque
-
-def window(seq, n=2):
+def window_evensteven(seq, width=1):
     it = iter(seq)
-    win = deque((next(it, None) for _ in range(n)), maxlen=n)
+    win = collections.deque((next(it, None) for _ in range(1 + width)), maxlen=2 * width + 1)
     yield win
     append = win.append
     for e in it:
         append(e)
+        yield win
+    while len(win) > width + 1:
+        win.popleft()
         yield win
 
 
@@ -146,19 +146,41 @@ if __name__ == '__main__':
     testf = np.array([np.sin(x) for x in x0])
     true_deriv = [np.cos(x) for x in x0]
 
-    deriv = [fd_coeff(0, x0[0:2], k=1).dot(testf[0:2])]
-
-    for w in window(x0, n=3):
-        print(w)
-
-    for ix, w in enumerate(window(x0, n=5)):
+    wwidth = 4
+    deriv = np.empty_like(x0)
+    for ix, (wx, wy) in enumerate(zip(window_evensteven(x0, width=wwidth), window_evensteven(testf, width=wwidth))):
         x = x0[ix]
-        y = testf[ix:ix + len(w)]
-        coeff = fd_coeff(x, w, k=1)
-        deriv.append(coeff.dot(y))
-
-    plt.plot(x0[1:-2], np.array(deriv))
+        coeff = fd_coeff(x, wx, k=1)
+        deriv[ix] = coeff.dot(wy)
+    plt.plot(x0, deriv)
+    plt.plot(x0, true_deriv)
     plt.show()
+    print(np.array(deriv) - np.array(true_deriv))
+
+    # deriv = []
+    # it = window(x0, n=3)
+    # w = next(it)
+    # for ix in range(len(x0)):
+    #     if ix == 0:
+    #         y = testf[:len(w)]
+    #     elif ix == len(x0)-1:
+    #         y = testf[-3:]
+    #     else:
+    #         y = testf[ix - 1:ix + 2]
+    #     x = x0[ix]
+    #     coeff = fd_coeff(x, w, k=1)
+    #     deriv.append(coeff.dot(y))
+    #     if ix != 0 and ix != len(x0)-2:
+    #         try:
+    #             w = next(it)
+    #         except StopIteration:
+    #             break
+    #
+    # plt.plot(x0, np.array(deriv))
+    # plt.plot(x0, true_deriv)
+    # plt.show()
+    #
+    #
     # deriv = np.array([ for xbar in x0])
     # plt.plot(deriv)
     # plt.show()
