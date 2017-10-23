@@ -38,8 +38,6 @@ def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
     data = data - data[0]
 
     # Construct antidifferentiation operator and its adjoint.
-    ATT = lambda w: (sum(w) * np.ones(n + 1) - np.transpose(
-        np.concatenate(([sum(w) / 2.0], np.cumsum(w) - w / 2.0)))) * timestep
     A = lambda v: np.cumsum(v)
     AT = lambda w: (sum(w) * np.ones(len(w)) - np.transpose(np.concatenate(([0.0], np.cumsum(w[:-1])))))
     # Construct differentiation matrix.
@@ -122,6 +120,7 @@ def fd_coeff(xbar, x, k=1):
         c1 = c2
     c = C[:, -1]
     return c
+
 
 def window_evensteven(seq, width=1):
     it = iter(seq)
