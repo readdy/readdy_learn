@@ -124,19 +124,16 @@ def fd_coeff(xbar, x, k=1):
     return c
 
 
+from collections import deque
+
 def window(seq, n=2):
-    "Returns a sliding window (of width n) over data from the iterable"
-    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
     it = iter(seq)
-    #for i in range(n//2+1, 1, -1):
-    #    yield tuple(seq[:n-i+1])
-    result = tuple(itertools.islice(it, n))
-    yield result
-    for elem in it:
-        result = result[1:] + (elem,)
-        yield result
-    #for i in range(1,n//2+1):
-    #    yield tuple(seq[-n+i:])
+    win = deque((next(it, None) for _ in range(n)), maxlen=n)
+    yield win
+    append = win.append
+    for e in it:
+        append(e)
+        yield win
 
 
 if __name__ == '__main__':
@@ -154,13 +151,13 @@ if __name__ == '__main__':
     for w in window(x0, n=3):
         print(w)
 
-    for ix, w in enumerate(window(x0, n=3)):
+    for ix, w in enumerate(window(x0, n=5)):
         x = x0[ix]
         y = testf[ix:ix + len(w)]
         coeff = fd_coeff(x, w, k=1)
         deriv.append(coeff.dot(y))
 
-    plt.plot(x0[-1], np.array(deriv))
+    plt.plot(x0[1:-2], np.array(deriv))
     plt.show()
     # deriv = np.array([ for xbar in x0])
     # plt.plot(deriv)
