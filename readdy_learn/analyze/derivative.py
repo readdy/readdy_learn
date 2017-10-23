@@ -7,22 +7,22 @@ import itertools
 import matplotlib.pyplot as plt
 
 
-# def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
-#     assert isinstance(data, np.ndarray)
-#     data = data.squeeze()
-#     assert len(data.shape) == 1
-#
-#     epsilon = 1e-8
-#
-#     n = len(data)
-#
-#     # require f(0) = 0
-#     data = data - data[0]
-#
-#     A = lambda v: integrate.cumtrapz(y=v, x=xs[:len(v)], initial=0)
-#     AT = lambda w: np.trapz(y=w, x=xs[:len(w)]) * np.ones(len(w)) - A(w)
-#
-#     u = np.gradient(data, xs)
+def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
+    assert isinstance(data, np.ndarray)
+    data = data.squeeze()
+    assert len(data.shape) == 1
+
+    epsilon = 1e-8
+
+    n = len(data)
+
+    # require f(0) = 0
+    data = data - data[0]
+
+    A = lambda v: integrate.cumtrapz(y=v, x=xs[:len(v)], initial=0)
+    AT = lambda w: np.trapz(y=w, x=xs[:len(w)]) * np.ones(len(w)) - A(w)
+
+    u = np.gradient(data, xs)
 
 
 def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
@@ -124,16 +124,19 @@ def fd_coeff(xbar, x, k=1):
     return c
 
 
-def window(seq, n=3):
+def window(seq, n=2):
     "Returns a sliding window (of width n) over data from the iterable"
     "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
     it = iter(seq)
+    #for i in range(n//2+1, 1, -1):
+    #    yield tuple(seq[:n-i+1])
     result = tuple(itertools.islice(it, n))
-    if len(result) == n:
-        yield result
+    yield result
     for elem in it:
         result = result[1:] + (elem,)
         yield result
+    #for i in range(1,n//2+1):
+    #    yield tuple(seq[-n+i:])
 
 
 if __name__ == '__main__':
@@ -147,14 +150,17 @@ if __name__ == '__main__':
     true_deriv = [np.cos(x) for x in x0]
 
     deriv = [fd_coeff(0, x0[0:2], k=1).dot(testf[0:2])]
-    for ix, w in enumerate(window(x0)):
-        x = x0[ix+1]
-        y = testf[ix:ix+3:1]
+
+    for w in window(x0, n=3):
+        print(w)
+
+    for ix, w in enumerate(window(x0, n=3)):
+        x = x0[ix]
+        y = testf[ix:ix + len(w)]
         coeff = fd_coeff(x, w, k=1)
         deriv.append(coeff.dot(y))
-    deriv.append(fd_coeff(x0[-1], x0[-3:-1], k=1).dot(testf[-3:-1]))
 
-    plt.plot(x0, np.array(deriv))
+    plt.plot(x0[-1], np.array(deriv))
     plt.show()
     # deriv = np.array([ for xbar in x0])
     # plt.plot(deriv)
