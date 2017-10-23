@@ -94,8 +94,7 @@ def fd_coeff(xbar, x, k=1):
     if k >= n:
         raise ValueError("*** length(y) = {} must be larger than k = {}".format(len(x), k))
 
-    # change to m = n - 1 if you want to compute coefficients for all
-    # possible derivatives.Then modify to output all of C.
+    # change to m = n - 1 to compute coeffs for all derivatives, then output C
     m = k
 
     c1 = 1
@@ -135,17 +134,20 @@ def window_evensteven(seq, width=1):
         yield win
 
 
-if __name__ == '__main__':
+def test_finite_differences():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
+    print(len(x0))
+    xx = []
+    for x in x0:
+        if np.random.random() < .2:
+            xx.append(x)
+    x0 = np.array(xx)
 
-    # xpts = np.array([.5, .75, 1., 1.25])
-    # print(fd_coeff(1, xpts, k=1))
-    #  expect 0.66667  -4.00000   2.00000   1.33333
-
+    print(len(x0))
     testf = np.array([np.sin(x) for x in x0])
     true_deriv = [np.cos(x) for x in x0]
 
-    wwidth = 4
+    wwidth = 3
     deriv = np.empty_like(x0)
     for ix, (wx, wy) in enumerate(zip(window_evensteven(x0, width=wwidth), window_evensteven(testf, width=wwidth))):
         x = x0[ix]
@@ -156,45 +158,21 @@ if __name__ == '__main__':
     plt.show()
     print(np.array(deriv) - np.array(true_deriv))
 
-    # deriv = []
-    # it = window(x0, n=3)
-    # w = next(it)
-    # for ix in range(len(x0)):
-    #     if ix == 0:
-    #         y = testf[:len(w)]
-    #     elif ix == len(x0)-1:
-    #         y = testf[-3:]
-    #     else:
-    #         y = testf[ix - 1:ix + 2]
-    #     x = x0[ix]
-    #     coeff = fd_coeff(x, w, k=1)
-    #     deriv.append(coeff.dot(y))
-    #     if ix != 0 and ix != len(x0)-2:
-    #         try:
-    #             w = next(it)
-    #         except StopIteration:
-    #             break
-    #
-    # plt.plot(x0, np.array(deriv))
-    # plt.plot(x0, true_deriv)
-    # plt.show()
-    #
-    #
-    # deriv = np.array([ for xbar in x0])
-    # plt.plot(deriv)
-    # plt.show()
-    # print(slope)
-    # print(np.cos(xbar))
+def test_ld_derivative():
+    x0 = np.arange(0, 2.0 * np.pi, 0.05)
+    testf = np.array([np.sin(x) for x in x0])
+    testf = testf + np.random.normal(0.0, 0.04, x0.shape)
+    true_deriv = [np.cos(x) for x in x0]
 
-    # testf = testf + np.random.normal(0.0, 0.04, x0.shape)
-    #
-    # deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-2, verbose=True)
-    # deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
-    #
-    #
-    # plt.plot(testf, label='fun')
-    # plt.plot(deriv_sm, label='alpha=5e-2')
-    # plt.plot(deriv_lrg, label='alpha=1e-1')
-    # plt.plot(true_deriv, label='derivative')
-    # plt.legend()
-    # plt.show()
+    deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
+    deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+
+    plt.plot(testf, label='fun')
+    plt.plot(deriv_sm, label='alpha=5e-4')
+    plt.plot(deriv_lrg, label='alpha=1e-1')
+    plt.plot(true_deriv, label='derivative')
+    plt.legend()
+    plt.show()
+
+if __name__ == '__main__':
+    test_finite_differences()
