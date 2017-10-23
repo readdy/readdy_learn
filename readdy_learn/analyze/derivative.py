@@ -1,9 +1,28 @@
 import numpy as np
 
+import scipy.integrate as integrate
 from scipy import sparse
 from scipy.sparse import linalg as splin
-
+import itertools
 import matplotlib.pyplot as plt
+
+
+# def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
+#     assert isinstance(data, np.ndarray)
+#     data = data.squeeze()
+#     assert len(data.shape) == 1
+#
+#     epsilon = 1e-8
+#
+#     n = len(data)
+#
+#     # require f(0) = 0
+#     data = data - data[0]
+#
+#     A = lambda v: integrate.cumtrapz(y=v, x=xs[:len(v)], initial=0)
+#     AT = lambda w: np.trapz(y=w, x=xs[:len(w)]) * np.ones(len(w)) - A(w)
+#
+#     u = np.gradient(data, xs)
 
 
 def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
@@ -19,6 +38,8 @@ def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
     data = data - data[0]
 
     # Construct antidifferentiation operator and its adjoint.
+    ATT = lambda w: (sum(w) * np.ones(n + 1) - np.transpose(
+        np.concatenate(([sum(w) / 2.0], np.cumsum(w) - w / 2.0)))) * timestep
     A = lambda v: np.cumsum(v)
     AT = lambda w: (sum(w) * np.ones(len(w)) - np.transpose(np.concatenate(([0.0], np.cumsum(w[:-1])))))
     # Construct differentiation matrix.
@@ -28,8 +49,7 @@ def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
     mask[-1, -1] = 0.0
     D = sparse.dia_matrix(D.multiply(mask))
     DT = D.transpose()
-    # Since Au( 0 ) = 0, we need to adjust.
-    data = data - data[0]
+
     # Default initialization is naive derivative.
     u = np.concatenate(([0], np.diff(data)))
     # Precompute.
@@ -70,20 +90,87 @@ def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
 
     return u / timestep
 
+
+def fd_coeff(xbar, x, k=1):
+    n = len(x)
+    if k >= n:
+        raise ValueError("*** length(y) = {} must be larger than k = {}".format(len(x), k))
+
+    # change to m = n - 1 if you want to compute coefficients for all
+    # possible derivatives.Then modify to output all of C.
+    m = k
+
+    c1 = 1
+    c4 = x[0] - xbar
+    C = np.zeros(shape=(n, m + 1))
+    C[0, 0] = 1
+    for i in range(1, n):
+        mn = min(i, m)
+        c2 = 1
+        c5 = c4
+        c4 = x[i] - xbar
+        for j in range(0, i):
+            c3 = x[i] - x[j]
+            c2 = c2 * c3
+            if j == i - 1:
+                for s in range(mn, 0, -1):
+                    C[i, s] = c1 * (s * C[i - 1, s - 1] - c5 * C[i - 1, s]) / c2
+                C[i, 0] = -c1 * c5 * C[i - 1, 0] / c2
+            for s in range(mn, 0, -1):
+                C[j, s] = (c4 * C[j, s] - s * C[j, s - 1]) / c3
+            C[j, 0] = c4 * C[j, 0] / c3
+        c1 = c2
+    c = C[:, -1]
+    return c
+
+
+def window(seq, n=3):
+    "Returns a sliding window (of width n) over data from the iterable"
+    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
+    it = iter(seq)
+    result = tuple(itertools.islice(it, n))
+    if len(result) == n:
+        yield result
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
+
+
 if __name__ == '__main__':
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
 
-    testf = [np.sin(x) for x in x0]
+    # xpts = np.array([.5, .75, 1., 1.25])
+    # print(fd_coeff(1, xpts, k=1))
+    #  expect 0.66667  -4.00000   2.00000   1.33333
+
+    testf = np.array([np.sin(x) for x in x0])
     true_deriv = [np.cos(x) for x in x0]
 
-    testf = testf + np.random.normal(0.0, 0.04, x0.shape)
+    deriv = [fd_coeff(0, x0[0:2], k=1).dot(testf[0:2])]
+    for ix, w in enumerate(window(x0)):
+        x = x0[ix+1]
+        y = testf[ix:ix+3:1]
+        coeff = fd_coeff(x, w, k=1)
+        deriv.append(coeff.dot(y))
+    deriv.append(fd_coeff(x0[-1], x0[-3:-1], k=1).dot(testf[-3:-1]))
 
-    deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-2, verbose=True)
-    deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
-
-    plt.plot(testf, label='fun')
-    plt.plot(deriv_sm, label='alpha=5e-2')
-    plt.plot(deriv_lrg, label='alpha=1e-1')
-    plt.plot(true_deriv, label='derivative')
-    plt.legend()
+    plt.plot(x0, np.array(deriv))
     plt.show()
+    # deriv = np.array([ for xbar in x0])
+    # plt.plot(deriv)
+    # plt.show()
+    # print(slope)
+    # print(np.cos(xbar))
+
+    # testf = testf + np.random.normal(0.0, 0.04, x0.shape)
+    #
+    # deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-2, verbose=True)
+    # deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+    #
+    #
+    # plt.plot(testf, label='fun')
+    # plt.plot(deriv_sm, label='alpha=5e-2')
+    # plt.plot(deriv_lrg, label='alpha=1e-1')
+    # plt.plot(true_deriv, label='derivative')
+    # plt.legend()
+    # plt.show()
