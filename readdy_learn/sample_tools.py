@@ -18,7 +18,6 @@ class Suite(object):
         self._tol = tol
         self._interp_degree = interp_degree
 
-
     def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
 
@@ -31,8 +30,9 @@ class Suite(object):
                                         options={'ftol': self._tol}, rescale=False)
         return est
 
-
     def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
+        if verbose:
+            print("---- begin suite run")
         counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
         traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose,
@@ -43,6 +43,8 @@ class Suite(object):
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
                                         options={'ftol': self._tol}, rescale=False)
         est.fit(None)
+        if verbose:
+            print("---- finish suite run, success = {}".format(est.success_))
         if est.success_:
             coefficients = est.coefficients_
             return timestep, coefficients
@@ -142,6 +144,8 @@ class Suite(object):
             for n in range(n_realizations):
                 system, bfc = self._set_up_system()
                 system.simulate(n_steps)
+                if verbose:
+                    print("suite calculate realization {} of {}, timesteps={}".format(n, n_realizations, timesteps))
                 for dt in timesteps:
                     _, rates = self.run(system, bfc, timestep=dt, verbose=verbose)
                     if rates is not None:
@@ -152,6 +156,7 @@ class Suite(object):
         for k in allrates.keys():
             allrates[k] = np.asarray(allrates[k])
         if save:
-            print("writing {} rates with {} counts and {} times to {}".format(allrates, concentrations[0], concentrations[1], file))
+            print("writing {} rates with {} counts and {} times to {}".format(allrates, concentrations[0],
+                                                                              concentrations[1], file))
             np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
         return np.mean(allrates[min(timesteps)], axis=0)
