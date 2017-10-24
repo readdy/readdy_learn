@@ -22,7 +22,7 @@ def set_up_system():
 
 if __name__ == '__main__':
 
-    suite = Suite(set_up_system, interp_degree=10)
+    suite = Suite(set_up_system, interp_degree=-1)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--outfile", help="the outfile", type=str)
