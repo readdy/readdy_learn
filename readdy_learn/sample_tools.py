@@ -86,6 +86,7 @@ class Suite(object):
 
         fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
+        ax1.set_title('Concentration')
         for t in config.types.keys():
             type_id = config.types[t]
             ax1.plot(times, estimated[:, type_id], "k--")
@@ -103,7 +104,7 @@ class Suite(object):
             ax2.plot(xs, reaction.rate * np.ones_like(xs), "--", label="expected " + str(reaction))
 
         ax2.set_xscale('log')
-        ax2.set_xlabel("time step")
+        ax2.set_xlabel("$\Delta t$")
         ax2.set_ylabel("rate")
         ax2.legend(loc="best")
 
