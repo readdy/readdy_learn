@@ -124,6 +124,8 @@ class Suite(object):
         concentrations = None
 
         if njobs > 1:
+            if verbose:
+                print("---- suite calculate parallel")
             def run_wrapper(args):
                 return self.run(**args)
 
@@ -141,6 +143,8 @@ class Suite(object):
                     if rates is not None:
                         allrates[dt].append(rates)
         else:
+            if verbose:
+                print("---- suite calculate serial")
             for n in range(n_realizations):
                 system, bfc = self._set_up_system()
                 system.simulate(n_steps)
