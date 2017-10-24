@@ -147,7 +147,7 @@ class Trajectory(object):
             if self._interpolation_degree == 'pw_linear':
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
             elif self._interpolation_degree == 'FD':
-                wwidth = 5
+                wwidth = 2
                 iix = 0
                 for ix, widx in enumerate(deriv.window_evensteven(indices, width=wwidth)):
                     iix_curr = indices[ix]

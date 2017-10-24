@@ -10,13 +10,14 @@ from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 
 class Suite(object):
-    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12, interp_degree=10):
+    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12, interp_degree=10, init_xi=None):
         self._set_up_system = set_up_system
         self._alpha = alpha
         self._l1_ratio = l1_ratio
         self._maxiter = maxiter
         self._tol = tol
         self._interp_degree = interp_degree
+        self._init_xi = None
 
     def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
@@ -27,7 +28,7 @@ class Suite(object):
 
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
-                                        options={'ftol': self._tol}, rescale=False)
+                                        options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi)
         return est
 
     def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
@@ -41,7 +42,7 @@ class Suite(object):
 
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
-                                        options={'ftol': self._tol}, rescale=False)
+                                        options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi)
         est.fit(None)
         if verbose:
             print("---- finish suite run, success = {}".format(est.success_))
