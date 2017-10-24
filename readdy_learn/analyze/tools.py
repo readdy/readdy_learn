@@ -36,7 +36,7 @@ import scipy.optimize as so
 from pathos.multiprocessing import Pool
 
 from readdy_learn import analyze_tools as opt
-from readdy_learn.analyze.derivative import ld_derivative
+import readdy_learn.analyze.derivative as deriv
 
 
 def get_count_trajectory(fname, cache_fname=None):
@@ -146,6 +146,16 @@ class Trajectory(object):
 
             if self._interpolation_degree == 'pw_linear':
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
+            elif self._interpolation_degree == 'FD':
+                wwidth = 5
+                xx = X[indices]
+                yy = counts[indices]
+                for ix, (wx, wy) in enumerate(
+                        zip(deriv.window_evensteven(xx, width=wwidth), deriv.window_evensteven(yy, width=wwidth))):
+                    x = xx[ix]
+                    coeff = deriv.fd_coeff(x, wx, k=1)
+                    interpolated[ix] = coeff.dot(wy)
+                is_gradient = True
             elif self._interpolation_degree < 0:
                 fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
                 dfun_db = lambda t, b, c, d, e, g: np.exp(c * t)

@@ -154,10 +154,4 @@ class Suite(object):
         if save:
             print("writing {} rates with {} counts and {} times to {}".format(allrates, concentrations[0], concentrations[1], file))
             np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
-        for dt in timesteps:
-            rates = allrates[dt]
-            if verbose:
-                print("got {:.3f}±{:.3f}  and {:.3f}±{:.3f} for timestep={}".format(
-                    np.mean(rates[:, 0]), np.std(rates[:, 0]),
-                    np.mean(rates[:, 1]), np.std(rates[:, 1]), dt))
         return np.mean(allrates[min(timesteps)], axis=0)

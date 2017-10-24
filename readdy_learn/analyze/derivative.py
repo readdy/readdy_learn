@@ -153,7 +153,7 @@ def test_finite_differences():
         x = x0[ix]
         coeff = fd_coeff(x, wx, k=1)
         deriv[ix] = coeff.dot(wy)
-    plt.plot(x0, deriv)
+    plt.plot(x0, deriv, 'o')
     plt.plot(x0, true_deriv)
     plt.show()
     print(np.array(deriv) - np.array(true_deriv))
@@ -175,5 +175,5 @@ def test_ld_derivative():
     plt.show()
 
 if __name__ == '__main__':
-    # test_finite_differences()
-    test_ld_derivative()
+    test_finite_differences()
+    #test_ld_derivative()
