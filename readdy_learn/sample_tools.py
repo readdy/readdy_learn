@@ -28,7 +28,7 @@ class Suite(object):
 
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
-                                        options={'ftol': self._tol})
+                                        options={'ftol': self._tol}, rescale=False)
         return est
 
 
@@ -41,7 +41,7 @@ class Suite(object):
 
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
-                                        options={'ftol': self._tol})
+                                        options={'ftol': self._tol}, rescale=False)
         est.fit(None)
         if est.success_:
             coefficients = est.coefficients_
