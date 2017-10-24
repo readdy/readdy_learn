@@ -102,6 +102,7 @@ void least_squares_function(input_array &result, const input_array &propensities
     }
 }
 
+// todo is this (still?) correct?
 input_array elastic_net_objective_function_jac(const input_array &propensities,
                                                const double alpha, const double l1_ratio, const input_array &theta,
                                                const input_array &dX) {

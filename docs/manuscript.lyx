@@ -7,10 +7,6 @@
 \textclass article
 \begin_preamble
 \usepackage{amsmath}
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\argmin}{arg\,min}
-\DeclareMathOperator{\argmax}{arg\,max}
-\DeclareMathOperator{\argmin}{arg\,min}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -84,7 +80,7 @@ Discover governing reactions from concentrations
 
 \begin_layout Standard
 Following SINDy ...
- etc etc
+ todo
 \end_layout
 
 \begin_layout Subsection*
@@ -342,6 +338,87 @@ It can be noted that for
 \end_layout
 
 \begin_layout Subsubsection*
+Implementation / solving
+\end_layout
+
+\begin_layout Standard
+Let a trajectory 
+\begin_inset Formula $\bm{X}$
+\end_inset
+
+ be given as output from, e.g., the Gillespie method.
+ The time derivative is computed by linearly interpolating 
+\begin_inset Formula $\bm{X}$
+\end_inset
+
+ between each two changes in concentration and then calculating the gradient
+ on these non-uniform data points:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename figures/interp_derivative.png
+	lyxscale 80
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+On the left-hand side the interpolation of the gillespie trajectory, on
+ the right-hand side the resulting derivative.
+ If interpolating the concentrations beforehand, one gets a different picture
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename figures/interp_derivative_poly.png
+	lyxscale 80
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+but also worse results, as the rates seem to be underestimated.
+ This (
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://pdfs.semanticscholar.org/8124/2160d75be7d0f65eb29204609a7d41282447.pdf
+\end_layout
+
+\end_inset
+
+) might give better results.
+\end_layout
+
+\begin_layout Standard
+Theta can also be computed as well as an analytical derivative of the objective
+ function
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+f(\bm{X}) & =\frac{1}{2T}\|\dot{\bm{X}}-\Theta(\bm{X})\Xi\|_{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The minimization problem is solved using sequential least squares (SLSQP)
+ from scipy.
+\end_layout
+
+\begin_layout Subsubsection*
 Example
 \end_layout
 
@@ -434,6 +511,137 @@ Cross validation, score function is
  
 \series bold
 Todo.
+\end_layout
+
+\begin_layout Subsubsection*
+Example (this probably can use some improving)
+\end_layout
+
+\begin_layout Standard
+Setting: Reactions
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\to D$
+\end_inset
+
+ with a rate of 
+\begin_inset Formula $0.2$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $D\to A$
+\end_inset
+
+ with a rate of 
+\begin_inset Formula $0.2$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A+B\to C$
+\end_inset
+
+ with a rate of 
+\begin_inset Formula $10^{-2}$
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $C\to D+B$
+\end_inset
+
+ with a rate of 
+\begin_inset Formula $10^{-2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The ansatz functions were chosen to be these reactions plus 
+\begin_inset Formula $C\to A+B$
+\end_inset
+
+ and 
+\begin_inset Formula $A\to B$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename figures/cv_example_counts.png
+	groupId cv counts
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures/cv_example_counts_test.png
+	groupId cv counts
+
+\end_inset
+
+,
+\end_layout
+
+\begin_layout Standard
+where the left plot shows the concentration curves for the training data
+ set, the right plot for the test data set.
+\end_layout
+
+\begin_layout Standard
+For different values of 
+\begin_inset Formula $\alpha\in[0,100]$
+\end_inset
+
+ evaluated on the test trajectory, one can see that the optimal alpha is
+ 
+\begin_inset Formula $\hat{\alpha}\approx5$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename figures/cv_score.png
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The rates yielded out of the optimization problem for this particular 
+\begin_inset Formula $\hat{\alpha}$
+\end_inset
+
+ are 
+\begin_inset Formula $(8.9\cdot10^{-3},1.1\cdot10^{-2},1.1\cdot10^{-2},4.6\cdot10^{-3},6.8\cdot10^{-3},3.0\cdot10^{-6})$
+\end_inset
+
+ corresponding to the reactions from the setting and the two additional
+ reactions, respectively.
+ The resulting concentration curves are
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename figures/cv_concentration.png
+
+\end_inset
+
+
 \end_layout
 
 \end_body
