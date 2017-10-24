@@ -152,6 +152,7 @@ class Suite(object):
         for k in allrates.keys():
             allrates[k] = np.asarray(allrates[k])
         if save:
+            print("writing {} rates with {} counts and {} times to {}".format(allrates, concentrations[0], concentrations[1], file))
             np.savez(file, rates=allrates, counts=concentrations[0], times=concentrations[1])
         for dt in timesteps:
             rates = allrates[dt]
