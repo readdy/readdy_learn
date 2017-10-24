@@ -17,7 +17,7 @@ class Suite(object):
         self._maxiter = maxiter
         self._tol = tol
         self._interp_degree = interp_degree
-        self._init_xi = None
+        self._init_xi = init_xi
 
     def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
