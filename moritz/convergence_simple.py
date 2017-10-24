@@ -60,6 +60,6 @@ if __name__ == '__main__':
             n_realizations = args.n_realizations
 
         print("---> running analysis for n_steps={} with n_realizations={}".format(n_steps, n_realizations))
-        timesteps = [.0001] + [x for x in np.arange(.001, .5, step=.005)]
+        timesteps = [.0001] + [x for x in np.arange(.0001, .1, step=.005)]
         suite.calculate(outfile, timesteps=timesteps, n_steps=n_steps, n_realizations=n_realizations,
                         verbose=args.verbose, write_concentrations_for_time_step=.001)
