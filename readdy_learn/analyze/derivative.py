@@ -175,4 +175,5 @@ def test_ld_derivative():
     plt.show()
 
 if __name__ == '__main__':
-    test_finite_differences()
+    # test_finite_differences()
+    test_ld_derivative()
