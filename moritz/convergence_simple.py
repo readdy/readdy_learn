@@ -22,7 +22,7 @@ def set_up_system():
 
 if __name__ == '__main__':
 
-    suite = Suite(set_up_system, interp_degree=5)
+    suite = Suite(set_up_system, interp_degree=-1)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--outfile", help="the outfile", type=str)
@@ -62,4 +62,4 @@ if __name__ == '__main__':
         print("---> running analysis for n_steps={} with n_realizations={}".format(n_steps, n_realizations))
         timesteps = [.0001] + [x for x in np.arange(.001, .1, step=.001)]
         suite.calculate(outfile, timesteps=timesteps, n_steps=n_steps, n_realizations=n_realizations,
-                        verbose=args.verbose, write_concentrations_for_time_step=.001)
+                        verbose=args.verbose, write_concentrations_for_time_step=.0001)
