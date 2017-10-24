@@ -148,13 +148,14 @@ class Trajectory(object):
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
             elif self._interpolation_degree == 'FD':
                 wwidth = 5
-                xx = X[indices]
-                yy = counts[indices]
-                for ix, (wx, wy) in enumerate(
-                        zip(deriv.window_evensteven(xx, width=wwidth), deriv.window_evensteven(yy, width=wwidth))):
-                    x = xx[ix]
-                    coeff = deriv.fd_coeff(x, wx, k=1)
-                    interpolated[ix] = coeff.dot(wy)
+                iix = 0
+                for ix, widx in enumerate(deriv.window_evensteven(indices, width=wwidth)):
+                    iix_curr = indices[ix]
+                    x = X[iix_curr]
+                    coeff = deriv.fd_coeff(x, X[widx], k=1)
+                    d = coeff.dot(counts[widx])
+                    interpolated[iix:iix_curr, s] = d
+                    iix = iix_curr
                 is_gradient = True
             elif self._interpolation_degree < 0:
                 fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
