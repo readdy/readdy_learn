@@ -134,7 +134,7 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
                 result.mutable_at(i) += theta_t_i_s * x;
             }
         }
-        result.mutable_at(i) *= 1. / (2.*n_timesteps);
+        result.mutable_at(i) *= -1. / (2.*n_timesteps);
 
         // now the l1 regularization
         result.mutable_at(i) += alpha * l1_ratio;
