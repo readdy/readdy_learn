@@ -19,6 +19,16 @@ class Suite(object):
         self._interp_degree = interp_degree
         self._init_xi = init_xi
 
+    @classmethod
+    def from_trajectory(cls, trajectory, system, bfc, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12,
+                        interp_degree=10, init_xi=None):
+        pass
+
+    @classmethod
+    def from_generator(cls, system_generator, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12,
+                        interp_degree=10, init_xi=None):
+        pass
+
     def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
 
