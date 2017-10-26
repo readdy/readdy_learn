@@ -10,24 +10,30 @@ from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
 
 class Suite(object):
-    def __init__(self, set_up_system, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12, interp_degree=10, init_xi=None):
+    def __init__(self, set_up_system, bfc, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12, interp_degree=10,
+                 init_xi=None, system=None, trajectory=None):
         self._set_up_system = set_up_system
+        self._trajectory = trajectory
+        self._bfc = bfc
         self._alpha = alpha
         self._l1_ratio = l1_ratio
         self._maxiter = maxiter
         self._tol = tol
         self._interp_degree = interp_degree
         self._init_xi = init_xi
+        self._system = system
 
     @classmethod
     def from_trajectory(cls, trajectory, system, bfc, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12,
                         interp_degree=10, init_xi=None):
-        pass
+        return Suite(None, bfc, alpha=alpha, l1_ratio=l1_ratio, maxiter=maxiter, tol=tol, interp_degree=interp_degree,
+                     init_xi=init_xi, system=system, trajectory=trajectory)
 
     @classmethod
-    def from_generator(cls, system_generator, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12,
-                        interp_degree=10, init_xi=None):
-        pass
+    def from_generator(cls, system_generator, bfc, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12,
+                       interp_degree=10, init_xi=None):
+        return Suite(system_generator, bfc=bfc, alpha=alpha, l1_ratio=l1_ratio, maxiter=maxiter, tol=tol,
+                     interp_degree=interp_degree, init_xi=init_xi)
 
     def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
@@ -81,8 +87,14 @@ class Suite(object):
             ax1.plot(times, counts[:, type_id], label="counts " + t)
         ax1.legend(loc="best")
 
+    def _get_system(self):
+        if self._set_up_system is not None:
+            return self._set_up_system()
+        else:
+            return self._system
+
     def plot(self, file):
-        system, bfc = self._set_up_system()
+        system = self._get_system()
         config = system.get_trajectory_config()
 
         f = np.load(file)
@@ -92,7 +104,7 @@ class Suite(object):
         xs = np.asarray([k for k in data.keys()])
         smallest_time_step = min(data.keys())
 
-        estimated = self.estimated_behavior(np.mean(data[smallest_time_step], axis=0), bfc, counts[0], times)
+        estimated = self.estimated_behavior(np.mean(data[smallest_time_step], axis=0), self._bfc, counts[0], times)
 
         fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
@@ -121,7 +133,7 @@ class Suite(object):
         fig.show()
         plt.show()
 
-    def calculate(self, file, timesteps, n_steps, n_realizations=20, write_concentrations_for_time_step=None,
+    def calculate(self, file, timesteps, n_steps, n_realizations=1, write_concentrations_for_time_step=None,
                   verbose=True, save=True, njobs=8):
         if os.path.exists(file):
             raise ValueError("File already existed: {}".format(file))
@@ -138,15 +150,16 @@ class Suite(object):
         if njobs > 1:
             if verbose:
                 print("---- suite calculate parallel")
+
             def run_wrapper(args):
                 return self.run(**args)
 
             params = []
             for n in range(n_realizations):
-                system, bfc = self._set_up_system()
+                system = self._get_system()
                 system.simulate(n_steps)
                 for dt in timesteps:
-                    params.append({'sys': system, 'bfc': bfc, 'timestep': dt, 'verbose': verbose})
+                    params.append({'sys': system, 'bfc': self._bfc, 'timestep': dt, 'verbose': verbose})
                     if dt == write_concentrations_for_time_step:
                         counts, times, config = system.get_counts_config(timestep=dt)
                         concentrations = counts.squeeze(), times.squeeze()
@@ -158,12 +171,12 @@ class Suite(object):
             if verbose:
                 print("---- suite calculate serial")
             for n in range(n_realizations):
-                system, bfc = self._set_up_system()
+                system = self._get_system()
                 system.simulate(n_steps)
                 if verbose:
                     print("suite calculate realization {} of {}, timesteps={}".format(n, n_realizations, timesteps))
                 for dt in timesteps:
-                    _, rates = self.run(system, bfc, timestep=dt, verbose=verbose)
+                    _, rates = self.run(system, self._bfc, timestep=dt, verbose=verbose)
                     if rates is not None:
                         allrates[dt].append(rates)
                         if dt == write_concentrations_for_time_step:
