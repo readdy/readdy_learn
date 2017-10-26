@@ -28,16 +28,16 @@ def set_up_system(init_state=None):
     return sys, bfc
 
 
-def get_traj(sys, bfc, verbose=True, n_frames=None, timestep=None):
+def get_traj(sys, verbose=True, n_frames=None, timestep=None):
     counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
-    traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose)
+    traj = pat.Trajectory.from_counts(counts, times[1] - times[0], verbose=verbose)
     traj.update()
     return traj
 
 
 train_system, bfc = set_up_system()
 train_system.simulate(300)
-train_traj = get_traj(train_system, bfc, timestep=1e-5)
+train_traj = get_traj(train_system, timestep=1e-5)
 
 test_trajs = []
 for _ in range(1):
@@ -46,7 +46,7 @@ for _ in range(1):
     print("setting up trajectory with init state {}".format(init))
     test_system, _ = set_up_system(init_state=init)
     test_system.simulate(300)
-    test_traj = get_traj(test_system, bfc, timestep=1e-5)
+    test_traj = get_traj(test_system, timestep=1e-5)
     test_trajs.append(test_traj)
 
 suite = Suite(set_up_system)

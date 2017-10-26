@@ -5,11 +5,51 @@ import numpy as np
 import readdy_learn.analyze.generate as generate
 import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 import readdy_learn.analyze.basis as basis
+import readdy_learn.analyze.sklearn as rlas
+import readdy_learn.analyze.tools as tools
 
 import matplotlib.pyplot as plt
 
 
 class TestDeriv(unittest.TestCase):
+
+    def test_derivative(self):
+        """
+        test the jac implementation against an approximated one!
+        """
+        plot = False
+        desired_rates = np.array([.02, .07])
+        init_condition = [[70, 50]]
+        n_steps = 5000
+        dt = 5e-6
+
+        bfc = basis.BasisFunctionConfiguration(n_species=2)
+        bfc.add_conversion(0, 1)  # A -> B
+        bfc.add_conversion(1, 0)  # B -> A
+        times_ode, counts_ode = generate.generate_continuous_counts(desired_rates, init_condition, bfc, dt, n_steps)
+
+        traj = tools.Trajectory(counts_ode, dt, interpolation_degree='pw_linear')
+        traj.update()
+        estimator = rlas.ReaDDyElasticNetEstimator([traj], bfc, alpha=0., init_xi=init_condition, verbose=True)
+        jac = estimator.get_analytical_jac()
+        jac_approx = estimator.get_approximated_jac()
+
+        rates_ab = np.arange(.001, .03, step=.001)
+        rates_ba = desired_rates[1] * np.ones_like(rates_ab)
+        ys = np.empty(shape=(len(rates_ab), 2))
+        ys_approx = np.empty_like(ys)
+        for i in range(len(rates_ab)):
+            ys[i] = jac(np.array([rates_ab[i], rates_ba[i]]))
+            ys_approx[i] = jac_approx(np.array([rates_ab[i], rates_ba[i]]))
+        print(ys.shape)
+        if plot:
+            plt.plot(rates_ab, ys[:, 0], label='analytical jac d(a->b)')
+            plt.plot(rates_ab, ys_approx[:, 0], label='approximated jac d(a->b)')
+            plt.plot(rates_ab, ys[:, 1], label='analytical jac d(b->a)')
+            plt.plot(rates_ab, ys_approx[:, 1], label='approximated jac d(b->a)')
+            plt.legend()
+            plt.show()
+        np.testing.assert_allclose(ys, ys_approx, rtol=1e-4, atol=1e-4)
 
     def test_generators(self):
         desired_rates = np.array([.02, .02, 1e-2, 1e-2])

@@ -103,7 +103,6 @@ void least_squares_function(input_array &result, const input_array &propensities
     }
 }
 
-// todo is this (still?) correct?
 input_array elastic_net_objective_function_jac(const input_array &propensities,
                                                const double alpha, const double l1_ratio, const input_array &theta,
                                                const input_array &dX) {
@@ -134,7 +133,7 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
                 result.mutable_at(i) += theta_t_i_s * x;
             }
         }
-        result.mutable_at(i) *= -1. / (2.*n_timesteps);
+        result.mutable_at(i) *= -1. / (n_timesteps);
 
         // now the l1 regularization
         result.mutable_at(i) += alpha * l1_ratio;

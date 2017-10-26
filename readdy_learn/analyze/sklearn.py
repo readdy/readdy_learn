@@ -104,10 +104,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
     def get_analytical_jac(self):
         data, expected = self._get_slice(None)
         large_theta = self.get_theta(data)
-
-        jac = False if self.approx_jac else \
-            lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected)
-        return jac
+        return lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected)
 
     def get_approximated_jac(self):
         data, expected = self._get_slice(None)
@@ -118,7 +115,18 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
             # print("got {}".format(obj))
             return obj
 
-        return opt.wrap_function(deriv.approx_jacobian, (objective, _epsilon))
+        def wrap_function(function, args):
+            ncalls = [0]
+            if function is None:
+                return ncalls, None
+
+            def function_wrapper(*wrapper_args):
+                ncalls[0] += 1
+                return function(*(wrapper_args + args))
+
+            return function_wrapper
+
+        return wrap_function(deriv.approx_jacobian, (objective, _epsilon))
 
     def fit_trajs(self, traj_range):
         """

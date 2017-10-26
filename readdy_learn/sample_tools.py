@@ -32,7 +32,7 @@ class Suite(object):
     def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
         counts, times, config = sys.get_counts_config(timestep=timestep)
 
-        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], interp_degree=interp_degree,
+        traj = pat.Trajectory.from_counts(counts, times[1] - times[0], interp_degree=interp_degree,
                                           verbose=verbose)
         traj.update()
 
@@ -46,7 +46,7 @@ class Suite(object):
             print("---- begin suite run")
         counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
-        traj = pat.Trajectory.from_counts(config, counts, times[1] - times[0], verbose=verbose,
+        traj = pat.Trajectory.from_counts(counts, times[1] - times[0], verbose=verbose,
                                           interp_degree=self._interp_degree)
         traj.update()
 

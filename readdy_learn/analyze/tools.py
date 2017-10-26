@@ -31,7 +31,7 @@ import os
 
 import h5py
 import numpy as np
-import readdy.util.io_utils as ioutils
+# import readdy.util.io_utils as ioutils
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 
@@ -84,7 +84,7 @@ class TrajectoryConfig(object):
 
 
 class Trajectory(object):
-    def __init__(self, traj_config, counts, time_step, interpolation_degree=10, verbose=True):
+    def __init__(self, counts, time_step, interpolation_degree=10, verbose=True):
         self._counts = counts
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
@@ -98,20 +98,18 @@ class Trajectory(object):
         self._dcounts_dt = None
         self._xi = None
         self._dirty = True
-        self._config = traj_config
         self._verbose = verbose
         self._interpolation_degree = interpolation_degree
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
         with h5py.File(fname) as f:
-            return Trajectory(TrajectoryConfig(fname),
-                              f["readdy/observables/n_particles/data"][:].astype(np.double), time_step,
+            return Trajectory(f["readdy/observables/n_particles/data"][:].astype(np.double), time_step,
                               verbose=verbose, interpolation_degree=interp_degree)
 
     @classmethod
-    def from_counts(cls, traj_config, counts, time_step, interp_degree=10, verbose=True):
-        return Trajectory(traj_config, counts, time_step, interpolation_degree=interp_degree, verbose=verbose)
+    def from_counts(cls, counts, time_step, interp_degree=10, verbose=True):
+        return Trajectory(counts, time_step, interpolation_degree=interp_degree, verbose=verbose)
 
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
