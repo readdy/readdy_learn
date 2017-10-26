@@ -35,14 +35,21 @@ class Suite(object):
         return Suite(system_generator, bfc=bfc, alpha=alpha, l1_ratio=l1_ratio, maxiter=maxiter, tol=tol,
                      interp_degree=interp_degree, init_xi=init_xi)
 
-    def get_estimator(self, sys, bfc, timestep, interp_degree=10, verbose=False):
-        counts, times, config = sys.get_counts_config(timestep=timestep)
+    def get_estimator(self, timestep=-1, interp_degree=10, verbose=False):
+
+        if self._trajectory is not None:
+            times = self._trajectory.times
+            counts = self._trajectory.counts
+        else:
+            if timestep <= 0:
+                raise ValueError("in case of initializing the suite with a generator, a timestep must be provided!")
+            counts, times, _ = self._get_system().get_counts_config(timestep=timestep)
 
         traj = pat.Trajectory.from_counts(counts, times[1] - times[0], interp_degree=interp_degree,
                                           verbose=verbose)
         traj.update()
 
-        est = ReaDDyElasticNetEstimator(traj, bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
+        est = ReaDDyElasticNetEstimator(traj, self._bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                         maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
                                         options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi)
         return est
