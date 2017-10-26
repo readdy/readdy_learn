@@ -133,7 +133,7 @@ class Trajectory(object):
         is_gradient = False
 
         dt = self.time_step
-        X = np.linspace(0, 1, num=self.n_time_steps) * dt
+        X = self.times
         interpolated = np.empty_like(self.counts)
         for s in range(self.n_species):
             counts = self.counts[:, s]
@@ -227,7 +227,7 @@ class Trajectory(object):
 
     @property
     def times(self):
-        times = np.linspace(0, self.counts.shape[0] * self.time_step, num=self.counts.shape[0])
+        times = np.linspace(0, self.counts.shape[0] * self.time_step, endpoint=False, num=self.counts.shape[0])
         assert times.shape[0] == self.counts.shape[0]
         assert np.isclose(times[1] - times[0], self.time_step), "times[1]-times[0] was {} but was expected to be {}" \
             .format(times[1] - times[0], self.time_step)
