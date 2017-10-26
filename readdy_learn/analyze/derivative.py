@@ -185,7 +185,7 @@ def test_finite_differences():
     testf = np.array([np.sin(x) for x in x0])
     true_deriv = [np.cos(x) for x in x0]
 
-    wwidth = 3
+    wwidth = 5
     deriv = np.empty_like(x0)
     for ix, (wx, wy) in enumerate(zip(window_evensteven(x0, width=wwidth), window_evensteven(testf, width=wwidth))):
         x = x0[ix]
@@ -216,4 +216,4 @@ def test_ld_derivative():
 
 if __name__ == '__main__':
     test_finite_differences()
-    # test_ld_derivative()
+    #test_ld_derivative()
