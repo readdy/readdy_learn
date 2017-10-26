@@ -22,7 +22,6 @@ def generate_kmc_counts(set_up_system, n_kmc_steps, timestep):
 
 def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realizations, njobs=8):
 
-    counts = []
     params = [(set_up_system, n_kmc_steps, timestep) for _ in range(n_realizations)]
 
     def generate_wrapper(args):
@@ -30,8 +29,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
         return counts
 
     with _Pool(processes=njobs) as p:
-        for res in p.imap_unordered(generate_wrapper, params, 1):
-            counts.append(res)
+        counts = p.map(generate_wrapper, params, 1)
 
     min_n_times = -1
     min_n_times_ix = 0
