@@ -77,12 +77,14 @@ class Suite(object):
         estimated_realisation = odeint(fun, initial_counts, times)
         return estimated_realisation
 
-    def plot_concentrations(self, timestep):
+    def plot_concentrations(self, timestep=-1):
         if self._trajectory is not None:
             config = self._get_system().get_trajectory_config()
             times = self._trajectory.times
             counts = self._trajectory.counts
         else:
+            if timestep <= 0:
+                raise ValueError("in case of initializing the suite with a generator, a timestep must be provided!")
             counts, times, config = self._get_system().get_counts_config(timestep=timestep)
 
         fig, ax1 = plt.subplots(nrows=1, ncols=1)
