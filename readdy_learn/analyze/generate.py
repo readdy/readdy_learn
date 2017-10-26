@@ -48,7 +48,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
         counts[i] = counts[i][:ncounts, :]
     counts = _np.array(counts)
     avgcounts = _np.average(counts, axis=0)
-    times = _np.linspace(0, float(avgcounts.shape[0]) * float(timestep), num=avgcounts.shape[0])
+    times = _np.linspace(0, float(avgcounts.shape[0]) * float(timestep), num=avgcounts.shape[0], endpoint=False)
     assert times.shape[0] == avgcounts.shape[0]
     if not _np.isclose(times[1] - times[0], timestep):
         print("WARN: times[1]-times[0] was {} but was expected to be {}".format(times[1]-times[0], timestep))
