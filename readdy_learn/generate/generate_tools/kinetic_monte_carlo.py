@@ -358,6 +358,8 @@ class ReactionDiffusionSystem:
         return copy.deepcopy(self._diffusivity)
 
     def simulate(self, n_steps):
+        np.random.seed()
+
         log.info("Simulate for {} steps", n_steps)
         self._n_reactions = len(self._reactions)
         self._is_finalized = True

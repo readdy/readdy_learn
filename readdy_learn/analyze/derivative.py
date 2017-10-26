@@ -7,6 +7,44 @@ import collections
 import matplotlib.pyplot as plt
 
 
+def approx_jacobian(x, func, epsilon, *args):
+    """
+    Approximate the Jacobian matrix of a callable function.
+
+    Parameters
+    ----------
+    x : array_like
+        The state vector at which to compute the Jacobian matrix.
+    func : callable f(x,*args)
+        The vector-valued function.
+    epsilon : float
+        The perturbation used to determine the partial derivatives.
+    args : sequence
+        Additional arguments passed to func.
+
+    Returns
+    -------
+    An array of dimensions ``(lenf, lenx)`` where ``lenf`` is the length
+    of the outputs of `func`, and ``lenx`` is the number of elements in
+    `x`.
+
+    Notes
+    -----
+    The approximation is done using forward differences.
+
+    """
+    x0 = np.asfarray(x)
+    f0 = np.atleast_1d(func(*((x0,) + args)))
+    jac = np.zeros([len(x0), len(f0)])
+    dx = np.zeros(len(x0))
+    for i in range(len(x0)):
+        dx[i] = epsilon
+        jac[i] = (func(*((x0 + dx,) + args)) - f0) / epsilon
+        dx[i] = 0.0
+
+    return jac.transpose()
+
+
 def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
     assert isinstance(data, np.ndarray)
     data = data.squeeze()
@@ -158,6 +196,7 @@ def test_finite_differences():
     plt.show()
     print(np.array(deriv) - np.array(true_deriv))
 
+
 def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
     testf = np.array([np.sin(x) for x in x0])
@@ -174,6 +213,7 @@ def test_ld_derivative():
     plt.legend()
     plt.show()
 
+
 if __name__ == '__main__':
     test_finite_differences()
-    #test_ld_derivative()
+    # test_ld_derivative()

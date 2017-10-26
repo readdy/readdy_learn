@@ -35,9 +35,8 @@ import readdy.util.io_utils as ioutils
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 
-from readdy_learn import analyze_tools as opt
 import readdy_learn.analyze.derivative as deriv
-
+from readdy_learn import analyze_tools as opt
 
 def get_count_trajectory(fname, cache_fname=None):
     if cache_fname and os.path.exists(cache_fname):
