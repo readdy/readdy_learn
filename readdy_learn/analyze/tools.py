@@ -226,6 +226,14 @@ class Trajectory(object):
         return self._xi
 
     @property
+    def times(self):
+        times = np.linspace(0, self.counts.shape[0] * self.time_step, num=self.counts.shape[0])
+        assert times.shape[0] == self.counts.shape[0]
+        assert np.isclose(times[1] - times[0], self.time_step), "times[1]-times[0] was {} but was expected to be {}" \
+            .format(times[1] - times[0], self.time_step)
+        return times
+
+    @property
     def propensities(self):
         if not self._xi:
             self.estimate(self._last_alpha)
