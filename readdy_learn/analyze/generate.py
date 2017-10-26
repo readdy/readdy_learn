@@ -8,7 +8,7 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps)
         theta = _np.array([f(data) for f in bfc.functions])
         return _np.matmul(rates, theta)
 
-    xs = _np.arange(0, n_steps * timestep, timestep)
+    xs = _np.linspace(0, n_steps*timestep, num=timestep, endpoint=False)
     initial_condition = _np.array(initial_condition).squeeze()
     return xs, _odeint(fun_reference, initial_condition, xs)
 
