@@ -418,6 +418,10 @@ class ReactionDiffusionSystem:
     def sequence(self):
         return self._event_list, self._time_list, self._state_list
 
+    @property
+    def smallest_dt(self):
+        return np.min(np.diff(self._time_list))
+
     # @todo move this into a result(event sequence)-object
     def convert_events_to_time_series(self, time_step=None, n_frames=None):
         """
