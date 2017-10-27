@@ -8,6 +8,8 @@ from pathos.multiprocessing import Pool
 import readdy_learn.analyze.tools as pat
 from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
 
+import readdy_learn.analyze.generate as generate
+
 
 class Suite(object):
     def __init__(self, set_up_system, bfc, alpha=0., l1_ratio=1., maxiter=30000, tol=1e-12, interp_degree=10,
@@ -54,10 +56,10 @@ class Suite(object):
                                         options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi)
         return est
 
-    def run(self, sys, bfc, verbose=True, n_frames=None, timestep=None):
+    def run(self, times, counts, bfc, verbose=True, n_frames=None, timestep=None, realization=None):
         if verbose:
             print("---- begin suite run")
-        counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
+        # counts, times, config = sys.get_counts_config(n_frames=n_frames, timestep=timestep)
 
         traj = pat.Trajectory.from_counts(counts, times[1] - times[0], verbose=verbose,
                                           interp_degree=self._interp_degree)
@@ -148,7 +150,7 @@ class Suite(object):
         plt.show()
 
     def calculate(self, file, timesteps, n_steps, n_realizations=1, write_concentrations_for_time_step=None,
-                  verbose=True, save=True, njobs=8):
+                  verbose=True, save=True, njobs=8, n_gillespie_realizations=1):
         if os.path.exists(file):
             raise ValueError("File already existed: {}".format(file))
 
@@ -169,14 +171,16 @@ class Suite(object):
                 return self.run(**args)
 
             params = []
-            for n in range(n_realizations):
-                system = self._get_system()
-                system.simulate(n_steps)
-                for dt in timesteps:
-                    params.append({'sys': system, 'bfc': self._bfc, 'timestep': dt, 'verbose': verbose})
+            for dt in timesteps:
+                for n in range(n_realizations):
+                    times, counts = generate.generate_averaged_kmc_counts(self._set_up_system, n_steps, timestep=dt,
+                                                                          n_realizations=n_gillespie_realizations)
+
+                    params.append({'times': times, 'counts': counts, 'bfc': self._bfc, 'timestep': dt,
+                                   'verbose': verbose, 'realization': n})
                     if dt == write_concentrations_for_time_step:
-                        counts, times, config = system.get_counts_config(timestep=dt)
                         concentrations = counts.squeeze(), times.squeeze()
+
             with Pool(processes=njobs) as p:
                 for dt, rates in p.imap_unordered(run_wrapper, params, chunksize=1):
                     if rates is not None:

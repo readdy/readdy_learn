@@ -73,7 +73,8 @@
 		\label{examples:linear-approximation}
 	\end{figure}
 	
-	For generating time series data of concentrations we use the Gillespie method \cite{Gillespie1976}. For a given set of initial conditions, we produce several realizations which are then converted to a trajectory with fixed time step and averaged. Since these trajectories are piecewise constant, one has to take special care when approximating the temporal derivative. Simply taking finite differences has the effect that, with decreasing time step, the derivative is most of the time constant zero and approaches infinity at the jump discontinuities. To counter this effect, we perform a linear approximation between each two adjacent discontinuities, as depicted in Figure \ref{examples:linear-approximation}.
+	For generating time series data of concentrations we use the Gillespie method \cite{Gillespie1976}. For a given set of initial conditions, we produce several realizations which are then converted to a trajectory with fixed time step and averaged. Since these trajectories are piecewise constant, one has to take special care when approximating the temporal derivative. Simply taking finite differences has the effect that, with decreasing time step, the derivative is most of the time constant zero and approaches infinity at the jump discontinuities. To counter this effect, we first perform a linear approximation between each two adjacent discontinuities, as depicted in Figure \ref{examples:linear-approximation}. (\textcolor{red}{Use regularized derivative?})
+	
 	\subsection*{Regression without regularization}
 	
 	\subsection*{Regression with regularization}
