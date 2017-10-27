@@ -6,8 +6,7 @@
 \usepackage{amssymb}
 \usepackage{color}
 
-% \usepackage{graphicx}
-\DeclareMathOperator*{\argmin}{arg\,min}
+\usepackage{graphicx}
 
 \begin{document}
 	\title{Discover governing reactions from concentration data}
@@ -60,16 +59,27 @@
 	\]
 	In particular, the system is linear in the coefficients $\Xi$, which makes sparse regression tools such as LASSO \cite{Tibshirani1996, Hastie2009} applicable. To this end, one can consider the minimization problem to find $\hat{\Xi}$ such that
 	\begin{align}
-		\hat{\Xi} = \argmin_{\Xi}\left( \frac{1}{2T}\left\| \dot{\textbf{X}} - \Theta(\textbf{X})\Xi \right\|_F^2 + \alpha\|\Xi\|_1 \right) \quad \text{subject to }\Xi \geq 0,
+		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \frac{1}{2T}\left\| \dot{\textbf{X}} - \Theta(\textbf{X})\Xi \right\|_F^2 + \alpha\|\Xi\|_1 \right) \quad \text{subject to }\Xi \geq 0,
 	\label{method:minimizationproblem}\end{align}
-	where $\alpha\geq 0$ is a sparsity inducing hyperparameter. For $\alpha=0$ this problem reduces to constrained least-squares. For solving (\ref{method:minimizationproblem}) we applied the sequential least squares minimizer SLSQP, originally described in \cite{Kraft1988}, contained in the software package SciPy \cite{SciPy}.
+	where $\alpha\geq 0$ is a sparsity inducing hyperparameter. For $\alpha=0$ this problem reduces to constrained least-squares. For solving (\ref{method:minimizationproblem}) we apply the sequential least squares minimizer SLSQP, originally described in \cite{Kraft1988}, contained in, e.g., the software package SciPy \cite{SciPy}.
 	
 	\section*{Examples}
 	
+	\begin{figure}
+		\begin{center}
+			\includegraphics[width=.5\textwidth]{./figures_tex/aux_linear_approximation.eps}
+		\end{center}
+		\caption{This figure depicts a possible output yielded by an application of the Gillespie method and the performed piecewise linear approximation in order to obtain a better behaving derivative.}
+		\label{examples:linear-approximation}
+	\end{figure}
 	
+	For generating time series data of concentrations we use the Gillespie method \cite{Gillespie1976}. For a given set of initial conditions, we produce several realizations which are then converted to a trajectory with fixed time step and averaged. Since these trajectories are piecewise constant, one has to take special care when approximating the temporal derivative. Simply taking finite differences has the effect that, with decreasing time step, the derivative is most of the time constant zero and approaches infinity at the jump discontinuities. To counter this effect, we perform a linear approximation between each two adjacent discontinuities, as depicted in Figure \ref{examples:linear-approximation}.
 	\subsection*{Regression without regularization}
 	
 	\subsection*{Regression with regularization}
+	
+	\section*{Conclusion}
+	dfdf
 	
 	
 	\newpage

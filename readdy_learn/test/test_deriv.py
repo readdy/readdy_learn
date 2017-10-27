@@ -17,7 +17,7 @@ class TestDeriv(unittest.TestCase):
         """
         test the jac implementation against an approximated one!
         """
-        plot = False
+        plot = True
         desired_rates = np.array([.02, .07])
         init_condition = [[70, 50]]
         n_steps = 5000
@@ -41,7 +41,6 @@ class TestDeriv(unittest.TestCase):
         for i in range(len(rates_ab)):
             ys[i] = jac(np.array([rates_ab[i], rates_ba[i]]))
             ys_approx[i] = jac_approx(np.array([rates_ab[i], rates_ba[i]]))
-        print(ys.shape)
         if plot:
             plt.plot(rates_ab, ys[:, 0], label='analytical jac d(a->b)')
             plt.plot(rates_ab, ys_approx[:, 0], label='approximated jac d(a->b)')
