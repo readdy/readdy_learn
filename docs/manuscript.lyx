@@ -289,7 +289,7 @@ Goal is to find the rates
 \begin_inset Formula $\hat{\Xi}$
 \end_inset
 
- that minimize the residual in the above equation with respect to the Frobenius
+ that minimize the residu al in the above equation with respect to the Frobenius
  norm.
  Sparsity in the solution can be enforced by Lasso, i.e., introducing an 
 \begin_inset Formula $L_{1}$
