@@ -99,7 +99,11 @@ Let there be
 \end_inset
 
  particle species.
- The concentration of them at a fixed time is given by a vector
+ The concentration of them at a fixed time is given by a vecto
+\end_layout
+
+\begin_layout Standard
+\noindent
 \begin_inset Formula 
 \[
 \bm{x}(t)=\begin{pmatrix}x_{1}(t)\\
