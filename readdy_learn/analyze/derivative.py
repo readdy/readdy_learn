@@ -62,6 +62,13 @@ def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
 
     u = np.gradient(data, xs)
 
+    wwidth = 2
+    deriv = np.empty_like(xs)
+    for ix, (wx, wy) in enumerate(zip(window_evensteven(xs, width=wwidth), window_evensteven(data, width=wwidth))):
+        x = xs[ix]
+        coeff = fd_coeff(x, wx, k=1)
+        deriv[ix] = coeff.dot(wy)
+
 
 def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
     assert isinstance(data, np.ndarray)
@@ -199,21 +206,29 @@ def test_finite_differences():
 
 def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
+    xx = []
+    for x in x0:
+        if np.random.random() < .2:
+            xx.append(x)
+    x0 = np.array(xx)
+
     testf = np.array([np.sin(x) for x in x0])
     testf = testf + np.random.normal(0.0, 0.04, x0.shape)
     true_deriv = [np.cos(x) for x in x0]
 
-    deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
-    deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+    ld_derivative2(testf, x0, alpha=1e-1)
 
-    plt.plot(testf, label='fun')
-    plt.plot(deriv_sm, label='alpha=5e-4')
-    plt.plot(deriv_lrg, label='alpha=1e-1')
-    plt.plot(true_deriv, label='derivative')
-    plt.legend()
-    plt.show()
+    deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
+    #deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+
+    #plt.plot(testf, label='fun')
+    #plt.plot(deriv_sm, label='alpha=5e-4')
+    #plt.plot(deriv_lrg, label='alpha=1e-1')
+    #plt.plot(true_deriv, label='derivative')
+    #plt.legend()
+    #plt.show()
 
 
 if __name__ == '__main__':
-    test_finite_differences()
-    #test_ld_derivative()
+    #test_finite_differences()
+    test_ld_derivative()
