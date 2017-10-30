@@ -12,13 +12,13 @@
 	\title{Discover governing reactions from concentration data}
 	\maketitle
 	
-	\section*{Introduction}
+	\section{Introduction}
 	When presented with a time series of possibly noisy concentration values as output of, e.g., measurements or simulations that were parameterized by microscopic rates \textcolor{red}{(cite ReaDDy?)}, one can ask for the corresponding macroscopic rates and generating reaction network. 
 	In this paper we present an application of the shallow learning method SINDy \cite{Brunton2015} which is able to identify the generating parsimonious nonlinear dynamics in data that stems from dynamical systems, thus providing an interpretable result.
 	In our application we, opposed to the original method, do not only look for macroscopic rates of net species change but investigate the specific reactions that might have lead to the observations.
 	We demonstrate the algorithm on a toy problem demonstrating the identification abilities.
 	
-	\section*{The method}
+	\section{The method}
 	The underlying model that we want to fit the data to is a law of mass action type dynamical system. To this end, let $S$ be the number of species, then the concentration data at a time $t$ can be represented by a vector
 	\[
 	\mathbf{x}(t)=\begin{pmatrix}
@@ -63,7 +63,7 @@
 	\label{method:minimizationproblem}\end{align}
 	where $\alpha\geq 0$ is a sparsity inducing hyperparameter. For $\alpha=0$ this problem reduces to constrained least-squares. For solving (\ref{method:minimizationproblem}) we apply the sequential least squares minimizer SLSQP, originally described in \cite{Kraft1988}, contained in, e.g., the software package SciPy \cite{SciPy}.
 	
-	\section*{Examples}
+	\section{Examples}
 	
 	\begin{figure}
 		\begin{center}
@@ -73,14 +73,34 @@
 		\label{examples:linear-approximation}
 	\end{figure}
 	
-	For generating time series data of concentrations we use the Gillespie method \cite{Gillespie1976}. For a given set of initial conditions, we produce several realizations which are then converted to a trajectory with fixed time step and averaged. Since these trajectories are piecewise constant, one has to take special care when approximating the temporal derivative. Simply taking finite differences has the effect that, with decreasing time step, the derivative is most of the time constant zero and approaches infinity at the jump discontinuities. To counter this effect, we first perform a linear approximation between each two adjacent discontinuities, as depicted in Figure \ref{examples:linear-approximation}. (\textcolor{red}{Use regularized derivative?})
+	For generating time series data of concentrations we use the Gillespie method \cite{Gillespie1976}. For a given set of initial conditions, we produce several realizations which then are converted to a trajectory with fixed time step and averaged. Since these trajectories are piecewise constant, one has to take special care when approximating the temporal derivative. Simply taking finite differences has the effect that, with decreasing time step, the derivative is most of the time constant zero and approaches infinity at the jump discontinuities. To counter this effect, we beforehand perform a linear approximation between each two adjacent discontinuities, as depicted in Figure \ref{examples:linear-approximation}. (\textcolor{red}{Use regularized derivative?})
 	
-	\subsection*{Regression without regularization}
+	\subsection{Regression without regularization}
+	\label{sec:ex1}
 	
+	Here we demonstrate that, with decreasing time step $\Delta t$ and $\alpha=0$, the estimated rates converge to the true rates if there is no ambiguity in the system. The systems contains two species $A$ and $B$ which can convert into each other with macroscopic rates of $r_1=4.0$ and $r_2=0.5$, respectively. The initial amount of particles is set to $70$ of type $A$ and $0$ of type $B$. A possibly resulting change of concentrations over time is depicted in Figure \ref{ex1:concentration-curves}.
 	
-	\subsection*{Regression with regularization}
+	\begin{figure}
+		\begin{center}
+			\includegraphics[width=.5\textwidth]{./figures_tex/aux_ex1_concentration_curves}
+		\end{center}
+		\caption{A realization of the example given in Section \ref{sec:ex1}.}
+		\label{ex1:concentration-curves}
+	\end{figure}
 	
-	\section*{Conclusion}
+	For each $\Delta t$, we averaged eight different realizations with identical starting conditions into one single trajectory and estimated the rates for reactions $A\to B$ and $B\to A$. This procedure, we repeated $30$. In Figure \ref{ex1:rates-convergence}, the average estimates out of these realizations alongside with their standard deviations are shown. One can see that, with decreasing $\Delta t$, also the estimate for the rates becomes better and they can be recovered.
+	
+	\begin{figure}
+		\begin{center}
+			\includegraphics[width=.5\textwidth]{./figures_tex/aux_rates_convergence}
+		\end{center}
+		\caption{The \textcolor{red}{todo}}
+		\label{ex1:rates-convergence}
+	\end{figure}
+	
+	\subsection{Regression with regularization}
+	
+	\section{Conclusion}
 	dfdf
 	
 	
