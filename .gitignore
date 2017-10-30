@@ -393,3 +393,7 @@ TSWLatexianTemp*
 # expex forward references with \gathertags
 *-tags.tex
 docs/tex/
+.DS_Store
+docs/.DS_Store
+docs/.manuscript.lb
+docs/figures_tex/.DS_Store
