@@ -13,10 +13,11 @@
 	\maketitle
 	
 	\section{Introduction}
-	When presented with a time series of possibly noisy concentration values as output of, e.g., measurements or simulations that were parameterized by microscopic rates \textcolor{red}{(cite ReaDDy?)}, one can ask for the corresponding macroscopic rates and generating reaction network. 
+	\textcolor{red}{non-equilibrium.}
+	When presented with a time series of possibly noisy concentration fluctuations of some species as output of, e.g., measurements from experiments or simulations that were parameterized by microscopic rates \textcolor{red}{(cite ReaDDy?)}, one can ask for the corresponding macroscopic rates and generating reaction network. 
 	In this paper we present an application of the shallow learning method SINDy \cite{Brunton2015} which is able to identify the generating parsimonious nonlinear dynamics in data that stems from dynamical systems, thus providing an interpretable result.
 	In our application we, opposed to the original method, do not only look for macroscopic rates of net species change but investigate the specific reactions that might have lead to the observations.
-	We demonstrate the algorithm on a toy problem demonstrating the identification abilities.
+	We demonstrate the algorithm on two toy problems - one problem showing that when there is no ambiguity in the system, one converges to the correct rates with increasing resolution of concentration fluctuations and one in which we compute a sparse reaction network for given data.
 	
 	\section{The method}
 	The underlying model that we want to fit the data to is a law of mass action type dynamical system. To this end, let $S$ be the number of species, then the concentration data at a time $t$ can be represented by a vector
@@ -94,11 +95,13 @@
 		\begin{center}
 			\includegraphics[width=.5\textwidth]{./figures_tex/aux_rates_convergence}
 		\end{center}
-		\caption{The \textcolor{red}{todo}}
+		\caption{Convergence of estimated rates to the ground truth with decreasing $\Delta t$.}
 		\label{ex1:rates-convergence}
 	\end{figure}
 	
 	\subsection{Regression with regularization}
+	
+	
 	
 	\section{Conclusion}
 	dfdf
