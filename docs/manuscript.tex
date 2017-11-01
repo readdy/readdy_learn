@@ -13,9 +13,8 @@
 	\maketitle
 	
 	\section{Introduction}
-	\textcolor{red}{non-equilibrium.}
-	When presented with a time series of possibly noisy concentration fluctuations of some species as output of, e.g., measurements from experiments or simulations that were parameterized by microscopic rates \textcolor{red}{(cite ReaDDy?)}, one can ask for the corresponding macroscopic rates and generating reaction network. 
-	In this paper we present an application of the shallow learning method SINDy \cite{Brunton2015} which is able to identify the generating parsimonious nonlinear dynamics in data that stems from dynamical systems, thus providing an interpretable result.
+	When presented with a non-equilibrium time series of possibly noisy concentration fluctuations of some species as output of, e.g., measurements from experiments or simulations that were parameterized by microscopic rates \textcolor{red}{(cite ReaDDy?)}, one can ask for the corresponding macroscopic rates and generating reaction network. 
+	In this paper we present an application of the shallow learning method SINDy \cite{Brunton2015}. It is able to identify the generating parsimonious nonlinear dynamics in data that stems from dynamical systems, thus providing an interpretable result.
 	In our application we, opposed to the original method, do not only look for macroscopic rates of net species change but investigate the specific reactions that might have lead to the observations.
 	We demonstrate the algorithm on two toy problems - one problem showing that when there is no ambiguity in the system, one converges to the correct rates with increasing resolution of concentration fluctuations and one in which we compute a sparse reaction network for given data.
 	
@@ -62,7 +61,7 @@
 	\begin{align}
 		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \frac{1}{2T}\left\| \dot{\textbf{X}} - \Theta(\textbf{X})\Xi \right\|_F^2 + \alpha\|\Xi\|_1 \right) \quad \text{subject to }\Xi \geq 0,
 	\label{method:minimizationproblem}\end{align}
-	where $\alpha\geq 0$ is a sparsity inducing hyperparameter. For $\alpha=0$ this problem reduces to constrained least-squares. For solving (\ref{method:minimizationproblem}) we apply the sequential least squares minimizer SLSQP, originally described in \cite{Kraft1988}, contained in, e.g., the software package SciPy \cite{SciPy}.
+	where $\alpha\geq 0$ is a sparsity inducing hyperparameter. For $\alpha=0$ this problem reduces to constrained least-squares. For solving (\ref{method:minimizationproblem}) we apply the sequential least squares minimizer SLSQP, originally described in \cite{Kraft1988}, contained in, e.g., the software package SciPy \cite{SciPy}. As initial guess for the regulated problem we use the solution of (\ref{method:minimizationproblem}) with $\alpha=0$.
 	
 	\section{Examples}
 	
@@ -100,11 +99,11 @@
 	\end{figure}
 	
 	\subsection{Regression with regularization}
-	
+	In this example we have four species $A$, $B$, $C$, and $D$ with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C+D\xrightarrow{k_5}B$, where $k_1=k_2=2\cdot 10^{-2}$, $k_3 = 1\cdot 10^{-2}$, and $k_4=k_5=1\cdot 10^{-4}$. 
 	
 	
 	\section{Conclusion}
-	dfdf
+	todo.
 	
 	
 	\newpage
