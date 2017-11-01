@@ -5,6 +5,7 @@
 \usepackage[intlimits]{amsmath}
 \usepackage{amssymb}
 \usepackage{color}
+\usepackage{subcaption}
 
 \usepackage{graphicx}
 
@@ -99,8 +100,25 @@
 	\end{figure}
 	
 	\subsection{Regression with regularization}
-	In this example we have four species $A$, $B$, $C$, and $D$ with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C+D\xrightarrow{k_5}B$, where $k_1=k_2=2\cdot 10^{-2}$, $k_3 = 1\cdot 10^{-2}$, and $k_4=k_5=1\cdot 10^{-4}$. 
+	\label{sec:ex2}
+	In this example there are four species $A$, $B$, $C$, and $D$ with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C+D\xrightarrow{k_5}B$, where $k_1=k_2=2\cdot 10^{-2}$, $k_3 = 1\cdot 10^{-2}$, and $k_4=k_5=1\cdot 10^{-4}$. These reactions are inserted into the ansatz library $\Theta (\cdot)$. Additionally the reactions $A\leftrightarrow B$, $A\leftrightarrow C$, and $A+C\leftrightarrow D$ are inserted into the library. 
 	
+	\begin{figure}
+		\centering
+		\begin{subfigure}[b]{.45\textwidth}
+			\includegraphics[width=\textwidth]{./figures_tex/cv_concentrations_train}
+			\caption{Train data set.}
+		\end{subfigure}
+		~
+		\begin{subfigure}[b]{.45\textwidth}
+			\includegraphics[width=\textwidth]{./figures_tex/cv_concentrations_test}
+			\caption{Test data set.}
+		\end{subfigure}
+		\caption{Train and test data sets for the example given in Section \ref{sec:ex2}.}
+		\label{ex2:test-train-concentration-curves}
+	\end{figure}
+	
+	The problem now is to find a suitable $\alpha$ such that a parsimonious solution is picked. To this end, cross-validation is applied. The trajectories that were used as training and test data set are depicted in Figure \ref{ex2:test-train-concentration-curves}.
 	
 	\section{Conclusion}
 	todo.
