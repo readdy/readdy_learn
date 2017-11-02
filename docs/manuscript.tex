@@ -10,7 +10,7 @@
 \usepackage{graphicx}
 
 \begin{document}
-	\title{Discover governing reactions from concentration data}
+	\title{Discovering governing reactions from concentration data}
 	\maketitle
 	
 	\section{Introduction}
@@ -35,7 +35,7 @@
 	so that the change of concentration for species $i$ at time $t_i$, is represented by the dynamical system
 	\begin{align}
 	\dot{\textbf{x}}_i(t) = \sum_{r=1}^{R}y_{r,i}(\textbf{x}(t))\xi_r,\quad i=1,\ldots, S,
-	\end{align}
+	\label{method:the-system}\end{align}
 	where $\xi_r$ are the to-be estimated macroscopic rates.
 	
 	When presented with a time series with $T$ observations, the data can be represented as a matrix
@@ -49,10 +49,10 @@
 	\end{align}
 	Given this matrix, one can propose a library $\Theta(\textbf{X}) = \begin{pmatrix} \theta_1(\textbf{X}) & \theta_2(\textbf{X}) & \cdots & \theta_R(\textbf{X}) \end{pmatrix}$ of $R$ ansatz reactions with corresponding reaction functions
 	\begin{align}
-	\theta_r(\textbf{X}) = \begin{pmatrix}
-	\textbf{y}_r(\textbf{X}_1)^T \\ \vdots \\ \textbf{y}_r(\textbf{X}_T)^T
-	\end{pmatrix}\in \mathbb{R}^{T\times S},\quad r=1,\ldots,R,
-	\end{align}
+		\theta_r(\textbf{X}) = \begin{pmatrix}
+		\textbf{y}_r(\textbf{X}_1)^T \\ \vdots \\ \textbf{y}_r(\textbf{X}_T)^T
+		\end{pmatrix}\in \mathbb{R}^{T\times S},\quad r=1,\ldots,R,
+	\label{method:the-reactions}\end{align}
 	where $\textbf{X}_i$ denotes the $i$-th row in $X$. Applying the concentration trajectory to the library yields a data tensor $\Theta(\textbf{X})\in\mathbb{R}^{T\times S\times R}$. Following the approach of SINDy, the goal is now to find coefficients $\Xi = \begin{pmatrix} \xi_1 & \xi_2 & \cdots & \xi_R
 	\end{pmatrix}^T$, so that
 	\begin{align}
@@ -101,7 +101,7 @@
 	
 	\subsection{Regression with regularization}
 	\label{sec:ex2}
-	In this example there are four species $A$, $B$, $C$, and $D$ with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C+D\xrightarrow{k_5}B$, where $k_1=k_2=2\cdot 10^{-2}$, $k_3 = 1\cdot 10^{-2}$, and $k_4=k_5=1\cdot 10^{-4}$. These reactions are inserted into the ansatz library $\Theta (\cdot)$. Additionally the reactions $A\leftrightarrow B$, $A\leftrightarrow C$, and $A+C\leftrightarrow D$ are inserted into the library. 
+	In this example there are four species $A$, $B$, $C$, and $D$ with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C\xrightarrow{k_5}D+B$, where $k_1=k_2=2\cdot 10^{-2}$, $k_3 = 1\cdot 10^{-2}$, and $k_4=k_5=1\cdot 10^{-4}$. These reactions are inserted into the ansatz library $\Theta (\cdot)$. Additionally the reactions $A\leftrightarrow B$, $A\leftrightarrow C$, and $A+C\leftrightarrow D$ are inserted into the library. 
 	
 	\begin{figure}
 		\centering
@@ -123,7 +123,7 @@
 		f_\alpha = \frac{1}{T}\|\mathbf{\dot{X}}_\text{test} - \Theta (\textbf{X}_\text{test}) \Xi_\text{train}\|_F^2.
 		\label{ex2:score-function}
 	\end{align}
-	For a selection of values $\alpha\in [0, 100]$, the model parameters $\Xi$ were estimated and the scoring function (\ref{ex2:score-function}) evaluated, yielding a graph as in Figure \ref{ex2:score-graph}.
+	For a selection of values $\alpha\in [0, 100]$, the model parameters $\Xi$ were estimated and the scoring function (\ref{ex2:score-function}) evaluated, yielding the graph that is depicted in Figure \ref{ex2:score-graph}.
 	
 	\begin{figure}
 		\begin{center}
@@ -137,11 +137,24 @@
 	\begin{align}
 		\hat{\alpha} = \underset{\alpha\in[0,100]}{\arg\min}f_\alpha\approx 10.
 	\end{align}
-	When evaluating the minimization problem (\ref{method:minimizationproblem}) with this hyperparameter and applying a cut-off of $10^{-8}$ to the yielded parameters, one obtains
+	When evaluating the minimization problem (\ref{method:minimizationproblem}) with $\hat{\alpha}$ as hyperparameter for the regularizer and applying a cut-off of $10^{-10}$ to the yielded parameters, one obtains the simpler set of reactions $A\xrightarrow{\hat{k}_1}D$, $D\xrightarrow{\hat{k}_3} B$, and $A+B\xrightarrow{\hat{k}_4}C$ with rates $\hat{k}_1 \approx 3.5\cdot 10^{-3}$, $\hat{k}_3\approx 9.1\cdot 10^{-3}$, and $\hat{k}_4\approx 8.7\cdot 10^{-5}$, respectively.
+	
+	One can see in Figure \ref{ex2:result} that with this simpler set of reactions the observed concentration curves can be explained as well. It can be argued that the second reaction of the generating model $D\xrightarrow{k_2}A$ can be compensated by a smaller rate $\hat{k}_1 < k_1$ and that the fifth reaction of the generating model can be neglected altogether in the observed timescale as its rate is two orders of magnitude smaller than the rates of the other unimolecular reactions. 
+	The rates $k_3$ and $k_4$ are approximately recovered by $\hat{k}_3$ and $\hat{k}_4$, respectively.
+	
+	\begin{figure}
+		\begin{center}
+			\includegraphics[width=.5\textwidth]{./figures_tex/cv_expected_estimated_concentrations}
+		\end{center}
+		\caption{Estimated and generating concentration curves for the example in Section \ref{sec:ex2}.}
+		\label{ex2:result}
+	\end{figure}
 	
 	\section{Conclusion}
-	todo.
+	In this work we have successfully applied and extended the SINDy method to not only parsimoniously detect potentially nonlinear terms in a dynamical system from possibly noisy data, but also pick up on, in this case, a sparse set of generating reactions (\ref{method:the-reactions}) and their respective rates.
 	
+	In two examples it was demonstrated that, despite noisy data and unavailability of derivative measurements, a parsimonious generating reaction network that is able to explain the observed data can be recovered. 
+	In particular it was shown in the example given in Section \ref{sec:ex1} that if there is no ambiguity in the underlying model and ansatz reaction library, the actual rates can be recovered. In the example of Section \ref{sec:ex2} an even simpler model could be obtained by making use of sparse regression and cross-validation.
 	
 	\newpage
 % 	\bibliographystyle{alpha}
