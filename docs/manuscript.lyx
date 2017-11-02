@@ -4,16 +4,19 @@
 \begin_header
 \save_transient_properties true
 \origin unavailable
-\textclass article
+\textclass scrartcl
 \begin_preamble
-\usepackage{amsmath}
+
+
+\usepackage{subcaption}
 \end_preamble
-\use_default_options true
+\options abstracton,titlepage
+\use_default_options false
 \maintain_unincluded_children false
 \language english
-\language_package default
-\inputencoding auto
-\fontencoding global
+\language_package none
+\inputencoding utf8
+\fontencoding default
 \font_roman "default" "default"
 \font_sans "default" "default"
 \font_typewriter "default" "default"
@@ -33,17 +36,17 @@
 \spacing single
 \use_hyperref false
 \papersize default
-\use_geometry false
-\use_package amsmath 1
-\use_package amssymb 1
-\use_package cancel 1
+\use_geometry true
+\use_package amsmath 2
+\use_package amssymb 2
+\use_package cancel 0
 \use_package esint 1
-\use_package mathdots 1
-\use_package mathtools 1
-\use_package mhchem 1
-\use_package stackrel 1
-\use_package stmaryrd 1
-\use_package undertilde 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
 \cite_engine basic
 \cite_engine_type default
 \biblio_style plain
@@ -52,7 +55,7 @@
 \paperorientation portrait
 \suppress_date false
 \justification true
-\use_refstyle 1
+\use_refstyle 0
 \index Index
 \shortcut idx
 \color #008000
@@ -60,7 +63,7 @@
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
-\paragraph_indentation 0bp
+\paragraph_indentation default
 \quotes_language english
 \papercolumns 1
 \papersides 1
@@ -74,76 +77,86 @@
 
 \begin_body
 
-\begin_layout Section*
-Discover governing reactions from concentrations
+\begin_layout Title
+Discovering governing reactions from concentration data
+\end_layout
+
+\begin_layout Section
+Introduction
 \end_layout
 
 \begin_layout Standard
-Following SINDy ...
- todo
+When presented with a time series of possibly noisy non-equilibrium concentratio
+n fluctuations of some species as output of, e.g., measurements from experiments
+ or simulations that were parameterized by microscopic rates 
+\color red
+(cite ReaDDy?)
+\color inherit
+, one can ask for the corresponding macroscopic rates and a generating reaction
+ network.
+ In this paper we present an application of the shallow learning method
+ SINDy 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Brunton2015"
+
+\end_inset
+
+.
+ By sparse regression, it is able to identify generating nonlinear dynamics
+ in data that stems from dynamical systems.
+ The parsimonious nature of the results avoids overfitting and provides
+ interpretability.
+ In our application we, as opposed to the original method, do not only look
+ for macroscopic rates of net species change but investigate the specific
+ reactions that might have lead to the observations.
+ We demonstrate the algorithm on two toy problems - one problem showing
+ that when there is no ambiguity in the system, one converges to the correct
+ rates with increasing resolution of concentration fluctuations and one
+ in which we compute a sparse reaction network for given data.
 \end_layout
 
-\begin_layout Subsection*
-The Ansatz (Law of mass action)
+\begin_layout Section
+The method
 \end_layout
 
 \begin_layout Standard
-The problem is formulated in terms of the law of mass action (LMA), i.e.,
- as system of ordinary differential equations.
-\end_layout
-
-\begin_layout Standard
-\noindent
-Let there be 
+The underlying model is a law of mass action type dynamical system.
+ To this end, let 
 \begin_inset Formula $S$
 \end_inset
 
- particle species.
- The concentration of them at a fixed time is given by a vecto
-\end_layout
+ be the number of species, then the observed concentration at a time 
+\begin_inset Formula $t$
+\end_inset
 
-\begin_layout Standard
-\noindent
+ can be represented by a vector 
 \begin_inset Formula 
-\[
-\bm{x}(t)=\begin{pmatrix}x_{1}(t)\\
+\begin{align}
+\mathbf{x}(t)=\begin{pmatrix}x_{1}(t)\\
 \vdots\\
 x_{S}(t)
 \end{pmatrix}\in\mathbb{R}^{S}.
-\]
+\end{align}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\noindent
-Further, there are 
+Further, one can choose 
 \begin_inset Formula $R$
 \end_inset
 
- reactions, represented by rates 
-\begin_inset Formula $\xi_{r}\geq0$
-\end_inset
-
- and a reaction function
+ possible ansatz reactions with their respective reaction function 
 \begin_inset Formula 
-\[
-\theta_{r}(\bm{x}(t))=\begin{pmatrix}\theta_{r,1}\\
+\begin{align}
+\textbf{y}_{r}(\textbf{x}(t))=\begin{pmatrix}y_{r,1}(\textbf{x}(t))\\
 \vdots\\
-\theta_{r,S}
-\end{pmatrix}(\bm{x}(t)),
-\]
+y_{r,S}(\textbf{x}(t))
+\end{pmatrix}
+\end{align}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\noindent
-so that the change of species 
+so that the change of concentration for species 
 \begin_inset Formula $i$
 \end_inset
 
@@ -151,321 +164,267 @@ so that the change of species
 \begin_inset Formula $t$
 \end_inset
 
- is represented by the ordinary differential equation
-\end_layout
-
-\begin_layout Standard
+, is represented by the dynamical system 
 \begin_inset Formula 
-\[
-\dot{x}_{i}(t)=\sum_{r=1}^{R}\theta_{r,i}(\bm{x}(t))\xi_{r}.
-\]
+\begin{align}
+\dot{\textbf{x}}_{i}(t)=\sum_{r=1}^{R}y_{r,i}(\textbf{x}(t))\xi_{r},\quad i=1,\ldots,S,\label{method:the-system}
+\end{align}
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-\noindent
-
-\series bold
-Example: 
-\series default
-Let 
-\begin_inset Formula $A+B\to C$
-\end_inset
-
- and 
-\begin_inset Formula $C\to A$
-\end_inset
-
- be given reactions with macroscopic rates 
-\begin_inset Formula $\xi_{1}$
-\end_inset
-
- and 
-\begin_inset Formula $\xi_{2}$
-\end_inset
-
-, respectively, then the representing system of ordinary differential equations
- is
-\begin_inset Formula 
-\[
-\dot{\bm{x}}(t)=\begin{pmatrix}\dot{x}_{A}(t)\\
-\dot{x}_{B}(t)\\
-\dot{x}_{C}(t)
-\end{pmatrix}=\begin{pmatrix}-x_{A}(t)x_{B}(t) & x_{C}(t)\\
--x_{A}(t)x_{B}(t) & 0\\
-x_{A}(t)x_{B}(t) & -x_{C}(t)
-\end{pmatrix}\begin{pmatrix}\xi_{1}\\
-\xi_{2}
-\end{pmatrix}.
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection*
-Learn rates from data
-\end_layout
-
-\begin_layout Standard
-Let 
-\begin_inset Formula $\bm{X}\in\mathbb{R}^{T\times S}$
-\end_inset
-
- be a trajectory containing concentrations of particles per time and species
- in 
-\begin_inset Formula $T$
-\end_inset
-
- time steps.
- Propose 
-\begin_inset Formula $R$
-\end_inset
-
- reactions with corresponding reaction functions 
-\begin_inset Formula $\theta_{r}(\cdot)$
-\end_inset
-
- and at this point unknown rates 
+where 
 \begin_inset Formula $\xi_{r}$
 \end_inset
 
-.
+ are the to-be estimated macroscopic rates.
 \end_layout
 
 \begin_layout Standard
-Application of the trajectory to the LMA yields a data tensor 
-\begin_inset Formula $\Theta(\bm{X})\in\mathbb{R}^{T\times S\times R}$
+When presented with a time series consisting of 
+\begin_inset Formula $T$
 \end_inset
 
- with a corresponding rates vector 
-\begin_inset Formula $\Xi\in\mathbb{R}^{R}$
-\end_inset
-
-, so that
+ observations, the data can be represented as a matrix 
 \begin_inset Formula 
-\[
-\dot{\bm{X}}=\Theta(\bm{X})\Xi.
-\]
+\begin{align}
+\textbf{X}=\begin{pmatrix}x_{1}(t_{1}) & x_{2}(t_{1}) & \cdots & x_{S}(t_{1})\\
+x_{1}(t_{2}) & x_{2}(t_{2}) & \cdots & x_{S}(t_{2})\\
+\vdots & \vdots & \ddots & \vdots\\
+x_{1}(t_{T}) & x_{2}(t_{T}) & \cdots & x_{S}(t_{T})
+\end{pmatrix}\in\mathbb{R}^{T\times S}.
+\end{align}
 
 \end_inset
 
+Given this matrix, one can propose a library 
+\begin_inset Formula $\Theta(\textbf{X})=\begin{pmatrix}\theta_{1}(\textbf{X}) & \theta_{2}(\textbf{X}) & \cdots & \theta_{R}(\textbf{X})\end{pmatrix}$
+\end_inset
 
-\end_layout
+ of 
+\begin_inset Formula $R$
+\end_inset
 
-\begin_layout Standard
-In particular,
+ ansatz reactions with corresponding reaction functions 
 \begin_inset Formula 
-\begin{eqnarray*}
-\Theta(\bm{X})\Xi & = & \sum_{r=1}^{R}\theta_{r}(\bm{X})\xi_{r}\\
- & = & \begin{pmatrix}\theta_{1,1}(\bm{X})\\
+\begin{align}
+\theta_{r}(\textbf{X})=\begin{pmatrix}\textbf{y}_{r}(\textbf{X}_{1})^{T}\\
 \vdots\\
-\theta_{1,S}(\bm{X})
-\end{pmatrix}\xi_{1}+\ldots+\begin{pmatrix}\theta_{R,1}(\bm{X})\\
-\vdots\\
-\theta_{R,S}(\bm{X})
-\end{pmatrix}\xi_{R},
-\end{eqnarray*}
+\textbf{y}_{r}(\textbf{X}_{T})^{T}
+\end{pmatrix}\in\mathbb{R}^{T\times S},\quad r=1,\ldots,R,\label{method:the-reactions}
+\end{align}
 
 \end_inset
 
+where 
+\begin_inset Formula $\textbf{X}_{i}$
+\end_inset
 
-\end_layout
+ denotes the 
+\begin_inset Formula $i$
+\end_inset
 
-\begin_layout Standard
-i.e., the system of equations is linear in the rates 
-\begin_inset Formula $\xi_{i}$
+-th row in 
+\begin_inset Formula $X$
 \end_inset
 
 .
-\end_layout
+ Applying the concentration trajectory to the library yields 
+\begin_inset Formula $\Theta(\textbf{X})\in\mathbb{R}^{T\times S\times R}$
+\end_inset
 
-\begin_layout Standard
-Goal is to find the rates 
+.
+ Following the approach of SINDy, the goal is now to find coefficients 
+\begin_inset Formula $\Xi=\begin{pmatrix}\xi_{1} & \xi_{2} & \cdots & \xi_{R}\end{pmatrix}^{T}$
+\end_inset
+
+, so that 
+\begin_inset Formula 
+\begin{align}
+\dot{\textbf{X}}=\Theta(\textbf{X})\Xi=\sum_{r=1}^{R}\theta_{r}(\textbf{X})\xi_{r}.
+\end{align}
+
+\end_inset
+
+In particular, the system is linear in the coefficients 
+\begin_inset Formula $\Xi$
+\end_inset
+
+, which makes sparse regression tools such as LASSO 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tibshirani1996, Hastie2009"
+
+\end_inset
+
+ applicable.
+ To this end, one can consider the minimization problem to find 
 \begin_inset Formula $\hat{\Xi}$
 \end_inset
 
- that minimize the residu al in the above equation with respect to the Frobenius
- norm.
- Sparsity in the solution can be enforced by Lasso, i.e., introducing an 
-\begin_inset Formula $L_{1}$
-\end_inset
-
- penalty term with hyperparameter 
-\begin_inset Formula $\alpha$
-\end_inset
-
-.
- Additionally one can introduce an 
-\begin_inset Formula $L_{2}$
-\end_inset
-
-penalty, i.e.
- Elastic Net, with weighting 
-\begin_inset Formula $\lambda\in[0,1]$
-\end_inset
-
-.
- The problem reads: Find 
+ such that 
 \begin_inset Formula 
-\begin{equation}
-\hat{\Xi}=\text{argmin}_{\Xi}(\frac{1}{2T}\|\dot{\bm{X}}-\Theta(\bm{X})\Xi\|_{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2})
-\end{equation}
+\begin{align}
+\hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\|\Xi\|_{1}\right)\quad\text{subject to }\Xi\geq0,\label{method:minimizationproblem}
+\end{align}
 
 \end_inset
 
+where 
+\begin_inset Formula $\|\cdot\|_{F}$
+\end_inset
 
-\end_layout
+ denotes the Frobenius norm and 
+\begin_inset Formula $\alpha\geq0$
+\end_inset
 
-\begin_layout Standard
-subject to 
-\begin_inset Formula $\Xi_{i}\geq0$
+ is a sparsity inducing hyperparameter.
+ For 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ the minimization problem reduces to constrained least-squares.
+ In order to solve (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+
+\end_inset
+
+) we apply the sequential least-squares minimizer SLSQP, originally described
+ in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Kraft1988"
+
+\end_inset
+
+, by the software package SciPy 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "SciPy"
+
+\end_inset
+
+.
+ As initial guess for the regularized problem we use the solution of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+
+\end_inset
+
+) with 
+\begin_inset Formula $\alpha=0$
 \end_inset
 
 .
 \end_layout
 
-\begin_layout Standard
-It can be noted that for 
-\begin_inset Formula $\lambda=1$
-\end_inset
-
- the problem reduces to Lasso and for 
-\begin_inset Formula $\lambda=0$
-\end_inset
-
- the problem reduces to Ridge regression.
-\end_layout
-
-\begin_layout Subsubsection*
-Implementation / solving
+\begin_layout Section
+Examples
 \end_layout
 
 \begin_layout Standard
-Let a trajectory 
-\begin_inset Formula $\bm{X}$
-\end_inset
-
- be given as output from, e.g., the Gillespie method.
- The time derivative is computed by linearly interpolating 
-\begin_inset Formula $\bm{X}$
-\end_inset
-
- between each two changes in concentration and then calculating the gradient
- on these non-uniform data points:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Graphics
-	filename figures/interp_derivative.png
-	lyxscale 80
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-On the left-hand side the interpolation of the gillespie trajectory, on
- the right-hand side the resulting derivative.
- If interpolating the concentrations beforehand, one gets a different picture
-\end_layout
-
-\begin_layout Standard
-\begin_inset Graphics
-	filename figures/interp_derivative_poly.png
-	lyxscale 80
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-but also worse results, as the rates seem to be underestimated.
- This (
-\begin_inset Flex URL
-status collapsed
+\begin_inset Float figure
+wide false
+sideways false
+status open
 
 \begin_layout Plain Layout
-
-https://pdfs.semanticscholar.org/8124/2160d75be7d0f65eb29204609a7d41282447.pdf
-\end_layout
-
-\end_inset
-
-) might give better results.
-\end_layout
-
-\begin_layout Standard
-Theta can also be computed as well as an analytical derivative of the objective
- function
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula 
-\begin{align*}
-f(\bm{X}) & =\frac{1}{2T}\|\dot{\bm{X}}-\Theta(\bm{X})\Xi\|_{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}.
-\end{align*}
+\align center
+\begin_inset Graphics
+	filename figures_tex/aux_linear_approximation.eps
+	lyxscale 50
+	width 50text%
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-The minimization problem is solved using sequential least squares (SLSQP)
- from scipy.
-\end_layout
-
-\begin_layout Subsubsection*
-Example
-\end_layout
-
-\begin_layout Standard
-Let reactions 
-\begin_inset Formula $A\to B$
-\end_inset
-
- and 
-\begin_inset Formula $B\to A$
-\end_inset
-
- with rates 
-\begin_inset Formula $4.0$
-\end_inset
-
- and 
-\begin_inset Formula $0.5$
-\end_inset
-
-, respectively, be given.
- Data was generated by the Gillespie method and then sampling the yielded
- concentration for each species with a fixed step size of 
-\begin_inset Formula $\Delta t$
-\end_inset
-
-, resulting in a corresponding trajectory 
-\begin_inset Formula $\bm{X}$
-\end_inset
-
-.
- The time derivative was computed by linearly interpolating 
-\begin_inset Formula $\bm{X}$
-\end_inset
-
- between each two changes of concentration and then calculating the gradient.
- (This causes a rather oscillatory derivative, however trying to smooth
- it yielded wrong rates in this case).
  
 \end_layout
 
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+This figure depicts a possible output yielded by an application of the Gillespie
+ method and the performed piecewise linear approximation in order to obtain
+ a better behaving derivative.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "examples:linear-approximation"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
-The minimization problem was then evaluated for a choice of 
+For generating time series data of concentrations we use the Gillespie method
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Gillespie1976"
+
+\end_inset
+
+.
+ For given initial conditions, we produce several realizations which then
+ are converted to a trajectory with fixed time step and averaged.
+ Since these trajectories are piecewise constant, one has to take special
+ care when approximating the data's temporal derivative that is needed in
+ (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+
+\end_inset
+
+).
+ Applying finite differences has the effect that, with decreasing time step,
+ the derivative mostly constant zero and approaches infinity at the jump
+ discontinuities.
+ To counter this effect, we beforehand perform a linear approximation between
+ each two adjacent discontinuities, as depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "examples:linear-approximation"
+
+\end_inset
+
+ and thus obtain a piecewise constant derivative.
+ (
+\color red
+Use regularized derivative?
+\color inherit
+)
+\end_layout
+
+\begin_layout Subsection
+Regression without regularization
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:ex1"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here we demonstrate that, with decreasing time step 
 \begin_inset Formula $\Delta t$
 \end_inset
 
@@ -473,152 +432,587 @@ The minimization problem was then evaluated for a choice of
 \begin_inset Formula $\alpha=0$
 \end_inset
 
-, i.e., as a constrained regression problem.
-\end_layout
-
-\begin_layout Standard
-The below plot shows on the left-hand side an exemplary Gillespie realization
- together with the LMA solution (dashed lines).
- The right-hand side depicts the estimated reaction rates for choices of
- 
-\begin_inset Formula $\Delta t$
-\end_inset
-
- as an average over 
-\begin_inset Formula $20$
-\end_inset
-
- realizations, the error bars are the standard deviation.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Graphics
-	filename figures/simple_regression_multiple_timesteps.png
-	lyxscale 70
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection*
-Derivation of hyper parameters
-\end_layout
-
-\begin_layout Standard
-Cross validation, score function is 
-\begin_inset Formula $\|\dot{\bm{X}}_{\text{test}}-\Theta(\bm{X}_{\text{test}})\Xi_{\text{train}}\|_{F}^{2}$
-\end_inset
-
- (probably should take time average into account as it otherwise is dependent
- on the trajectory's length).
- 
-\series bold
-Todo.
-\end_layout
-
-\begin_layout Subsubsection*
-Example (this probably can use some improving)
-\end_layout
-
-\begin_layout Standard
-Setting: Reactions
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $A\to D$
-\end_inset
-
- with a rate of 
-\begin_inset Formula $0.2$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $D\to A$
-\end_inset
-
- with a rate of 
-\begin_inset Formula $0.2$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $A+B\to C$
-\end_inset
-
- with a rate of 
-\begin_inset Formula $10^{-2}$
-\end_inset
-
-,
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $C\to D+B$
-\end_inset
-
- with a rate of 
-\begin_inset Formula $10^{-2}$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-The ansatz functions were chosen to be these reactions plus 
-\begin_inset Formula $C\to A+B$
+, the estimated rates converge to the true rates if there is no ambiguity
+ in the system.
+ Let there be two species 
+\begin_inset Formula $A$
 \end_inset
 
  and 
+\begin_inset Formula $B$
+\end_inset
+
+ which can unimolecularly convert into each other with macroscopic rates
+ of 
+\begin_inset Formula $k_{1}=4.0$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{2}=0.5$
+\end_inset
+
+, respectively.
+ The initial amount of particles is set to 
+\begin_inset Formula $70$
+\end_inset
+
+ of type 
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $0$
+\end_inset
+
+ of type 
+\begin_inset Formula $B$
+\end_inset
+
+.
+ The law of mass action solution and Gillespie realization corresponding
+ to this system are depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex1:concentration-curves"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures_tex/aux_ex1_concentration_curves.eps
+	lyxscale 50
+	width 50text%
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The law of mass action solution and a Gillespie realization of the example
+ given in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:ex1"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "ex1:concentration-curves"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For each 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+, eight different realizations with identical starting conditions are averaged
+ into a single trajectory, of which then the rates for reactions 
 \begin_inset Formula $A\to B$
 \end_inset
 
+ and 
+\begin_inset Formula $B\to A$
+\end_inset
+
+ are estimated.
+ This procedure was repeated 
+\begin_inset Formula $30$
+\end_inset
+
+ times.
+ In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex1:rates-convergence"
+
+\end_inset
+
+, the average estimates with their standard deviations are shown.
+ One can see that, with decreasing 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+, the estimates become better and the rates can be recovered.
+ Further it can be observed that in this case a time step of 
+\begin_inset Formula $\Delta t\approx10^{-2}$
+\end_inset
+
+ suffices.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures_tex/aux_rates_convergence.eps
+	lyxscale 50
+	width 50text%
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Convergence of estimated rates with decreasing 
+\begin_inset Formula $\Delta t$
+\end_inset
+
 .
 \end_layout
 
-\begin_layout Standard
-\begin_inset Graphics
-	filename figures/cv_example_counts.png
-	groupId cv counts
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "ex1:rates-convergence"
+
+\end_inset
+
+ 
+\end_layout
 
 \end_inset
 
 
-\begin_inset Graphics
-	filename figures/cv_example_counts_test.png
-	groupId cv counts
+\end_layout
+
+\begin_layout Subsection
+Regression with regularization
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:ex2"
 
 \end_inset
 
-,
+ In this example there are four species 
+\begin_inset Formula $A$
+\end_inset
+
+, 
+\begin_inset Formula $B$
+\end_inset
+
+, 
+\begin_inset Formula $C$
+\end_inset
+
+, and 
+\begin_inset Formula $D$
+\end_inset
+
+.
+ The system was generated with reactions 
+\begin_inset Formula $A\xrightarrow{k_{1}}D$
+\end_inset
+
+, 
+\begin_inset Formula $D\xrightarrow{k_{2}}A$
+\end_inset
+
+, 
+\begin_inset Formula $D\xrightarrow{k_{3}}B$
+\end_inset
+
+, 
+\begin_inset Formula $A+B\xrightarrow{k_{4}}C$
+\end_inset
+
+, and 
+\begin_inset Formula $C\xrightarrow{k_{5}}D+B$
+\end_inset
+
+, where the rates are given in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:estimated-rates"
+
+\end_inset
+
+.
+ These reactions are inserted into the ansatz library 
+\begin_inset Formula $\Theta(\cdot)$
+\end_inset
+
+.
+ Additionally the reactions 
+\begin_inset Formula $A\leftrightarrow B$
+\end_inset
+
+, 
+\begin_inset Formula $A\leftrightarrow C$
+\end_inset
+
+, and 
+\begin_inset Formula $A+C\leftrightarrow D$
+\end_inset
+
+ are inserted into the library.
 \end_layout
 
 \begin_layout Standard
-where the left plot shows the concentration curves for the training data
- set, the right plot for the test data set.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{subfigure}[b]
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+.45
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+textwidth
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Graphics
+	filename figures_tex/cv_concentrations_train.eps
+	lyxscale 50
+	width 100text%
+
+\end_inset
+
+ 
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Train data set.
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{subfigure}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset space ~
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{subfigure}[b]
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+.45
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+textwidth
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Graphics
+	filename figures_tex/cv_concentrations_test.eps
+	lyxscale 50
+	width 100text%
+
+\end_inset
+
+ 
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Test data set.
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{subfigure}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Train and test data sets for the example given in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:ex2"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "ex2:test-train-concentration-curves"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-For different values of 
+The problem now is to find a suitable 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ such that a parsimonious solution is yielded.
+ To this end, cross-validation is applied.
+ The trajectories that are used as training and test data set are depicted
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex2:test-train-concentration-curves"
+
+\end_inset
+
+.
+ 
+\color red
+Perhaps use several test trajectories with different initial conditions
+ to get something like a confidence interval?
+\color inherit
+ As an indicator to the estimation error one can use the scoring function
+ 
+\begin_inset Formula 
+\begin{align}
+f_{\alpha}=\frac{1}{T}\|\mathbf{\dot{X}}_{\text{test}}-\Theta(\textbf{X}_{\text{test}})\Xi_{\text{train}}\|_{F}^{2},\label{ex2:score-function}
+\end{align}
+
+\end_inset
+
+where the best possible score is 
+\begin_inset Formula $f_{\alpha}=0$
+\end_inset
+
+ and larger values indicate worse models.
+ For a selection of hyperparameters 
 \begin_inset Formula $\alpha\in[0,100]$
 \end_inset
 
- evaluated on the test trajectory, one can see that the optimal alpha is
- 
-\begin_inset Formula $\hat{\alpha}\approx5$
+, the model parameters 
+\begin_inset Formula $\Xi$
+\end_inset
+
+ are estimated and the scoring function (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex2:score-function"
+
+\end_inset
+
+) evaluated, yielding a dependency of the score on 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ as depicted in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex2:score-graph"
+
 \end_inset
 
 .
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename figures/cv_score.png
+	filename figures_tex/cv_score.eps
+	lyxscale 50
+	width 50text%
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Score function (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex2:score-function"
+
+\end_inset
+
+) evaluated for a range of 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ values.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "ex2:score-graph"
+
+\end_inset
+
+ 
+\end_layout
 
 \end_inset
 
@@ -626,22 +1020,516 @@ For different values of
 \end_layout
 
 \begin_layout Standard
-The rates yielded out of the optimization problem for this particular 
+One can see that the minimum score is achieved at 
+\begin_inset Formula 
+\begin{align}
+\hat{\alpha}=\underset{\alpha\in[0,100]}{\arg\min}f_{\alpha}\approx10.
+\end{align}
+
+\end_inset
+
+When evaluating the minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+
+\end_inset
+
+) with 
 \begin_inset Formula $\hat{\alpha}$
 \end_inset
 
- are 
-\begin_inset Formula $(8.9\cdot10^{-3},1.1\cdot10^{-2},1.1\cdot10^{-2},4.6\cdot10^{-3},6.8\cdot10^{-3},3.0\cdot10^{-6})$
+ as hyperparameter for the regularizer and applying a cut-off of 
+\begin_inset Formula $10^{-10}$
 \end_inset
 
- corresponding to the reactions from the setting and the two additional
- reactions, respectively.
- The resulting concentration curves are
+ to the yielded parameters, one obtains the simpler set of reactions 
+\begin_inset Formula $A\xrightarrow{\hat{k}_{1}}D$
+\end_inset
+
+, 
+\begin_inset Formula $D\xrightarrow{\hat{k}_{3}}B$
+\end_inset
+
+, and 
+\begin_inset Formula $A+B\xrightarrow{\hat{k}_{4}}C$
+\end_inset
+
+ with rates as in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:estimated-rates"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="3">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Reaction 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+original rate 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+estimated rate 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+noalign
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+vskip
+\end_layout
+
+\end_inset
+
+ .1cm
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $A\to D$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{1}=2\cdot10^{-2}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\hat{k}_{1}\approx3.5\cdot10^{-3}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $D\to A$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{2}=2\cdot10^{-2}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\hat{k}_{2}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $D\to B$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{3}=1\cdot10^{-2}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\hat{k}_{3}\approx9.1\cdot10^{-3}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $A+B\to C$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{4}=1\cdot10^{-4}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\hat{k}_{4}\approx8.7\cdot10^{-5}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $C\to D+B$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{5}=1\cdot10^{-4}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\hat{k}_{5}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Original and estimated reaction rates for the example in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:ex2"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:estimated-rates"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+One can see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ex2:result"
+
+\end_inset
+
+ that with this simpler set of reactions the observed concentration curves
+ can be explained as well.
+ Further, it can be argued that the second reaction of the original model
+ 
+\begin_inset Formula $D\xrightarrow{k_{2}}A$
+\end_inset
+
+ is compensated by a smaller rate 
+\begin_inset Formula $\hat{k}_{1}<k_{1}$
+\end_inset
+
+ and that the fifth reaction of the generating model can be neglected altogether
+ in the observed timescale as its rate is two orders of magnitude smaller
+ than the other unimolecular reactions' rates.
+ The parameters 
+\begin_inset Formula $k_{3}$
+\end_inset
+
+ and 
+\begin_inset Formula $k_{4}$
+\end_inset
+
+ are approximately recovered by 
+\begin_inset Formula $\hat{k}_{3}$
+\end_inset
+
+ and 
+\begin_inset Formula $\hat{k}_{4}$
+\end_inset
+
+, respectively.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename figures/cv_concentration.png
+	filename figures_tex/cv_expected_estimated_concentrations.eps
+	lyxscale 50
+	width 50text%
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Integrated law of mass action equations (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:the-system"
+
+\end_inset
+
+) for the sparse estimated parameters and the corresponding Gillespie realizatio
+n for the example in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:ex2"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "ex2:result"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+In this work we have successfully applied and extended the SINDy method
+ to not only parsimoniously detect potentially nonlinear terms in a dynamical
+ system from possibly noisy data, but also yield, in this case, a sparse
+ set of rates with respect to generating reactions (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:the-reactions"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+In two examples it was demonstrated that, despite noisy data and unavailability
+ of derivative measurements, a parsimonious generating reaction network
+ that is qualitatively able to explain the observed data can be estimated.
+ In particular it was shown in the first example that if there is no ambiguity
+ in the underlying model and ansatz reaction library, the actual rates can
+ be recovered with decreasing time step, i.e., increasing resolution of the
+ jump process.
+ In the second example we could obtain an even simpler model than what was
+ used to generate data by making use of sparse regression and cross-validation.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+ 
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "bibliography.bib"
+options "abbrv"
 
 \end_inset
 

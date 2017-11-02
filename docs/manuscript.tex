@@ -79,7 +79,7 @@
 	\subsection{Regression without regularization}
 	\label{sec:ex1}
 	
-	Here we demonstrate that, with decreasing time step $\Delta t$ and $\alpha=0$, the estimated rates converge to the true rates if there is no ambiguity in the system. Let there be two species $A$ and $B$ which can unimolecularly convert into each other with macroscopic rates of $k_1=4.0$ and $k_2=0.5$, respectively. The initial amount of particles is set to $70$ of type $A$ and $0$ of type $B$. The to this system corresponding law of mass action solution and a Gillespie realization are  depicted in Figure \ref{ex1:concentration-curves}.
+	Here we demonstrate that, with decreasing time step $\Delta t$ and $\alpha=0$, the estimated rates converge to the true rates if there is no ambiguity in the system. Let there be two species $A$ and $B$ which can unimolecularly convert into each other with macroscopic rates of $k_1=4.0$ and $k_2=0.5$, respectively. The initial amount of particles is set to $70$ of type $A$ and $0$ of type $B$. The law of mass action solution and Gillespie realization corresponding to this system are depicted in Figure \ref{ex1:concentration-curves}.
 	
 	\begin{figure}
 		\begin{center}
@@ -101,7 +101,7 @@
 	
 	\subsection{Regression with regularization}
 	\label{sec:ex2}
-	In this example there are four species $A$, $B$, $C$, and $D$ with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C\xrightarrow{k_5}D+B$, where $k_1=k_2=2\cdot 10^{-2}$, $k_3 = 1\cdot 10^{-2}$, and $k_4=k_5=1\cdot 10^{-4}$. These reactions are inserted into the ansatz library $\Theta (\cdot)$. Additionally the reactions $A\leftrightarrow B$, $A\leftrightarrow C$, and $A+C\leftrightarrow D$ are inserted into the library.
+	In this example there are four species $A$, $B$, $C$, and $D$. The system was generated with reactions $A\xrightarrow{k_1}D$, $D\xrightarrow{k_2}A$, $D\xrightarrow{k_3}B$, $A+B\xrightarrow{k_4}C$, and $C\xrightarrow{k_5}D+B$, where the rates are given in Table \ref{tab:estimated-rates}. These reactions are inserted into the ansatz library $\Theta (\cdot)$. Additionally the reactions $A\leftrightarrow B$, $A\leftrightarrow C$, and $A+C\leftrightarrow D$ are inserted into the library.
 	
 	\begin{figure}
 		\centering
@@ -123,7 +123,7 @@
 		f_\alpha = \frac{1}{T}\|\mathbf{\dot{X}}_\text{test} - \Theta (\textbf{X}_\text{test}) \Xi_\text{train}\|_F^2,
 		\label{ex2:score-function}
 	\end{align}
-	where the best possible score for some $f_\alpha = 0$ and larger values indicate worse models.
+	where the best possible score is $f_\alpha = 0$ and larger values indicate worse models.
 	For a selection of hyperparameters $\alpha\in [0, 100]$, the model parameters $\Xi$ are estimated and the scoring function (\ref{ex2:score-function}) evaluated, yielding a dependency of the score on $\alpha$ as depicted in Figure \ref{ex2:score-graph}.
 	
 	\begin{figure}
@@ -138,7 +138,21 @@
 	\begin{align}
 		\hat{\alpha} = \underset{\alpha\in[0,100]}{\arg\min}f_\alpha\approx 10.
 	\end{align}
-	When evaluating the minimization problem (\ref{method:minimizationproblem}) with $\hat{\alpha}$ as hyperparameter for the regularizer and applying a cut-off of $10^{-10}$ to the yielded parameters, one obtains the simpler set of reactions $A\xrightarrow{\hat{k}_1}D$, $D\xrightarrow{\hat{k}_3} B$, and $A+B\xrightarrow{\hat{k}_4}C$ with rates $\hat{k}_1 \approx 3.5\cdot 10^{-3}$, $\hat{k}_3\approx 9.1\cdot 10^{-3}$, and $\hat{k}_4\approx 8.7\cdot 10^{-5}$, respectively.
+	When evaluating the minimization problem (\ref{method:minimizationproblem}) with $\hat{\alpha}$ as hyperparameter for the regularizer and applying a cut-off of $10^{-10}$ to the yielded parameters, one obtains the simpler set of reactions $A\xrightarrow{\hat{k}_1}D$, $D\xrightarrow{\hat{k}_3} B$, and $A+B\xrightarrow{\hat{k}_4}C$ with rates as in Table \ref{tab:estimated-rates}.
+	
+	\begin{table}
+		\centering
+		\begin{tabular}{ccc}
+			Reaction & original rate & estimated rate \\ \hline\noalign{\vskip .1cm}
+			$A \to D$ & $k_1 = 2\cdot 10^{-2}$ & $\hat{k}_1 \approx 3.5\cdot 10^{-3}$\\
+			$D \to A$ & $k_2 = 2\cdot 10^{-2}$ & $\hat{k}_2 = 0$ \\
+			$D\to B$ & $k_3 = 1\cdot 10^{-2}$ & $\hat{k}_3\approx 9.1 \cdot 10^{-3}$ \\
+			$A+B\to C$ & $k_4 = 1\cdot 10^{-4}$ & $\hat{k}_4\approx 8.7 \cdot 10^{-5}$ \\
+			$C \to D+B$ & $k_5 = 1\cdot 10^{-4}$ & $\hat{k}_5 = 0$ 
+		\end{tabular}
+		\caption{Original and estimated reaction rates for the example in Section \ref{sec:ex2}.}
+		\label{tab:estimated-rates}
+	\end{table}
 	
 	One can see in Figure \ref{ex2:result} that with this simpler set of reactions the observed concentration curves can be explained as well. Further, it can be argued that the second reaction of the original model $D\xrightarrow{k_2}A$ is compensated by a smaller rate $\hat{k}_1 < k_1$ and that the fifth reaction of the generating model can be neglected altogether in the observed timescale as its rate is two orders of magnitude smaller than the other unimolecular reactions' rates.
 	The parameters $k_3$ and $k_4$ are approximately recovered by $\hat{k}_3$ and $\hat{k}_4$, respectively.
@@ -147,7 +161,7 @@
 		\begin{center}
 			\includegraphics[width=.5\textwidth]{./figures_tex/cv_expected_estimated_concentrations}
 		\end{center}
-		\caption{Estimated and generating concentration curves as well as the corresponding Gillespie realization for the example in Section \ref{sec:ex2}.}
+		\caption{Integrated law of mass action equations (\ref{method:the-system}) for the sparse estimated parameters and the corresponding Gillespie realization for the example in Section \ref{sec:ex2}.}
 		\label{ex2:result}
 	\end{figure}
 	
