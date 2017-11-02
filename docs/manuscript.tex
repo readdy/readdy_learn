@@ -140,22 +140,23 @@
 	\end{align}
 	When evaluating the minimization problem (\ref{method:minimizationproblem}) with $\hat{\alpha}$ as hyperparameter for the regularizer and applying a cut-off of $10^{-10}$ to the yielded parameters, one obtains the simpler set of reactions $A\xrightarrow{\hat{k}_1}D$, $D\xrightarrow{\hat{k}_3} B$, and $A+B\xrightarrow{\hat{k}_4}C$ with rates $\hat{k}_1 \approx 3.5\cdot 10^{-3}$, $\hat{k}_3\approx 9.1\cdot 10^{-3}$, and $\hat{k}_4\approx 8.7\cdot 10^{-5}$, respectively.
 	
-	One can see in Figure \ref{ex2:result} that with this simpler set of reactions the observed concentration curves can be explained as well. It can be argued that the second reaction of the generating model $D\xrightarrow{k_2}A$ can be compensated by a smaller rate $\hat{k}_1 < k_1$ and that the fifth reaction of the generating model can be neglected altogether in the observed timescale as its rate is two orders of magnitude smaller than the rates of the other unimolecular reactions. 
-	The rates $k_3$ and $k_4$ are approximately recovered by $\hat{k}_3$ and $\hat{k}_4$, respectively.
+	One can see in Figure \ref{ex2:result} that with this simpler set of reactions the observed concentration curves can be explained as well. Further, it can be argued that the second reaction of the original model $D\xrightarrow{k_2}A$ is compensated by a smaller rate $\hat{k}_1 < k_1$ and that the fifth reaction of the generating model can be neglected altogether in the observed timescale as its rate is two orders of magnitude smaller than the other unimolecular reactions' rates.
+	The parameters $k_3$ and $k_4$ are approximately recovered by $\hat{k}_3$ and $\hat{k}_4$, respectively.
 	
 	\begin{figure}
 		\begin{center}
 			\includegraphics[width=.5\textwidth]{./figures_tex/cv_expected_estimated_concentrations}
 		\end{center}
-		\caption{Estimated and generating concentration curves for the example in Section \ref{sec:ex2}.}
+		\caption{Estimated and generating concentration curves as well as the corresponding Gillespie realization for the example in Section \ref{sec:ex2}.}
 		\label{ex2:result}
 	\end{figure}
 	
 	\section{Conclusion}
-	In this work we have successfully applied and extended the SINDy method to not only parsimoniously detect potentially nonlinear terms in a dynamical system from possibly noisy data, but also pick up on, in this case, a sparse set of generating reactions (\ref{method:the-reactions}) and their respective rates.
+	In this work we have successfully applied and extended the SINDy method to not only parsimoniously detect potentially nonlinear terms in a dynamical system from possibly noisy data, but also yield, in this case, a sparse set of rates with respect to generating reactions (\ref{method:the-reactions}).
 	
-	In two examples it was demonstrated that, despite noisy data and unavailability of derivative measurements, a parsimonious generating reaction network that is able to explain the observed data can be recovered. 
-	In particular it was shown in the example given in Section \ref{sec:ex1} that if there is no ambiguity in the underlying model and ansatz reaction library, the actual rates can be recovered. In the example of Section \ref{sec:ex2} an even simpler model could be obtained by making use of sparse regression and cross-validation.
+	In two examples it was demonstrated that, despite noisy data and unavailability of derivative measurements, a parsimonious generating reaction network that is qualitatively able to explain the observed data can be estimated. 
+	In particular it was shown in the first example that if there is no ambiguity in the underlying model and ansatz reaction library, the actual rates can be recovered with decreasing time step, i.e., increasing resolution of the jump process. 
+	In the second example we could obtain an even simpler model than what was used to generate data by making use of sparse regression and cross-validation.
 	
 	\newpage
 % 	\bibliographystyle{alpha}
