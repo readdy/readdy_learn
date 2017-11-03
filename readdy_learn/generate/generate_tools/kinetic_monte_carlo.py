@@ -360,11 +360,11 @@ class ReactionDiffusionSystem:
     def simulate(self, n_steps):
         np.random.seed()
 
-        log.info("Simulate for {} steps", n_steps)
+        log.debug("Simulate for {} steps", n_steps)
         self._n_reactions = len(self._reactions)
         self._is_finalized = True
         for t in range(n_steps):
-            log.debug("Step {}, system {}", t, self)
+            # log.debug("Step {}, system {}", t, self)
             possible_events = []
             cumulative = 0.
             # gather reaction events
@@ -400,10 +400,10 @@ class ReactionDiffusionSystem:
             cumulative_list = [x.cumulative_propensity for x in possible_events]
             event_idx = bisect.bisect_right(cumulative_list, rnd)
             event = possible_events[event_idx]
-            log.debug("Cumulative list {}", cumulative_list)
-            log.debug("Random number {}", rnd)
-            log.debug("Event index for random number {}", event_idx)
-            log.debug("Performing event {}", event)
+            #log.debug("Cumulative list {}", cumulative_list)
+            #log.debug("Random number {}", rnd)
+            #log.debug("Event index for random number {}", event_idx)
+            #log.debug("Performing event {}", event)
 
             # save event and time to sequence
             self._event_list.append(event)
