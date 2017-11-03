@@ -432,11 +432,11 @@ class ReactionDiffusionSystem:
         for ix in range(len(times)):
             t = times[ix]
             if t <= self._time_list[state]:
-                result[t] = self._state_list[state]
+                result[ix] = self._state_list[state]
             else:
                 while state < nstates and t > self._time_list[state]:
                     state += 1
-                result[t] = self._state_list[state]
+                result[ix] = self._state_list[state]
 
         return result, times
 
