@@ -268,7 +268,7 @@ class ReactionDiffusionSystem:
 
     def get_counts_config(self, n_frames=None, timestep=None):
         assert n_frames is not None or timestep is not None
-        counts, times = self.convert_events_to_time_series(n_frames=n_frames, time_step=timestep)
+        counts, times = self.convert_events_to_time_series2(time_step=timestep)
         # flatten out spatial dimension and convert to float
         counts = np.sum(counts, axis=1, dtype=np.float64)
         config = self.get_trajectory_config()
@@ -421,6 +421,24 @@ class ReactionDiffusionSystem:
     @property
     def smallest_dt(self):
         return np.min(np.diff(self._time_list))
+
+    def convert_events_to_time_series2(self, time_step):
+        n_frames = int(math.floor((self._time_list[-1] - self._time_list[0]) / time_step))
+        result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.int)
+        times = np.linspace(0, n_frames * time_step, num=n_frames, endpoint=False)
+
+        state = 0
+        nstates = len(self._state_list)
+        for ix in range(len(times)):
+            t = times[ix]
+            if t <= self._time_list[state]:
+                result[t] = self._state_list[state]
+            else:
+                while state < nstates and t > self._time_list[state]:
+                    state += 1
+                result[t] = self._state_list[state]
+
+        return result, times
 
     # @todo move this into a result(event sequence)-object
     def convert_events_to_time_series(self, time_step=None, n_frames=None):
