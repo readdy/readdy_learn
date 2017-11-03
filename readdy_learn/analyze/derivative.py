@@ -45,6 +45,49 @@ def approx_jacobian(x, func, epsilon, *args):
     return jac.transpose()
 
 
+def get_differentiation_operator(xs):
+    n_nodes = len(xs)
+    wwidth = 1
+
+    D_data = np.empty(shape=(3 * n_nodes - 2,))
+    D_row_data = np.empty_like(D_data)
+    D_col_data = np.empty_like(D_data)
+
+    offset = 0
+    for ix, wx in enumerate(window_evensteven(xs, width=wwidth)):
+        x = xs[ix]
+        coeff = fd_coeff(x, wx, k=1)
+        D_data[offset:offset + len(coeff)] = coeff
+        D_row_data[offset:offset + len(coeff)] = np.ones(shape=(len(coeff),)) * ix
+        D_col_data[offset:offset + len(coeff)] = np.arange(max((0, ix - wwidth)), min(ix + wwidth + 1, n_nodes))
+        offset += len(coeff)
+
+    return sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
+
+
+def get_differentiation_operator_midpoint(xs):
+    n_nodes = len(xs)
+    D_data = np.empty(shape=(2 * n_nodes - 2,))
+    D_row_data = np.empty_like(D_data)
+    D_col_data = np.empty_like(D_data)
+
+    dx = np.diff(xs)
+
+    for ix in range(n_nodes - 1):
+        iix1 = 2 * ix
+        iix2 = 2 * ix + 1
+        d = dx[ix]
+        D_data[iix1] = -1. / d
+        D_data[iix2] = 1. / d
+        D_row_data[iix1] = ix
+        D_row_data[iix2] = ix
+        D_col_data[iix1] = ix
+        D_col_data[iix2] = ix + 1
+
+    mid_xs = .5 * (xs[:-1] + xs[1:])
+    return mid_xs, sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
+
+
 def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
     assert isinstance(data, np.ndarray)
     data = data.squeeze()
@@ -57,17 +100,65 @@ def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
     # require f(0) = 0
     data = data - data[0]
 
-    A = lambda v: integrate.cumtrapz(y=v, x=xs[:len(v)], initial=0)
-    AT = lambda w: np.trapz(y=w, x=xs[:len(w)]) * np.ones(len(w)) - A(w)
+    # differentiation operator
+    mid_xs, D = get_differentiation_operator_midpoint(xs)
+    D_T = D.transpose()
+
+    # antidifferentiation operator Av(x) = int_0^x v(x)
+    A = lambda v: (np.cumsum(v) - .5 * (v + v[0]))[1:]*mid_xs
+    # antidifferentiation adjoint A*w(x) = int_x^L w(x)
+    def AT(w):
+        Aw = A(w)
+        return Aw[-1] * np.ones(len(Aw)) - Aw
+
+    #A = lambda v: chop(np.cumsum(v) - 0.5 * (v + v[0])) * dx
+    #AT = lambda w: (sum(w) * np.ones(n + 1) - np.transpose(
+    #    np.concatenate(([sum(w) / 2.0], np.cumsum(w) - w / 2.0)))) * dx
 
     u = np.gradient(data, xs)
 
-    wwidth = 2
-    deriv = np.empty_like(xs)
-    for ix, (wx, wy) in enumerate(zip(window_evensteven(xs, width=wwidth), window_evensteven(data, width=wwidth))):
-        x = xs[ix]
-        coeff = fd_coeff(x, wx, k=1)
-        deriv[ix] = coeff.dot(wy)
+    AT_data = AT(data)
+
+    DX = sparse.spdiags(np.diff(xs), 0, n-1, n-1)
+
+    # Main loop.
+    for ii in range(1, maxit + 1):
+        # Diagonal matrix of weights, for linearizing E-L equation.
+        Q = DX * sparse.spdiags(1. / np.sqrt(np.diff(u) ** 2.0 + epsilon), 0, n-1, n-1)
+        # Linearized diffusion matrix, also approximation of Hessian.
+        print('shape DX:', DX.shape)
+        print('shape DT:', D_T.shape)
+        print('shape Q:', Q.shape)
+        print('shape D:', D.shape)
+        L = D_T * Q * D
+        # Gradient of functional.
+        g = AT(A(u)) - AT_data
+        g = g + alpha * L * u
+        # Build preconditioner.
+        c = np.cumsum(range(n, 0, -1))
+        B = alpha * L + sparse.spdiags(c[::-1], 0, n, n)
+        # droptol = 1.0e-2
+        R = sparse.dia_matrix(np.linalg.cholesky(B.todense()))
+        # Prepare to solve linear equation.
+        tol = 1.0e-4
+        maxit = None
+
+        linop = lambda v: (alpha * L * v + AT(A(v)))
+        linop = splin.LinearOperator((n, n), linop)
+
+        [s, info_i] = splin.cg(A=linop, b=-g, x0=None, tol=tol, maxiter=maxit, xtype=None, M=np.dot(R.transpose(), R))
+        if verbose:
+            print('iteration {0:4d}: relative change = {1:.3e}, gradient norm = {2:.3e}'
+                  .format(ii, np.linalg.norm(s[0]) / np.linalg.norm(u), np.linalg.norm(g)))
+            if info_i > 0:
+                print("WARNING - convergence to tolerance not achieved!")
+            elif info_i < 0:
+                print("WARNING - illegal input or breakdown")
+
+        # Update current solution
+        u = u + s
+
+    return u
 
 
 def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
@@ -216,19 +307,34 @@ def test_ld_derivative():
     testf = testf + np.random.normal(0.0, 0.04, x0.shape)
     true_deriv = [np.cos(x) for x in x0]
 
-    ld_derivative2(testf, x0, alpha=1e-1)
+    D = get_differentiation_operator(x0)
+    dmidxs, Dmid = get_differentiation_operator_midpoint(x0)
+    deriv = D * testf
+    Dmidderiv = Dmid * testf
 
-    deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
-    #deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+    ld_deriv = ld_derivative2(testf, x0, alpha=1e-3, verbose=True)
 
-    #plt.plot(testf, label='fun')
-    #plt.plot(deriv_sm, label='alpha=5e-4')
-    #plt.plot(deriv_lrg, label='alpha=1e-1')
-    #plt.plot(true_deriv, label='derivative')
-    #plt.legend()
-    #plt.show()
+
+    plt.plot(testf, label='f')
+    plt.plot(true_deriv, label='df')
+    plt.plot(x0, deriv, label='approx df')
+    plt.plot(dmidxs, Dmidderiv)
+    # plt.plot(ld_deriv, label='total variation df')
+    plt.legend()
+    plt.show()
+
+
+    # deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
+    # deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+
+    # plt.plot(testf, label='fun')
+    # plt.plot(deriv_sm, label='alpha=5e-4')
+    # plt.plot(deriv_lrg, label='alpha=1e-1')
+    # plt.plot(true_deriv, label='derivative')
+    # plt.legend()
+    # plt.show()
 
 
 if __name__ == '__main__':
-    #test_finite_differences()
+    # test_finite_differences()
     test_ld_derivative()
