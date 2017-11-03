@@ -224,20 +224,19 @@ class CV(object):
         alpha, l1_ratio = params
         scores = []
 
-        test_traj = self.test_traj[0]
-
         estimator = ReaDDyElasticNetEstimator(self.traj, self.bfc, alpha=alpha, maxiter=self.maxiter,
                                               l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
                                               method=self.method, rescale=self.rescale, tol=self.tol)
         # fit the whole thing
         estimator.fit(None)
         if estimator.success_:
-            testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, alpha=alpha,
-                                                   l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-                                                   method=self.method, rescale=self.rescale, tol=self.tol)
-            testimator.coefficients_ = estimator.coefficients_
-            score = testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt)
-            scores.append(score)
+            for test_traj in self.test_traj:
+                    testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, alpha=alpha,
+                                                           l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                                           method=self.method, rescale=self.rescale, tol=self.tol)
+                    testimator.coefficients_ = estimator.coefficients_
+                    score = testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt)
+                    scores.append(score)
         else:
             print("no success for alpha={}, l1_ratio={}".format(alpha, l1_ratio))
             print("status %s: %s" % (estimator.result_.status, estimator.result_.message))
