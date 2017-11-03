@@ -31,10 +31,12 @@ import numpy as np
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 from readdy_learn.analyze_tools import opt
+import readdy_learn.analyze.tools as tools
 import readdy_learn.analyze.derivative as deriv
 from sklearn.linear_model.base import BaseEstimator
 from sklearn.model_selection import KFold, LeaveOneOut
 from sklearn.model_selection import TimeSeriesSplit
+
 _epsilon = np.sqrt(np.finfo(float).eps)
 
 
@@ -231,12 +233,17 @@ class CV(object):
         estimator.fit(None)
         if estimator.success_:
             for test_traj in self.test_traj:
-                    testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, alpha=alpha,
-                                                           l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-                                                           method=self.method, rescale=self.rescale, tol=self.tol)
-                    testimator.coefficients_ = estimator.coefficients_
-                    score = testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt)
-                    scores.append(score)
+                if isinstance(test_traj, str):
+                    counts = np.load(test_traj)
+                    test_traj = tools.Trajectory(counts, self.traj.time_step,
+                                                 interpolation_degree=self.traj.interpolation_degree, verbose=False)
+                    test_traj.update()
+                testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, alpha=alpha,
+                                                       l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                                       method=self.method, rescale=self.rescale, tol=self.tol)
+                testimator.coefficients_ = estimator.coefficients_
+                score = testimator.score(range(0, test_traj.n_time_steps), test_traj.dcounts_dt)
+                scores.append(score)
         else:
             print("no success for alpha={}, l1_ratio={}".format(alpha, l1_ratio))
             print("status %s: %s" % (estimator.result_.status, estimator.result_.message))

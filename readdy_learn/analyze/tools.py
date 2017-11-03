@@ -111,6 +111,10 @@ class Trajectory(object):
     def from_counts(cls, counts, time_step, interp_degree=10, verbose=True):
         return Trajectory(counts, time_step, interpolation_degree=interp_degree, verbose=verbose)
 
+    @property
+    def interpolation_degree(self):
+        return self._interpolation_degree
+
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
         tmp = np.sqrt(microscopic_rate / diffusion_coefficient) * reaction_radius
