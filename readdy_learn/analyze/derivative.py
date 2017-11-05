@@ -88,6 +88,41 @@ def get_differentiation_operator_midpoint(xs):
     return mid_xs, sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
 
 
+def get_integration_operator(xs, prepend_zero=False):
+    """
+    Integrate via trapezoidal rule: \int_a^b f \approx .5*(b-a)(f(a) + f(b)).
+
+    K_i f = .5 \Delta x (f_i + f_(i-1))
+
+    :param xs: x values
+    :return: matrix rep of operator
+    """
+    n_nodes = len(xs)
+    K_data = np.empty(shape=(2 * n_nodes - 2,))
+    K_row_data = np.empty_like(K_data)
+    K_col_data = np.empty_like(K_data)
+
+    row_offset = 0
+    if prepend_zero:
+        row_offset = 1
+
+    dx = np.diff(xs)
+
+    for ix in range(n_nodes - 1):
+        iix1 = 2 * ix
+        iix2 = 2 * ix + 1
+        d = dx[ix]
+        K_data[iix1] = -.5 * d
+        K_data[iix2] = .5 * d
+        K_row_data[iix1] = ix+row_offset
+        K_row_data[iix2] = ix+row_offset
+        K_col_data[iix1] = ix
+        K_col_data[iix2] = ix + 1
+
+    mid_xs = .5 * (xs[:-1] + xs[1:])
+    return mid_xs, sparse.bsr_matrix((K_data, (K_row_data, K_col_data)), shape=(n_nodes-1+row_offset, n_nodes))
+
+
 def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
     assert isinstance(data, np.ndarray)
     data = data.squeeze()
@@ -104,35 +139,23 @@ def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
     mid_xs, D = get_differentiation_operator_midpoint(xs)
     D_T = D.transpose()
 
-    # antidifferentiation operator Av(x) = int_0^x v(x)
-    A = lambda v: (np.cumsum(v) - .5 * (v + v[0]))[1:]*mid_xs
-    # antidifferentiation adjoint A*w(x) = int_x^L w(x)
-    def AT(w):
-        Aw = A(w)
-        return Aw[-1] * np.ones(len(Aw)) - Aw
-
-    #A = lambda v: chop(np.cumsum(v) - 0.5 * (v + v[0])) * dx
-    #AT = lambda w: (sum(w) * np.ones(n + 1) - np.transpose(
-    #    np.concatenate(([sum(w) / 2.0], np.cumsum(w) - w / 2.0)))) * dx
+    _, K = get_integration_operator(xs, prepend_zero=False)
+    KT = K.transpose()
 
     u = np.gradient(data, xs)
 
-    AT_data = AT(data)
+    KT_data = KT*data[1:]
 
-    DX = sparse.spdiags(np.diff(xs), 0, n-1, n-1)
+    DX = sparse.spdiags(np.diff(xs), 0, n - 1, n - 1)
 
     # Main loop.
     for ii in range(1, maxit + 1):
         # Diagonal matrix of weights, for linearizing E-L equation.
-        Q = DX * sparse.spdiags(1. / np.sqrt(np.diff(u) ** 2.0 + epsilon), 0, n-1, n-1)
+        Q = DX * sparse.spdiags(1. / np.sqrt(np.diff(u) ** 2.0 + epsilon), 0, n - 1, n - 1)
         # Linearized diffusion matrix, also approximation of Hessian.
-        print('shape DX:', DX.shape)
-        print('shape DT:', D_T.shape)
-        print('shape Q:', Q.shape)
-        print('shape D:', D.shape)
         L = D_T * Q * D
         # Gradient of functional.
-        g = AT(A(u)) - AT_data
+        g = KT*K*u - KT_data
         g = g + alpha * L * u
         # Build preconditioner.
         c = np.cumsum(range(n, 0, -1))
@@ -143,7 +166,7 @@ def ld_derivative2(data, xs, alpha, maxit=1000, verbose=False):
         tol = 1.0e-4
         maxit = None
 
-        linop = lambda v: (alpha * L * v + AT(A(v)))
+        linop = lambda v: (alpha * L * v + KT*K*v)
         linop = splin.LinearOperator((n, n), linop)
 
         [s, info_i] = splin.cg(A=linop, b=-g, x0=None, tol=tol, maxiter=maxit, xtype=None, M=np.dot(R.transpose(), R))
@@ -299,7 +322,7 @@ def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
     xx = []
     for x in x0:
-        if np.random.random() < .2:
+        if np.random.random() < .2 or True:
             xx.append(x)
     x0 = np.array(xx)
 
@@ -312,14 +335,13 @@ def test_ld_derivative():
     deriv = D * testf
     Dmidderiv = Dmid * testf
 
-    ld_deriv = ld_derivative2(testf, x0, alpha=1e-3, verbose=True)
-
+    ld_deriv = ld_derivative2(testf, x0, alpha=5e-4, verbose=True)
 
     plt.plot(testf, label='f')
     plt.plot(true_deriv, label='df')
-    plt.plot(x0, deriv, label='approx df')
-    plt.plot(dmidxs, Dmidderiv)
-    # plt.plot(ld_deriv, label='total variation df')
+    plt.plot(deriv, label='approx df')
+    # plt.plot(dmidxs, Dmidderiv)
+    plt.plot(ld_deriv, label='total variation df')
     plt.legend()
     plt.show()
 
