@@ -174,7 +174,7 @@ class Trajectory(object):
             elif self._interpolation_degree == 'regularized_derivative':
                 print('---- calculating regularized derivative for species {} with {} data points ----'
                       .format(s, len(indices)))
-                dX = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=5e-4)
+                dX = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=1e-1, verbose=True, show_progress=False)
                 prev = 0
                 for ix in range(len(indices)):
                     interpolated[prev:(ix+1), s] = dX[ix]

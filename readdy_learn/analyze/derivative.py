@@ -173,7 +173,8 @@ def trapz(xs, ys):
     return result
 
 
-def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, restol=1e-4, verbose=False, show_progress=True):
+def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, restol=1e-4, verbose=False,
+                  show_progress=True, solver='lgmres'):
     assert isinstance(data, np.ndarray)
     # require f(0) = 0
     data = np.copy(data) - data[0]
@@ -239,8 +240,16 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         R = splin.spilu(B)
         linop_preconditioning = splin.LinearOperator((n, n), lambda v: R.solve(v))
 
-        [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit,
-                                   M=linop_preconditioning)
+        if solver == 'lgmres':
+            [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit,
+                                       M=linop_preconditioning)
+        elif solver == 'bicgstab':
+            [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit,
+                                         M=linop_preconditioning)
+        elif solver == 'spsolve':
+            pass
+            # s = umfpack(linop, -g)
+            # s = splin.spsolve(linop, -g)
         if verbose:
             print('iteration {0:4d}: relative change = {1:.3e}, gradient norm = {2:.3e}'
                   .format(ii, np.linalg.norm(s[0]) / np.linalg.norm(u), np.linalg.norm(g)))
@@ -325,7 +334,7 @@ def test_ld_derivative():
     deriv = D * testf
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True)
+        ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
