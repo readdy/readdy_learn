@@ -211,14 +211,12 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
 
     E_n = sparse.dia_matrix((n - 1, n - 1), dtype=xs.dtype)
 
-    progress = None
     label = None
     if show_progress:
         from ipywidgets import IntProgress, Label, Box
         from IPython.display import display
-        progress = IntProgress(min=0, max=maxit)
         label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
-        box = Box([progress, label])
+        box = Box([label])
         display(box)
 
     prev_grad_norm = None
@@ -271,7 +269,6 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         u = u + s
 
         if show_progress:
-            progress.value = ii+1
             label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}".format(ii, maxit, np.linalg.norm(g), atol,
                                                                               relative_change, rtol)
 
