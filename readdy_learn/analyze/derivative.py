@@ -261,7 +261,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         # Update current solution
         u = u + s
 
-        progress.value = ii+1
+        if show_progress:
+            progress.value = ii+1
 
         if restol is not None and np.linalg.norm(g) < restol:
             break
