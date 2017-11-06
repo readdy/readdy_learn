@@ -182,7 +182,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     data = data.squeeze()
     assert len(data.shape) == 1
 
-    epsilon = 1e-8
+    epsilon = 1e-4
 
     n = len(data)
 
@@ -241,8 +241,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         linop_preconditioning = splin.LinearOperator((n, n), lambda v: R.solve(v))
 
         if solver == 'lgmres':
-            [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit,
-                                       M=linop_preconditioning)
+            [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=5)
         elif solver == 'bicgstab':
             [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit,
                                          M=linop_preconditioning)
