@@ -143,7 +143,8 @@ class Trajectory(object):
             counts = self.counts[:, s]
             indices = 1 + np.where(counts[:-1] != counts[1:])[0]
             indices = np.insert(indices, 0, 0)
-            indices = np.append(indices, len(counts) - 1)
+            if indices[-1] != len(counts) -1:
+                indices = np.append(indices, len(counts) - 1)
 
             if self._interpolation_degree == 'pw_linear':
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
@@ -161,7 +162,11 @@ class Trajectory(object):
             elif self._interpolation_degree == 'regularized_derivative':
                 print('---- calculating regularized derivative for species {} with {} data points ----'
                       .format(s, len(indices)))
-                interpolated[:, s] = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=5e-4)
+                deriv = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=5e-4)
+                prev = 0
+                for ix in range(len(indices)):
+                    interpolated[prev:(ix+1), s] = deriv[ix]
+                    prev = ix
                 is_gradient = True
             elif self._interpolation_degree < 0:
                 fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t

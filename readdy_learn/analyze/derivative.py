@@ -289,7 +289,7 @@ def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
     xx = []
     for x in x0:
-        if np.random.random() < .2:
+        if np.random.random() < .4:
             xx.append(x)
     x0 = np.array(xx)
 
