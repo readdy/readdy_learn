@@ -173,7 +173,7 @@ def trapz(xs, ys):
     return result
 
 
-def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, restol=1e-4, verbose=False):
+def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, restol=1e-4, verbose=False, show_progress=True):
     assert isinstance(data, np.ndarray)
     # require f(0) = 0
     data = np.copy(data) - data[0]
@@ -210,6 +210,13 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
 
     E_n = sparse.dia_matrix((n - 1, n - 1), dtype=xs.dtype)
 
+    progress = None
+    if show_progress:
+        from ipywidgets import IntProgress
+        from IPython.display import display
+        progress = IntProgress(min=0, max=maxit)
+        display(progress)
+
     outer_v = []
     # Main loop.
     for ii in range(1, maxit + 1):
@@ -244,6 +251,9 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
 
         # Update current solution
         u = u + s
+
+        progress.value = ii+1
+
         if restol is not None and np.linalg.norm(g) < restol:
             break
 
