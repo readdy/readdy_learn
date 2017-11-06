@@ -173,7 +173,7 @@ def trapz(xs, ys):
     return result
 
 
-def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, restol=1e-4, verbose=False,
+def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6, verbose=False,
                   show_progress=True, solver='lgmres'):
     assert isinstance(data, np.ndarray)
     # require f(0) = 0
@@ -219,6 +219,9 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         display(progress)
 
     outer_v = []
+
+    prev_grad_norm = None
+
     # Main loop.
     for ii in range(1, maxit + 1):
         # Diagonal matrix of weights, for linearizing E-L equation.
@@ -249,13 +252,19 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             pass
             # s = umfpack(linop, -g)
             # s = splin.spsolve(linop, -g)
+
+        relative_change = np.linalg.norm(s[0]) / np.linalg.norm(u)
         if verbose:
             print('iteration {0:4d}: relative change = {1:.3e}, gradient norm = {2:.3e}'
-                  .format(ii, np.linalg.norm(s[0]) / np.linalg.norm(u), np.linalg.norm(g)))
+                  .format(ii, relative_change, np.linalg.norm(g)))
             if info_i > 0:
                 print("WARNING - convergence to tolerance not achieved!")
             elif info_i < 0:
                 print("WARNING - illegal input or breakdown")
+
+        if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
+            print("WARNING - increasing gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
+        prev_grad_norm = np.linalg.norm(g)
 
         # Update current solution
         u = u + s
@@ -263,7 +272,11 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         if show_progress:
             progress.value = ii+1
 
-        if restol is not None and np.linalg.norm(g) < restol:
+        if atol is not None and np.linalg.norm(g) < atol:
+            print("ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g)))
+            break
+        if rtol is not None and relative_change < rtol:
+            print("ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change))
             break
 
     return u
