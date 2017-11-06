@@ -86,7 +86,7 @@ class TrajectoryConfig(object):
 class Trajectory(object):
     def __init__(self, counts, time_step, interpolation_degree=10, verbose=True,
                  ld_derivative_atol=1e-7, ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3,
-                 ld_derivative_solver='lgmres', ld_derivative_maxit='10000', ld_derivative_linalg_solver_maxit=100):
+                 ld_derivative_solver='lgmres', ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100):
         self._counts = counts
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
