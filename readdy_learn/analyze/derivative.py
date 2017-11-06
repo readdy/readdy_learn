@@ -6,6 +6,8 @@ from scipy.sparse import linalg as splin
 import collections
 import matplotlib.pyplot as plt
 
+from sklearn.decomposition import FactorAnalysis
+
 
 def approx_jacobian(x, func, epsilon, *args):
     """
@@ -287,9 +289,10 @@ def test_finite_differences():
     print(len(x0))
     xx = []
     for x in x0:
-        if np.random.random() < .2:
+        if np.random.random() < .8:
             xx.append(x)
     x0 = np.array(xx)
+    x0 = np.arange(0, 2.0 * np.pi, 0.05)
 
     print(len(x0))
     testf = np.array([np.sin(x) for x in x0])
@@ -306,6 +309,13 @@ def test_finite_differences():
     plt.show()
     print(np.array(deriv) - np.array(true_deriv))
 
+def estimate_alpha(f):
+    # calculate MSE between Au* and f, should be equal to variance of noise in f
+    fa = FactorAnalysis()
+    fa.fit(f.reshape(-1, 1))
+    return fa.noise_variance_
+
+
 
 def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
@@ -314,6 +324,7 @@ def test_ld_derivative():
         if np.random.random() < .4:
             xx.append(x)
     x0 = np.array(xx)
+    x0 = np.arange(0, 2.0 * np.pi, 0.05)
 
     testf = np.array([np.sin(x) for x in x0])
     testf = testf + np.random.normal(0.0, 0.04, x0.shape)
@@ -346,14 +357,20 @@ def test_ld_derivative():
     get_differentiation_operator_midpoint(x0)
     deriv = D * testf
 
+
+    nv = estimate_alpha(testf)
+    print("got noise variance {}".format(nv))
+
     if True:
         ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
-        plt.plot(deriv, label='approx df')
+        #plt.plot(deriv, label='approx df')
         # plt.plot(dmidxs, Dmidderiv)
-        plt.plot(ld_deriv, label='total variation df')
+        #plt.plot(ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres'), label='total variation df alpha=5e-4')
+        #plt.plot(ld_derivative(testf, x0, alpha=1e-3, verbose=True, solver='lgmres'), label='total variation df alpha=1e-3')
+        plt.plot(ld_derivative(testf, x0, alpha=nv[0], verbose=True, solver='lgmres'), label='total variation df alpha=1e-2')
         plt.legend()
         plt.show()
 

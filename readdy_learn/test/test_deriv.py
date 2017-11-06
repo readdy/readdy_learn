@@ -5,7 +5,7 @@ import numpy as np
 import readdy_learn.analyze.generate as generate
 import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 import readdy_learn.analyze.basis as basis
-import readdy_learn.analyze.sklearn as rlas
+import readdy_learn.analyze.estimator as rlas
 import readdy_learn.analyze.tools as tools
 
 import matplotlib.pyplot as plt

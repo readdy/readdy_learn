@@ -6,7 +6,7 @@ from scipy.integrate import odeint
 from pathos.multiprocessing import Pool
 
 import readdy_learn.analyze.tools as pat
-from readdy_learn.analyze.sklearn import ReaDDyElasticNetEstimator
+from readdy_learn.analyze.estimator import ReaDDyElasticNetEstimator
 
 import readdy_learn.analyze.generate as generate
 

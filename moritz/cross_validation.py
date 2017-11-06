@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
-from readdy_learn.analyze.sklearn import BasisFunctionConfiguration, CV, get_dense_params
+from readdy_learn.analyze.estimator import BasisFunctionConfiguration, CV, get_dense_params
 from readdy_learn.sample_tools import Suite
 
 
