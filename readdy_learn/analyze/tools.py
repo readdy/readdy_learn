@@ -111,7 +111,8 @@ class Trajectory(object):
                                      'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
                                      'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit}
         if fname is not None and os.path.exists(fname):
-            self._counts, self._dcounts_dt = np.load(fname)
+            archive = np.load(fname)
+            self._counts, self._dcounts_dt = archive['counts'], archive['dcounts_dt']
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
@@ -142,7 +143,7 @@ class Trajectory(object):
 
     def persist(self):
         if self._fname is not None:
-            np.savez(self._fname, [self.counts, self.dcounts_dt])
+            np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt)
         else:
             raise ValueError("no file name set!")
 
