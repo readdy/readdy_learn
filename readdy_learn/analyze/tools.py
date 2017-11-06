@@ -124,14 +124,6 @@ class Trajectory(object):
         return Trajectory(counts, time_step, interpolation_degree=interp_degree, verbose=verbose)
 
     @property
-    def derivative_fname(self):
-        return self._derivative_fname
-
-    @derivative_fname.setter
-    def derivative_fname(self, value):
-        self._derivative_fname = value
-
-    @property
     def interpolation_degree(self):
         return self._interpolation_degree
 
@@ -168,13 +160,11 @@ class Trajectory(object):
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
 
-        print("got derivative fname {}".format(self.derivative_fname))
-        if self.derivative_fname is not None and os.path.exists(self.derivative_fname):
-            return np.load(self.derivative_fname)
+        if self.dcounts_dt is None:
+            return self.dcounts_dt
 
         is_gradient = False
 
-        dt = self.time_step
         X = self.times
         interpolated = np.empty_like(self.counts)
         for s in range(self.n_species):
@@ -308,6 +298,10 @@ class Trajectory(object):
     @property
     def dcounts_dt(self):
         return self._dcounts_dt
+
+    @dcounts_dt.setter
+    def dcounts_dt(self, value):
+        self._dcounts_dt = value
 
     @property
     def theta(self):
