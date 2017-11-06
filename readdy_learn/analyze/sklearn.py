@@ -234,8 +234,7 @@ class CV(object):
         if estimator.success_:
             for test_traj in self.test_traj:
                 if isinstance(test_traj, str):
-                    counts = np.load(test_traj)
-                    test_traj = tools.Trajectory(counts, self.traj.time_step,
+                    test_traj = tools.Trajectory(test_traj, self.traj.time_step,
                                                  interpolation_degree=self.traj.interpolation_degree, verbose=False)
                     test_traj.update()
                 testimator = ReaDDyElasticNetEstimator(test_traj, self.bfc, alpha=alpha,

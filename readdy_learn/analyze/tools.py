@@ -87,7 +87,10 @@ class Trajectory(object):
     def __init__(self, counts, time_step, interpolation_degree=10, verbose=True,
                  ld_derivative_atol=1e-7, ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3,
                  ld_derivative_solver='lgmres', ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100,
-                 derivative_fname=None):
+                 fname=None):
+        if isinstance(counts, str):
+            fname = counts
+            counts = None
         self._counts = counts
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
@@ -103,10 +106,12 @@ class Trajectory(object):
         self._dirty = True
         self._verbose = verbose
         self._interpolation_degree = interpolation_degree
-        self._derivative_fname = derivative_fname
+        self._fname = fname
         self.ld_derivative_config = {'atol': ld_derivative_atol, 'rtol': ld_derivative_rtol,
                                      'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
                                      'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit}
+        if fname is not None and os.path.exists(fname):
+            self._counts, self._dcounts_dt = np.load(fname)
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
@@ -142,6 +147,20 @@ class Trajectory(object):
             print("lasso fitted rate (per volume): {}".format(rate_per_volume))
 
         return rate_chapman, xi, rate_per_volume
+
+    def persist(self):
+        if self._fname is not None:
+            np.savez(self._fname, [self.counts, self.dcounts_dt])
+        else:
+            raise ValueError("no file name set!")
+
+    @property
+    def fname(self):
+        return self._fname
+
+    @fname.setter
+    def fname(self, value):
+        self._fname = value
 
     def calculate_dX(self):
         from sklearn.pipeline import Pipeline
