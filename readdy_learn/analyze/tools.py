@@ -100,6 +100,7 @@ class Trajectory(object):
         self._dirty = True
         self._verbose = verbose
         self._interpolation_degree = interpolation_degree
+        self._derivative_fname = None
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
@@ -110,6 +111,14 @@ class Trajectory(object):
     @classmethod
     def from_counts(cls, counts, time_step, interp_degree=10, verbose=True):
         return Trajectory(counts, time_step, interpolation_degree=interp_degree, verbose=verbose)
+
+    @property
+    def derivative_fname(self):
+        return self._derivative_fname
+
+    @derivative_fname.setter
+    def derivative_fname(self, value):
+        self._derivative_fname = value
 
     @property
     def interpolation_degree(self):
@@ -133,6 +142,9 @@ class Trajectory(object):
         from sklearn.preprocessing import PolynomialFeatures
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
+
+        if self.derivative_fname is not None:
+            return np.load(self.derivative_fname)
 
         is_gradient = False
 
