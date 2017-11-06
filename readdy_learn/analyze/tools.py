@@ -84,7 +84,9 @@ class TrajectoryConfig(object):
 
 
 class Trajectory(object):
-    def __init__(self, counts, time_step, interpolation_degree=10, verbose=True):
+    def __init__(self, counts, time_step, interpolation_degree=10, verbose=True,
+                 ld_derivative_atol=1e-7, ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3,
+                 ld_derivative_solver='lgmres', ld_derivative_maxit='10000', ld_derivative_linalg_solver_maxit=100):
         self._counts = counts
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
@@ -101,6 +103,9 @@ class Trajectory(object):
         self._verbose = verbose
         self._interpolation_degree = interpolation_degree
         self._derivative_fname = None
+        self.ld_derivative_config = {'atol': ld_derivative_atol, 'rtol': ld_derivative_rtol,
+                                     'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
+                                     'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit}
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
@@ -143,7 +148,7 @@ class Trajectory(object):
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
 
-        if self.derivative_fname is not None:
+        if self.derivative_fname is not None and os.path.exists(self.derivative_fname):
             return np.load(self.derivative_fname)
 
         is_gradient = False
@@ -174,7 +179,8 @@ class Trajectory(object):
             elif self._interpolation_degree == 'regularized_derivative':
                 print('---- calculating regularized derivative for species {} with {} data points ----'
                       .format(s, len(indices)))
-                dX = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=1e-1, verbose=False, show_progress=True)
+                dX = deriv.ld_derivative(data=counts[indices], xs=X[indices], verbose=False,
+                                         show_progress=True, **self.ld_derivative_config)
                 prev = 0
                 for ix in range(len(indices)):
                     interpolated[indices[prev]:(indices[ix]+1), s] = dX[ix]
