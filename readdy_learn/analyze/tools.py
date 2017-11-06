@@ -162,10 +162,10 @@ class Trajectory(object):
             elif self._interpolation_degree == 'regularized_derivative':
                 print('---- calculating regularized derivative for species {} with {} data points ----'
                       .format(s, len(indices)))
-                deriv = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=5e-4)
+                dX = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=5e-4)
                 prev = 0
                 for ix in range(len(indices)):
-                    interpolated[prev:(ix+1), s] = deriv[ix]
+                    interpolated[prev:(ix+1), s] = dX[ix]
                     prev = ix
                 is_gradient = True
             elif self._interpolation_degree < 0:
