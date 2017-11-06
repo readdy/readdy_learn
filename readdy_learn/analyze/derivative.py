@@ -145,7 +145,7 @@ def get_differentiation_operator_midpoint(xs):
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
 
 def get_integration_operator(xs):
-    # integrate.cumtrapz(y=v, x=xs, initial=0)
+    # todo this obv has to be cumulative.................... (and therefore upper triangular matrix or s.th.)
     n_nodes = len(xs)
     D_data = np.empty(shape=(2 * n_nodes - 2,))
     D_row_data = np.empty_like(D_data)
@@ -165,6 +165,8 @@ def get_integration_operator(xs):
         D_col_data[2*ix+1] = k
 
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
+
+# def get_integration_adjoint_operator(xs):
 
 
 def trapz(xs, ys):
@@ -223,35 +225,32 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
 
     prev_grad_norm = None
 
+    spsolve_term = None
+    if solver == 'spsolve':
+        integration_operator_matrix = get_integration_operator(xs)
+        spsolve_term = integration_operator_matrix.transpose(copy=True) * integration_operator_matrix
+
     # Main loop.
     for ii in range(1, maxit + 1):
         # Diagonal matrix of weights, for linearizing E-L equation.
-        E_n.setdiag(xs_diff * (1. / np.sqrt(np.diff(u) ** 2.0 + epsilon))) #np.diff(u)
-        # sparse.spdiags(1. / np.sqrt(np.diff(u) ** 2.0 + epsilon), 0, n - 1, n - 1)
+        E_n.setdiag(xs_diff * (1. / np.sqrt(np.diff(u) ** 2.0 + epsilon)))
         # Q = E_n #DX *
         L = D_T * E_n * D
         # Gradient of functional.
         g = Aadj_A(u) - KT_data
         g = g + alpha * L * u
 
-        # Prepare to solve linear equation.
-        linop = lambda v: (alpha * L * v + Aadj_A(v))
-        linop = splin.LinearOperator((n, n), linop)
-
-        # preconditioner by sparse incomplete LU decomp.
-        c = np.cumsum(range(n, 0, -1))
-        B = alpha * L + sparse.spdiags(c[::-1], 0, n, n, format='csc')
-        R = splin.spilu(B)
-        linop_preconditioning = splin.LinearOperator((n, n), lambda v: R.solve(v))
-
+        # solve linear equation.
         if solver == 'lgmres':
+            linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=5)
         elif solver == 'bicgstab':
-            [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit,
-                                         M=linop_preconditioning)
+            linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
+            [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
         elif solver == 'spsolve':
-            pass
-            # s = umfpack(linop, -g)
+            system_matrix = alpha * L + spsolve_term
+            s = splin.spsolve(system_matrix, -g)
+            info_i = 0
             # s = splin.spsolve(linop, -g)
 
         relative_change = np.linalg.norm(s[0]) / np.linalg.norm(u)
@@ -309,6 +308,17 @@ def test_finite_differences():
     plt.show()
     print(np.array(deriv) - np.array(true_deriv))
 
+
+def mad(arr):
+    """ Median Absolute Deviation: a "Robust" version of standard deviation.
+        Indices variabililty of the sample.
+        https://en.wikipedia.org/wiki/Median_absolute_deviation
+    """
+    arr = np.ma.array(arr).compressed()
+    med = np.median(arr)
+    return np.median(np.abs(arr - med))
+
+
 def estimate_alpha(f):
     # calculate MSE between Au* and f, should be equal to variance of noise in f
     fa = FactorAnalysis()
@@ -358,11 +368,11 @@ def test_ld_derivative():
     deriv = D * testf
 
 
-    nv = estimate_alpha(testf)
+    nv = [mad(testf)]
     print("got noise variance {}".format(nv))
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres')
+        ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='spsolve')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
@@ -389,69 +399,3 @@ def test_ld_derivative():
 if __name__ == '__main__':
     # test_finite_differences()
     test_ld_derivative()
-
-
-
-#
-# def ld_derivative(data, timestep, alpha, maxit=1000, verbose=False):
-#     assert isinstance(data, np.ndarray)
-#     data = data.squeeze()
-#     assert len(data.shape) == 1
-#
-#     epsilon = 1e-8
-#
-#     n = len(data)
-#
-#     # require f(0) = 0
-#     data = data - data[0]
-#
-#     # Construct antidifferentiation operator and its adjoint.
-#     A = lambda v: np.cumsum(v)
-#     AT = lambda w: (sum(w) * np.ones(len(w)) - np.transpose(np.concatenate(([0.0], np.cumsum(w[:-1])))))
-#     # Construct differentiation matrix.
-#     c = np.ones(n)
-#     D = sparse.spdiags([-c, c], [0, 1], n, n) / timestep
-#     mask = np.ones((n, n))
-#     mask[-1, -1] = 0.0
-#     D = sparse.dia_matrix(D.multiply(mask))
-#     DT = D.transpose()
-#
-#     # Default initialization is naive derivative.
-#     u = np.concatenate(([0], np.diff(data)))
-#     # Precompute.
-#     ATd = AT(data)
-#
-#     # Main loop.
-#     for ii in range(1, maxit + 1):
-#         # Diagonal matrix of weights, for linearizing E-L equation.
-#         Q = sparse.spdiags(1. / np.sqrt((D * u) ** 2.0 + epsilon), 0, n, n)
-#         # Linearized diffusion matrix, also approximation of Hessian.
-#         L = DT * Q * D
-#         # Gradient of functional.
-#         g = AT(A(u)) - ATd
-#         g = g + alpha * L * u
-#         # Build preconditioner.
-#         c = np.cumsum(range(n, 0, -1))
-#         B = alpha * L + sparse.spdiags(c[::-1], 0, n, n)
-#         # droptol = 1.0e-2
-#         R = sparse.dia_matrix(np.linalg.cholesky(B.todense()))
-#         # Prepare to solve linear equation.
-#         tol = 1.0e-4
-#         maxit = None
-#
-#         linop = lambda v: (alpha * L * v + AT(A(v)))
-#         linop = splin.LinearOperator((n, n), linop)
-#
-#         [s, info_i] = splin.cg(A=linop, b=-g, x0=None, tol=tol, maxiter=maxit, xtype=None, M=np.dot(R.transpose(), R))
-#         if verbose:
-#             print('iteration {0:4d}: relative change = {1:.3e}, gradient norm = {2:.3e}'
-#                   .format(ii, np.linalg.norm(s[0]) / np.linalg.norm(u), np.linalg.norm(g)))
-#             if info_i > 0:
-#                 print("WARNING - convergence to tolerance not achieved!")
-#             elif info_i < 0:
-#                 print("WARNING - illegal input or breakdown")
-#
-#         # Update current solution
-#         u = u + s
-#
-#     return u / timestep
