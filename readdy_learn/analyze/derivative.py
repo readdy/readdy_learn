@@ -221,8 +221,6 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         box = Box([progress, label])
         display(box)
 
-    outer_v = []
-
     prev_grad_norm = None
 
     # Main loop.

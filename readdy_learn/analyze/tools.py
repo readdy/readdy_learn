@@ -86,7 +86,8 @@ class TrajectoryConfig(object):
 class Trajectory(object):
     def __init__(self, counts, time_step, interpolation_degree=10, verbose=True,
                  ld_derivative_atol=1e-7, ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3,
-                 ld_derivative_solver='lgmres', ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100):
+                 ld_derivative_solver='lgmres', ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100,
+                 derivative_fname=None):
         self._counts = counts
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
@@ -102,7 +103,7 @@ class Trajectory(object):
         self._dirty = True
         self._verbose = verbose
         self._interpolation_degree = interpolation_degree
-        self._derivative_fname = None
+        self._derivative_fname = derivative_fname
         self.ld_derivative_config = {'atol': ld_derivative_atol, 'rtol': ld_derivative_rtol,
                                      'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
                                      'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit}
@@ -148,6 +149,7 @@ class Trajectory(object):
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
 
+        print("got derivative fname {}".format(self.derivative_fname))
         if self.derivative_fname is not None and os.path.exists(self.derivative_fname):
             return np.load(self.derivative_fname)
 
