@@ -177,7 +177,7 @@ class Trajectory(object):
                 dX = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=1e-1, verbose=False, show_progress=True)
                 prev = 0
                 for ix in range(len(indices)):
-                    interpolated[prev:(ix+1), s] = dX[ix]
+                    interpolated[indices[prev]:(indices[ix]+1), s] = dX[ix]
                     prev = ix
                 is_gradient = True
             elif self._interpolation_degree < 0:
