@@ -160,7 +160,7 @@ class Trajectory(object):
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
 
-        if self.dcounts_dt is None:
+        if self.dcounts_dt is not None:
             return self.dcounts_dt
 
         is_gradient = False
