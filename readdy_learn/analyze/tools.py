@@ -158,6 +158,10 @@ class Trajectory(object):
                     interpolated[iix:iix_curr, s] = d
                     iix = iix_curr
                 is_gradient = True
+            elif self._interpolation_degree == 'regularized_derivative':
+                print('--------------- calculating regularized derivative for species {} ----------------'.format(s))
+                interpolated[:, s] = deriv.ld_derivative(data=counts[indices], xs=X[indices], alpha=5e-4)
+                is_gradient = True
             elif self._interpolation_degree < 0:
                 fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
                 dfun_db = lambda t, b, c, d, e, g: np.exp(c * t)

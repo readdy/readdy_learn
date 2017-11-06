@@ -143,7 +143,7 @@ def get_differentiation_operator_midpoint(xs):
     return sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
 
 
-def ld_derivative2(data, xs, alpha, maxit=1000, linalg_solver_maxit=10000, tol=1e-8, verbose=False):
+def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=10000, tol=1e-8, verbose=False):
     assert isinstance(data, np.ndarray)
     data = data.squeeze()
     assert len(data.shape) == 1
@@ -256,7 +256,7 @@ def test_ld_derivative():
     get_differentiation_operator_midpoint(x0)
     deriv = D * testf
 
-    ld_deriv = ld_derivative2(testf, x0, alpha=5e-4, verbose=True)
+    ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True)
 
     plt.plot(testf, label='f')
     plt.plot(true_deriv, label='df')
