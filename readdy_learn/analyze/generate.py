@@ -45,26 +45,6 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
                         avgcounts += counts[:avgcounts.shape[0],:]
 
         avgcounts /= N
-        # min_n_times = -1
-        # min_n_times_ix = 0
-        # for ix, fname in enumerate(counts):
-        #     cc = _np.load(fname)
-        #     if min_n_times == -1:
-        #         min_n_times = cc.shape[0]
-        #         min_n_times_ix = ix
-        #     else:
-        #         if cc.shape[0] < min_n_times:
-        #             min_n_times = cc.shape[0]
-        #             min_n_times_ix = ix
-        # avgcounts = _np.zeros_like(_np.load(counts[min_n_times_ix]))
-        # ncounts = avgcounts.shape[0]
-        # assert ncounts == min_n_times
-        # for i in range(len(counts)):
-        #     avgcounts += _np.load(counts[i])[:ncounts, :]
-        #     # counts[i] = counts[i][:ncounts, :]
-        # avgcounts /= len(counts)
-        #counts = _np.array(counts)
-        #avgcounts = _np.average(counts, axis=0)
         times = _np.linspace(0, float(avgcounts.shape[0]) * float(timestep), num=avgcounts.shape[0], endpoint=False)
         assert times.shape[0] == avgcounts.shape[0]
         if not _np.isclose(times[1] - times[0], timestep):

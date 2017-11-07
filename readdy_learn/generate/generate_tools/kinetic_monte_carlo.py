@@ -424,7 +424,7 @@ class ReactionDiffusionSystem:
 
     def convert_events_to_time_series2(self, time_step):
         n_frames = int(math.floor((self._time_list[-1] - self._time_list[0]) / time_step))
-        result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.int)
+        result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.uint)
         times = np.linspace(0, n_frames * time_step, num=n_frames, endpoint=False)
 
         state = 0

@@ -382,7 +382,7 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=50, linalg_solver_maxit=100, verbose=True, solver='spsolve')
+        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=100, verbose=True, solver='lgmres')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
