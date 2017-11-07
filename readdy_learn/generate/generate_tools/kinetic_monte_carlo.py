@@ -35,6 +35,7 @@ import math
 import numpy as np
 
 from readdy_learn.generate.generate_tools.logutil import StyleAdapter
+from readdy_learn.analyze_tools.tools import convert_kmc
 
 __license__ = "LGPL"
 __author__ = "chrisfroe"
@@ -424,19 +425,23 @@ class ReactionDiffusionSystem:
 
     def convert_events_to_time_series2(self, time_step):
         n_frames = int(math.floor((self._time_list[-1] - self._time_list[0]) / time_step))
-        result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.uint)
-        times = np.linspace(0, n_frames * time_step, num=n_frames, endpoint=False)
+        result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.uint32)
+        times = np.linspace(0, n_frames * time_step, num=n_frames, endpoint=False, dtype=np.float64)
 
-        state = 0
-        nstates = len(self._state_list)
-        for ix in range(len(times)):
-            t = times[ix]
-            if t <= self._time_list[state]:
-                result[ix] = self._state_list[state]
-            else:
-                while state < nstates and t > self._time_list[state]:
-                    state += 1
-                result[ix] = self._state_list[state]
+        times_list = np.array(self._time_list, dtype=np.float64).squeeze()
+        state_list = np.array(self._state_list, dtype=np.uint32).squeeze()
+        convert_kmc(result, times, times_list, state_list)
+
+        # state = 0
+        # nstates = len(self._state_list)
+        # for ix in range(len(times)):
+        #     t = times[ix]
+        #     if t <= self._time_list[state]:
+        #         result[ix] = self._state_list[state]
+        #     else:
+        #         while state < nstates and t > self._time_list[state]:
+        #             state += 1
+        #         result[ix] = self._state_list[state]
 
         return result, times
 

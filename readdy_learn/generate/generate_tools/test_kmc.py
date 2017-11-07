@@ -81,7 +81,7 @@ class TestKineticMonteCarlo(unittest.TestCase):
 
     def test_conservation_of_particles_after_converting(self):
         system = example_system_conversions()
-        time_series, times = system.convert_events_to_time_series(n_frames=500)
+        time_series, times = system.convert_events_to_time_series2(time_step=.1)
         n_particles = np.sum(time_series[0])
         all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, time_series), dtype=np.bool)
         np.testing.assert_equal(np.all(all_correct), True)
