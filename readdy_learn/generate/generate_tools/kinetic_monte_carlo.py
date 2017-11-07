@@ -428,8 +428,8 @@ class ReactionDiffusionSystem:
         result = np.zeros((n_frames, self._n_boxes, self._n_species), dtype=np.uint32)
         times = np.linspace(0, n_frames * time_step, num=n_frames, endpoint=False, dtype=np.float64)
 
-        times_list = np.array(self._time_list, dtype=np.float64).squeeze()
-        state_list = np.array(self._state_list, dtype=np.uint32).squeeze()
+        times_list = np.array(self._time_list, dtype=np.float64)
+        state_list = np.array(self._state_list, dtype=np.uint32)
         convert_kmc(result, times, times_list, state_list)
 
         # state = 0
