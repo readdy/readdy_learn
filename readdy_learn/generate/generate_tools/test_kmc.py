@@ -45,6 +45,32 @@ def example_system_conversions():
     return system
 
 
+def set_up_system(init_state):
+    desired_rates = np.array([2e-2, 2e-2, 1e-2, 1e-4, 1e-4, 0,0,0,0,0,0,0,0,0,0, 0,0,0])
+
+    sys = kmc.ReactionDiffusionSystem(n_species=4, n_boxes=1, diffusivity=[[[0.]], [[0.]], [[0.]], [[0.]]],
+                                      init_state=init_state, species_names=["A", "B", "C", "D"])
+    sys.add_conversion("A", "D", np.array([desired_rates[0]]))
+    sys.add_conversion("D", "A", np.array([desired_rates[1]]))
+    sys.add_conversion("D", "B", np.array([desired_rates[2]]))
+    sys.add_fusion("A", "B", "C", np.array([desired_rates[3]]))
+    sys.add_fission("C", "D", "B", np.array([desired_rates[4]]))
+
+    return sys
+
+def example_system_conversions2():
+    """Produce realisations of system with only conversions"""
+    n_species = 2
+    n_boxes = 2
+    diffusivity_0 = np.array([[4.], [3.]])  # species 0
+    init_state = np.array([[1, 1]], dtype=np.int)
+    species_names = ["A", "B"]
+    system = kmc.ReactionDiffusionSystem(diffusivity_0, n_species, n_boxes, init_state, species_names=species_names)
+    system.add_conversion("A", "B", np.array([4.]))
+    system.add_conversion("B", "A", np.array([0.5]))
+    system.simulate(50)
+    return system
+
 class TestKineticMonteCarlo(unittest.TestCase):
     def test_raise_if_finalized(self):
         with np.testing.assert_raises(RuntimeError):
@@ -80,7 +106,8 @@ class TestKineticMonteCarlo(unittest.TestCase):
             system.convert_events_to_time_series([], time_step=0.1, n_frames=10)
 
     def test_conservation_of_particles_after_converting(self):
-        system = example_system_conversions()
+        system = set_up_system(np.array([[10, 10, 10, 10]]))
+        system.simulate(100)
         time_series, times = system.convert_events_to_time_series2(time_step=.1)
         n_particles = np.sum(time_series[0])
         all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, time_series), dtype=np.bool)

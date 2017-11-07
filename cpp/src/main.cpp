@@ -39,14 +39,14 @@ static void convert_kmc(kmc_result_array &result, const kmc_times_array &times, 
         auto t = times.at(ix);
         if(t <= times_list.at(state)) {
             for (std::size_t s = 0; s < nspecies; ++s) {
-                result.mutable_at(state, 0, s) = state_list.at(state, 0, s);
+                result.mutable_at(ix, 0, s) = state_list.at(state, 0, s);
             }
         } else {
             while(state < nstates && t > times_list.at(state)) {
                 ++state;
             }
             for (std::size_t s = 0; s < nspecies; ++s) {
-                result.mutable_at(state, 0, s) = state_list.at(state, 0, s);
+                result.mutable_at(ix, 0, s) = state_list.at(state, 0, s);
             }
         }
     }
