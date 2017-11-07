@@ -107,7 +107,7 @@ def get_differentiation_operator(xs, chopright=False):
 
     offset = 0
     for ix, wx in enumerate(window_evensteven(xs, width=wwidth)):
-        if chopright and ix == len(xs)-1:
+        if chopright and ix == len(xs) - 1:
             continue
         x = xs[ix]
         coeff = fd_coeff(x, wx, k=1)
@@ -117,7 +117,7 @@ def get_differentiation_operator(xs, chopright=False):
         offset += len(coeff)
 
     if chopright:
-        return sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes-1, n_nodes))
+        return sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
     else:
         return sparse.bsr_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
 
@@ -144,36 +144,72 @@ def get_differentiation_operator_midpoint(xs):
     # mid_xs = .5 * (xs[:-1] + xs[1:])
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
 
+
 def get_integration_operator(xs):
-    # todo this obv has to be cumulative.................... (and therefore upper triangular matrix or s.th.)
     n_nodes = len(xs)
-    D_data = np.empty(shape=(2 * n_nodes - 2,))
+    D_data = np.zeros(shape=(int(.5 * (n_nodes ** 2 + n_nodes) - 1),))
     D_row_data = np.empty_like(D_data)
     D_col_data = np.empty_like(D_data)
 
-    for ix in range(n_nodes - 1):
-        k = ix+1
-        d = xs[k] - xs[k-1]
-        D_data[2*ix] = .5*d
-        D_data[2*ix+1] = .5*d
+    current_row = np.array([0], dtype=np.float64)
 
-        # first row is const_0
-        D_row_data[2*ix] = k
-        D_col_data[2*ix] = k-1
+    offset = 0
+    for ix in range(n_nodes):
+        # ix'th row
+        if ix == 0:
+            # ignore 1st row, its const zero
+            pass
+        else:
+            # fill up data with current row...
+            d = xs[ix] - xs[ix - 1]
+            current_row[-1] += d
+            current_row = np.append(current_row, d)
+            D_data[offset:offset + len(current_row)] = current_row
+            D_row_data[offset:offset + len(current_row)] = ix
+            D_col_data[offset:offset + len(current_row)] = np.array([range(len(current_row))])
+            offset += len(current_row)
 
-        D_row_data[2*ix+1] = k
-        D_col_data[2*ix+1] = k
+    D_data = .5 * D_data
 
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
 
-# def get_integration_adjoint_operator(xs):
+def get_integration_adjoint_operator(xs):
+    """
+    This guy integrates from x to L, so the first row contains the full thing,
+    second row full thing minus the last node etc
+    """
+    n_nodes = len(xs)
+    D_data = np.zeros(shape=(int(.5 * (n_nodes ** 2 + n_nodes)-1),))
+    D_row_data = np.empty_like(D_data)
+    D_col_data = np.empty_like(D_data)
+
+    current_row = np.array([0], dtype=np.float64)
+
+    offset = 0
+    for ix in range(n_nodes-1, -1, -1):
+        # ix'th row
+        if ix == n_nodes-1:
+            # ignore last row, its const zero
+            pass
+        else:
+            # fill up data with current row...
+            d = xs[ix] - xs[ix - 1]
+            current_row[-1] += d
+            current_row = np.append(current_row, d)
+            D_data[offset:offset + len(current_row)] = current_row
+            D_row_data[offset:offset + len(current_row)] = ix
+            D_col_data[offset:offset + len(current_row)] = np.array([range(n_nodes-1, n_nodes-len(current_row)-1, -1)])
+            offset += len(current_row)
+
+    D_data = .5 * D_data
+    return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
 
 
 def trapz(xs, ys):
     result = np.empty_like(xs)
     result[0] = 0
     for ix in range(1, len(xs)):
-        result[ix] = .5*(xs[ix]-xs[ix-1])*(ys[ix-1]+ys[ix])
+        result[ix] = .5 * (xs[ix] - xs[ix - 1]) * (ys[ix - 1] + ys[ix])
     return result
 
 
@@ -186,7 +222,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     data = data.squeeze()
     assert len(data.shape) == 1
 
-    epsilon = 1e-4
+    epsilon = 1e-8
 
     n = len(data)
 
@@ -226,9 +262,10 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     prev_grad_norm = None
 
     spsolve_term = None
-    if solver == 'spsolve':
-        integration_operator_matrix = get_integration_operator(xs)
-        spsolve_term = integration_operator_matrix.transpose(copy=True) * integration_operator_matrix
+    if solver == 'spsolve' or solver == 'np':
+        K = get_integration_operator(xs)
+        KT = get_integration_adjoint_operator(xs)
+        spsolve_term = KT * K
 
     # Main loop.
     for ii in range(1, maxit + 1):
@@ -241,6 +278,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         g = g + alpha * L * u
 
         # solve linear equation.
+        info_i = 0
         if solver == 'lgmres':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=5)
@@ -248,10 +286,11 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
         elif solver == 'spsolve':
-            system_matrix = alpha * L + spsolve_term
-            s = splin.spsolve(system_matrix, -g)
-            info_i = 0
-            # s = splin.spsolve(linop, -g)
+            # todo this behaves oddly
+            s = splin.spsolve((alpha * L + spsolve_term), -g, use_umfpack=False, permc_spec='COLAMD')
+        elif solver == 'np':
+            # todo this behaves oddly
+            s = np.linalg.solve((alpha * L + spsolve_term).todense().astype(np.float64), (-g).astype(np.float64))
 
         relative_change = np.linalg.norm(s[0]) / np.linalg.norm(u)
         if verbose:
@@ -326,7 +365,6 @@ def estimate_alpha(f):
     return fa.noise_variance_
 
 
-
 def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
     xx = []
@@ -340,60 +378,31 @@ def test_ld_derivative():
     testf = testf + np.random.normal(0.0, 0.04, x0.shape)
     true_deriv = [np.cos(x) for x in x0]
 
-    K = get_integration_operator(x0)
-    k1 = integrate.cumtrapz(y=testf, x=x0, initial=0)
-    k2 = K*testf
-    k3 = trapz(x0, testf)
-
-    def A_adjoint(w):
-        # integrate w from x to L <=> int_0^Lw - int_0^xw
-        full_integral = integrate.trapz(w, x0)
-        # assert np.isclose(full_integral, A(w)[-1]), "got {}, but expected {}".format(full_integral, A(w)[-1])
-        return np.ones_like(w) * full_integral - integrate.cumtrapz(w, x0, initial=0)
-
-    print(A_adjoint(testf))
-    print(K.transpose() * testf)
-
-    print(k1-k2)
-    print(k2 - k3)
-
-    print("--------")
-    print(k1)
-    print(k2)
-    print(k3)
-    # print(k2)
-
-    D = get_differentiation_operator(x0)
-    get_differentiation_operator_midpoint(x0)
-    deriv = D * testf
-
-
-    nv = [mad(testf)]
-    print("got noise variance {}".format(nv))
-
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='spsolve')
+        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=50, linalg_solver_maxit=100, verbose=True, solver='lgmres')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
-        #plt.plot(deriv, label='approx df')
+        # plt.plot(deriv, label='approx df')
         # plt.plot(dmidxs, Dmidderiv)
-        #plt.plot(ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres'), label='total variation df alpha=5e-4')
-        #plt.plot(ld_derivative(testf, x0, alpha=1e-3, verbose=True, solver='lgmres'), label='total variation df alpha=1e-3')
-        plt.plot(ld_derivative(testf, x0, alpha=nv[0], verbose=True, solver='lgmres'), label='total variation df alpha=1e-2')
+        # plt.plot(ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres'), label='total variation df alpha=5e-4')
+        # plt.plot(ld_derivative(testf, x0, alpha=1e-3, verbose=True, solver='lgmres'), label='total variation df alpha=1e-3')
+        #plt.plot(ld_derivative(testf, x0, alpha=1e-2, verbose=True, solver='lgmres'),
+        #         label='total variation df alpha=1e-2')
+        plt.plot(ld_deriv, label='umfpack')
         plt.legend()
         plt.show()
 
 
-    # deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
-    # deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
+        # deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
+        # deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
 
-    # plt.plot(testf, label='fun')
-    # plt.plot(deriv_sm, label='alpha=5e-4')
-    # plt.plot(deriv_lrg, label='alpha=1e-1')
-    # plt.plot(true_deriv, label='derivative')
-    # plt.legend()
-    # plt.show()
+        # plt.plot(testf, label='fun')
+        # plt.plot(deriv_sm, label='alpha=5e-4')
+        # plt.plot(deriv_lrg, label='alpha=1e-1')
+        # plt.plot(true_deriv, label='derivative')
+        # plt.legend()
+        # plt.show()
 
 
 if __name__ == '__main__':

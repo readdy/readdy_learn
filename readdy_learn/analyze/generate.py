@@ -53,3 +53,19 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
     if not _np.isclose(times[1] - times[0], timestep):
         print("WARN: times[1]-times[0] was {} but was expected to be {}".format(times[1]-times[0], timestep))
     return times, avgcounts
+
+def generate_kmc_events(set_up_system, n_kmc_steps):
+    sys = set_up_system()
+    sys.simulate(n_kmc_steps)
+    counts, times, state = sys.sequence
+    return times, _np.array(state).squeeze()
+#
+# def generate_averaged_kmc_events(set_up_system, n_kmc_steps, n_realizations):
+#
+#     times, counts = None, None
+#     for _ in range(n_realizations):
+#         ttimes, ccounts = generate_kmc_events(set_up_system, n_kmc_steps)
+#         if times is None:
+#             times, counts = ttimes, ccounts
+#         else:
+#             indices = _np.searchsorted(times, ttimes)
