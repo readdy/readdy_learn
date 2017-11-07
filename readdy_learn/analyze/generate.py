@@ -1,6 +1,7 @@
 import numpy as _np
 from scipy.integrate import odeint as _odeint
 from pathos.multiprocessing import Pool as _Pool
+import readdy_learn.analyze.progress as _pr
 
 
 def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps):
@@ -19,11 +20,10 @@ def generate_kmc_counts(set_up_system, n_kmc_steps, timestep):
     counts, times, _ = sys.get_counts_config(timestep=timestep)
     return times, counts
 
-
 def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realizations, njobs=8):
 
     params = [(set_up_system, n_kmc_steps, timestep) for _ in range(n_realizations)]
-
+    progress = _pr.Progress(n=n_realizations, label="generate averaged kmc")
     try:
         def generate_wrapper(args):
             _, counts = generate_kmc_counts(*args)
@@ -35,6 +35,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
         if njobs == 1:
             for p in params:
                 counts = generate_wrapper(p)
+                progress.increase(1)
                 N += 1.
                 if avgcounts is None:
                     avgcounts = counts
@@ -48,6 +49,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
         else:
             with _Pool(processes=njobs) as p:
                 for counts in p.imap(generate_wrapper, params, 1):
+                    progress.increase(1)
                     N += 1.
                     if avgcounts is None:
                         avgcounts = counts
@@ -65,7 +67,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
             print("WARN: times[1]-times[0] was {} but was expected to be {}".format(times[1]-times[0], timestep))
         return times, avgcounts
     finally:
-        pass
+        progress.finish()
 
 def generate_kmc_events(set_up_system, n_kmc_steps):
     sys = set_up_system()
