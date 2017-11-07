@@ -32,10 +32,10 @@ static void convert_kmc(kmc_result_array &result, const kmc_times_array &times, 
 
     auto nstates = (std::size_t) state_list.shape()[0];
     auto nframes = (std::size_t) result.shape()[0];
-    auto nboxes = (std::size_t) result.shape()[1];
+    //auto nboxes = (std::size_t) result.shape()[1];
     auto nspecies = (std::size_t) result.shape()[2];
 
-    for(std::size_t ix = 0; ix < (std::size_t) times.shape()[0]; ++ix) {
+    for(std::size_t ix = 0; ix < nframes; ++ix) {
         auto t = times.at(ix);
         if(t <= times_list.at(state)) {
             for (std::size_t s = 0; s < nspecies; ++s) {

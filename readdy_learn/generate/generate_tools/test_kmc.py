@@ -109,6 +109,7 @@ class TestKineticMonteCarlo(unittest.TestCase):
         system = set_up_system(np.array([[10, 10, 10, 10]]))
         system.simulate(100)
         time_series, times = system.convert_events_to_time_series2(time_step=.1)
+        print(time_series)
         n_particles = np.sum(time_series[0])
         all_correct = np.fromiter(map(lambda state: np.sum(state) == n_particles, time_series), dtype=np.bool)
         np.testing.assert_equal(np.all(all_correct), True)
