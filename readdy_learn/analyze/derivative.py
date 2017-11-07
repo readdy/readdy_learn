@@ -171,6 +171,8 @@ def get_integration_operator(xs):
 
     D_data = .5 * D_data
 
+    assert(len(D_data) == offset)
+
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
 
 def get_integration_adjoint_operator(xs):
@@ -202,6 +204,7 @@ def get_integration_adjoint_operator(xs):
             offset += len(current_row)
 
     D_data = .5 * D_data
+    assert (len(D_data) == offset)
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
 
 
@@ -222,7 +225,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     data = data.squeeze()
     assert len(data.shape) == 1
 
-    epsilon = 1e-8
+    epsilon = 1e-4
 
     n = len(data)
 
@@ -379,7 +382,7 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=50, linalg_solver_maxit=100, verbose=True, solver='lgmres')
+        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=50, linalg_solver_maxit=100, verbose=True, solver='spsolve')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
