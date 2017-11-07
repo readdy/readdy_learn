@@ -24,39 +24,45 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
 
     params = [(set_up_system, n_kmc_steps, timestep) for _ in range(n_realizations)]
 
-    import tempfile as tmp
-    import shutil
-
-    tempdir = tmp.mkdtemp("kmc")
-
     try:
         def generate_wrapper(args):
             _, counts = generate_kmc_counts(*args)
-            f = tmp.mktemp(dir=tempdir)
-            _np.save(f, counts)
-            return f
+            return counts
+
+        avgcounts = None
+        N = 0.
 
         with _Pool(processes=njobs) as p:
-            counts = p.map(generate_wrapper, params, 1)
+            for counts in p.imap(generate_wrapper, params, 1):
+                N += 1.
+                if avgcounts is None:
+                    avgcounts = counts
+                else:
+                    if counts.shape[0] < avgcounts.shape[0]:
+                        avgcounts = avgcounts[:counts.shape[0],:]
+                        avgcounts += counts
+                    else:
+                        avgcounts += counts[:avgcounts.shape[0],:]
 
-        min_n_times = -1
-        min_n_times_ix = 0
-        for ix, fname in enumerate(counts):
-            cc = _np.load(fname)
-            if min_n_times == -1:
-                min_n_times = cc.shape[0]
-                min_n_times_ix = ix
-            else:
-                if cc.shape[0] < min_n_times:
-                    min_n_times = cc.shape[0]
-                    min_n_times_ix = ix
-        avgcounts = _np.zeros_like(_np.load(counts[min_n_times_ix]))
-        ncounts = avgcounts.shape[0]
-        assert ncounts == min_n_times
-        for i in range(len(counts)):
-            avgcounts += _np.load(counts[i])[:ncounts, :]
-            # counts[i] = counts[i][:ncounts, :]
-        avgcounts /= len(counts)
+        avgcounts /= N
+        # min_n_times = -1
+        # min_n_times_ix = 0
+        # for ix, fname in enumerate(counts):
+        #     cc = _np.load(fname)
+        #     if min_n_times == -1:
+        #         min_n_times = cc.shape[0]
+        #         min_n_times_ix = ix
+        #     else:
+        #         if cc.shape[0] < min_n_times:
+        #             min_n_times = cc.shape[0]
+        #             min_n_times_ix = ix
+        # avgcounts = _np.zeros_like(_np.load(counts[min_n_times_ix]))
+        # ncounts = avgcounts.shape[0]
+        # assert ncounts == min_n_times
+        # for i in range(len(counts)):
+        #     avgcounts += _np.load(counts[i])[:ncounts, :]
+        #     # counts[i] = counts[i][:ncounts, :]
+        # avgcounts /= len(counts)
         #counts = _np.array(counts)
         #avgcounts = _np.average(counts, axis=0)
         times = _np.linspace(0, float(avgcounts.shape[0]) * float(timestep), num=avgcounts.shape[0], endpoint=False)
@@ -65,7 +71,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
             print("WARN: times[1]-times[0] was {} but was expected to be {}".format(times[1]-times[0], timestep))
         return times, avgcounts
     finally:
-        shutil.rmtree(tempdir, ignore_errors=True)
+        pass
 
 def generate_kmc_events(set_up_system, n_kmc_steps):
     sys = set_up_system()
