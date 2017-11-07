@@ -32,17 +32,31 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
         avgcounts = None
         N = 0.
 
-        with _Pool(processes=njobs) as p:
-            for counts in p.imap(generate_wrapper, params, 1):
+        if njobs == 1:
+            for p in params:
+                counts = generate_wrapper(p)
                 N += 1.
                 if avgcounts is None:
                     avgcounts = counts
                 else:
                     if counts.shape[0] < avgcounts.shape[0]:
-                        avgcounts = avgcounts[:counts.shape[0],:]
+                        avgcounts = avgcounts[:counts.shape[0], :]
                         avgcounts += counts
                     else:
-                        avgcounts += counts[:avgcounts.shape[0],:]
+                        avgcounts += counts[:avgcounts.shape[0], :]
+
+        else:
+            with _Pool(processes=njobs) as p:
+                for counts in p.imap(generate_wrapper, params, 1):
+                    N += 1.
+                    if avgcounts is None:
+                        avgcounts = counts
+                    else:
+                        if counts.shape[0] < avgcounts.shape[0]:
+                            avgcounts = avgcounts[:counts.shape[0],:]
+                            avgcounts += counts
+                        else:
+                            avgcounts += counts[:avgcounts.shape[0],:]
 
         avgcounts /= N
         times = _np.linspace(0, float(avgcounts.shape[0]) * float(timestep), num=avgcounts.shape[0], endpoint=False)
