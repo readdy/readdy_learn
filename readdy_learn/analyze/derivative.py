@@ -217,7 +217,7 @@ def trapz(xs, ys):
 
 
 def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6, verbose=False,
-                  show_progress=True, solver='lgmres'):
+                  show_progress=True, solver='lgmres', precondition=True):
     assert isinstance(data, np.ndarray)
     # require f(0) = 0
     data = np.copy(data) - data[0]
@@ -265,7 +265,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     prev_grad_norm = None
 
     spsolve_term = None
-    if solver == 'spsolve' or solver == 'np':
+    if precondition or solver == 'spsolve' or solver == 'np':
         K = get_integration_operator(xs)
         KT = get_integration_adjoint_operator(xs)
         spsolve_term = KT * K
@@ -284,10 +284,21 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         info_i = 0
         if solver == 'lgmres':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
-            [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=5)
+            if precondition:
+                lu = splin.spilu(alpha * L + spsolve_term)
+                precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
+                [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7,
+                                           M=precond)
+            else:
+                [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
-            [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
+            if precondition:
+                lu = splin.spilu(alpha * L + spsolve_term)
+                precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
+                [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
+            else:
+                [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
         elif solver == 'spsolve':
             # todo this behaves oddly
             s = splin.spsolve((alpha * L + spsolve_term), -g, use_umfpack=False, permc_spec='COLAMD')
@@ -385,7 +396,7 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=100, verbose=True, solver='lgmres')
+        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=100, verbose=True, solver='bicgstab')
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
