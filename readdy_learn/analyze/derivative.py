@@ -285,6 +285,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         KT = get_integration_adjoint_operator(xs)
         spsolve_term = KT * K
 
+    if show_progress:
+        label.value = 'begin solver loop'
     # Main loop.
     for ii in range(1, maxit + 1):
         # Diagonal matrix of weights, for linearizing E-L equation.
