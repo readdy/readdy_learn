@@ -219,7 +219,18 @@ def trapz(xs, ys):
 def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6, verbose=False,
                   show_progress=True, solver='lgmres', precondition=True):
     assert isinstance(data, np.ndarray)
+
+    label = None
+    if show_progress:
+        from ipywidgets import IntProgress, Label, Box
+        from IPython.display import display
+        label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
+        box = Box([label])
+        display(box)
+
     # require f(0) = 0
+    if show_progress:
+        label.value = 'copying data and setting f(0) = 0'
     data = np.copy(data) - data[0]
 
     data = data.squeeze()
@@ -230,6 +241,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     n = len(data)
 
     # differentiation operator
+    if show_progress:
+        label.value = 'obtaining differentiation operator'
     D = get_differentiation_operator_midpoint(xs)
     D_T = D.transpose().tocsc()
 
@@ -245,27 +258,29 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
 
     Aadj_A = lambda v: A_adjoint(A(v))
 
+    if show_progress:
+        label.value = 'calculating native gradient of data'
     u = np.gradient(data, xs)
 
+    if show_progress:
+        label.value = 'precalculating A*(data)'
     KT_data = A_adjoint(data)
 
     xs_diff = np.diff(xs)
     # DX = sparse.spdiags(np.diff(xs), 0, n - 1, n - 1)
 
-    E_n = sparse.dia_matrix((n - 1, n - 1), dtype=xs.dtype)
-
-    label = None
     if show_progress:
-        from ipywidgets import IntProgress, Label, Box
-        from IPython.display import display
-        label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
-        box = Box([label])
-        display(box)
-
+        label.value = 'preparing E_n'
+    E_n = sparse.dia_matrix((n - 1, n - 1), dtype=xs.dtype)
     prev_grad_norm = None
 
     spsolve_term = None
     if precondition or solver == 'spsolve' or solver == 'np':
+        if show_progress:
+            if precondition:
+                label.value = 'computing preconditioner'
+            else:
+                label.value = 'assembling matrix'
         K = get_integration_operator(xs)
         KT = get_integration_adjoint_operator(xs)
         spsolve_term = KT * K
