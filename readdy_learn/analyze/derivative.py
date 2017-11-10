@@ -322,6 +322,9 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             print("ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change))
             break
 
+    if show_progress:
+        box.close()
+
     return u
 
 
