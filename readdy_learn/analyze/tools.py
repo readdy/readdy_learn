@@ -128,6 +128,10 @@ class Trajectory(object):
     def interpolation_degree(self):
         return self._interpolation_degree
 
+    @interpolation_degree.setter
+    def interpolation_degree(self, value):
+        self._interpolation_degree = value
+
     def rate_info(self, xi, diffusion_coefficient=.2, microscopic_rate=.05, reaction_radius=.7):
         self.update()
         tmp = np.sqrt(microscopic_rate / diffusion_coefficient) * reaction_radius
@@ -160,6 +164,9 @@ class Trajectory(object):
         from sklearn.preprocessing import PolynomialFeatures
         from sklearn.linear_model import LinearRegression as interp
         from scipy import optimize
+
+        if self._interpolation_degree is None:
+            return None
 
         if self.dcounts_dt is not None:
             return self.dcounts_dt
