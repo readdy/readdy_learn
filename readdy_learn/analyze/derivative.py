@@ -278,11 +278,15 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     if precondition or solver == 'spsolve' or solver == 'np':
         if show_progress:
             if precondition:
-                label.value = 'computing preconditioner'
+                label.value = 'computing preconditioner: getting integration operator'
             else:
                 label.value = 'assembling matrix'
         K = get_integration_operator(xs)
+        if show_progress and precondition:
+            label.value = 'computing preconditioner: getting adjoint integration operator'
         KT = get_integration_adjoint_operator(xs)
+        if show_progress and precondition:
+            label.value = 'calculating K^T * K'
         spsolve_term = KT * K
 
     if show_progress:
