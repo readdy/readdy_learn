@@ -312,6 +312,9 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                         .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
+                if show_progress:
+                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, lgmres' \
+                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7,
                                            M=precond)
             else:
@@ -324,6 +327,9 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                         .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
+                if show_progress:
+                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, bicgstab' \
+                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
             else:
                 [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
