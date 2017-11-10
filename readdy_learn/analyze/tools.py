@@ -87,6 +87,7 @@ class Trajectory(object):
     def __init__(self, counts, time_step, interpolation_degree=10, verbose=True,
                  ld_derivative_atol=1e-7, ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3,
                  ld_derivative_solver='lgmres', ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100,
+                 ld_derivative_linalg_solver_tol=1e-4,
                  fname=None):
         if isinstance(counts, str):
             fname = counts
@@ -109,7 +110,8 @@ class Trajectory(object):
         self._fname = fname
         self.ld_derivative_config = {'atol': ld_derivative_atol, 'rtol': ld_derivative_rtol,
                                      'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
-                                     'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit}
+                                     'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit,
+                                     'tol': ld_derivative_linalg_solver_tol}
         if fname is not None and os.path.exists(fname):
             archive = np.load(fname)
             self._counts, self._dcounts_dt = archive['counts'], archive['dcounts_dt']
