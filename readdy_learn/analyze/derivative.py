@@ -304,8 +304,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             elif info_i < 0:
                 print("WARNING - illegal input or breakdown")
 
-        if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
-            print("WARNING - increasing gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
+        if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
+            print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
         prev_grad_norm = np.linalg.norm(g)
 
         # Update current solution
