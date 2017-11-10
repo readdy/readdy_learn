@@ -292,6 +292,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     if show_progress:
         label.value = 'begin solver loop'
     # Main loop.
+    relative_change = None
     for ii in range(1, maxit + 1):
         # Diagonal matrix of weights, for linearizing E-L equation.
         E_n.setdiag(xs_diff * (1. / np.sqrt(np.diff(u) ** 2.0 + epsilon)))
@@ -307,7 +308,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
                 if show_progress:
-                    label.value = 'Progress: {}/{} it, compute spilu'.format(ii, maxit)
+                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, compute spilu'\
+                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
                 [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7,
@@ -318,7 +320,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
                 if show_progress:
-                    label.value = 'Progress: {}/{} it, compute spilu'.format(ii, maxit)
+                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, compute spilu' \
+                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
                 [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
@@ -348,8 +351,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         u = u + s
 
         if show_progress:
-            label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}".format(ii, maxit, np.linalg.norm(g), atol,
-                                                                              relative_change, rtol)
+            label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}"\
+                .format(ii, maxit, np.linalg.norm(g), atol, relative_change, rtol)
 
         if atol is not None and np.linalg.norm(g) < atol:
             label.value = "ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g))
