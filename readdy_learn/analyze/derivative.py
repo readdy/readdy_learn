@@ -316,10 +316,10 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                                                                               relative_change, rtol)
 
         if atol is not None and np.linalg.norm(g) < atol:
-            print("ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g)))
+            label.value = "ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g))
             break
         if rtol is not None and relative_change < rtol:
-            print("ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change))
+            label.value = "ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change)
             break
 
     if show_progress:
