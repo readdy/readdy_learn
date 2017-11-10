@@ -306,8 +306,14 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         if solver == 'lgmres':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
-                lu = splin.spilu(alpha * L + spsolve_term, drop_tol=1e-2)
+                oldval = None
+                if show_progress:
+                    oldval = label.value
+                    label.value = 'sparse incomplete LU'
+                lu = splin.spilu(alpha * L + spsolve_term, drop_tol=1e-8)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
+                if show_progress:
+                    label.value = oldval
                 [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7,
                                            M=precond)
             else:
@@ -315,7 +321,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
-                lu = splin.spilu(alpha * L + spsolve_term, drop_tol=1e-2)
+                lu = splin.spilu(alpha * L + spsolve_term, drop_tol=1e-8)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
                 [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
             else:
