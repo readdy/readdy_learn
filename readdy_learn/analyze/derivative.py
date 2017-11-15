@@ -316,10 +316,10 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                 if show_progress:
                     label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, lgmres' \
                         .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
-                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7, M=precond)
+                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
                 info_i = 0
             else:
-                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=10, inner_m=90)
                 info_i = 0
                 #s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
         elif solver == 'bicgstab':
@@ -433,7 +433,8 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=1000, verbose=True, solver='lgmres', precondition=False, tol=1e-16)
+        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
+                                 solver='lgmres', precondition=False, tol=1e-16)
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
