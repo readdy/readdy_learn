@@ -309,7 +309,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
 
         # solve linear equation.
         info_i = 0
-        if solver == 'lgmres':
+        if solver == 'lgmres' or solver == 'lgmres_scipy':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
                 if show_progress:
@@ -320,12 +320,15 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                 if show_progress:
                     label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, lgmres' \
                         .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
-                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
-                info_i = 0
+                if solver == 'lgmres_scipy':
+                    s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
+                else:
+                    s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
             else:
-                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=10, inner_m=90)
-                info_i = 0
-                # s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+                if solver == 'lgmres_scipy':
+                    s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+                else:
+                    s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=10, inner_m=90)
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
