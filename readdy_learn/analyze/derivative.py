@@ -172,9 +172,10 @@ def get_integration_operator(xs):
 
     D_data = .5 * D_data
 
-    assert(len(D_data) == offset)
+    assert (len(D_data) == offset)
 
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes, n_nodes))
+
 
 def get_integration_adjoint_operator(xs):
     """
@@ -182,16 +183,16 @@ def get_integration_adjoint_operator(xs):
     second row full thing minus the last node etc
     """
     n_nodes = len(xs)
-    D_data = np.zeros(shape=(int(.5 * (n_nodes ** 2 + n_nodes)-1),))
+    D_data = np.zeros(shape=(int(.5 * (n_nodes ** 2 + n_nodes) - 1),))
     D_row_data = np.empty_like(D_data)
     D_col_data = np.empty_like(D_data)
 
     current_row = np.array([0], dtype=np.float64)
 
     offset = 0
-    for ix in range(n_nodes-1, -1, -1):
+    for ix in range(n_nodes - 1, -1, -1):
         # ix'th row
-        if ix == n_nodes-1:
+        if ix == n_nodes - 1:
             # ignore last row, its const zero
             pass
         else:
@@ -201,7 +202,8 @@ def get_integration_adjoint_operator(xs):
             current_row = np.append(current_row, d)
             D_data[offset:offset + len(current_row)] = current_row
             D_row_data[offset:offset + len(current_row)] = ix
-            D_col_data[offset:offset + len(current_row)] = np.array([range(n_nodes-1, n_nodes-len(current_row)-1, -1)])
+            D_col_data[offset:offset + len(current_row)] = np.array(
+                [range(n_nodes - 1, n_nodes - len(current_row) - 1, -1)])
             offset += len(current_row)
 
     D_data = .5 * D_data
@@ -310,7 +312,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
                 if show_progress:
-                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, compute spilu'\
+                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, compute spilu' \
                         .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
@@ -322,7 +324,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             else:
                 s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=10, inner_m=90)
                 info_i = 0
-                #s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+                # s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
@@ -370,7 +372,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         u = u + s
 
         if show_progress:
-            label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}"\
+            label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}" \
                 .format(ii, maxit, np.linalg.norm(g), atol, relative_change, rtol)
 
         if atol is not None and np.linalg.norm(g) < atol:
@@ -384,6 +386,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         box.close()
 
     return u
+
 
 def test_finite_differences():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
@@ -421,6 +424,11 @@ def mad(arr):
     return np.median(np.abs(arr - med))
 
 
+def mse(x, y):
+    assert x.shape == y.shape
+    return ((x - y) ** 2).mean(axis=None)
+
+
 def estimate_alpha(f):
     # calculate MSE between Au* and f, should be equal to variance of noise in f
     fa = FactorAnalysis()
@@ -442,7 +450,7 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=.04**2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
+        ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
                                  solver='lgmres', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
 
         plt.plot(testf, label='f')
@@ -451,9 +459,12 @@ def test_ld_derivative():
         # plt.plot(dmidxs, Dmidderiv)
         # plt.plot(ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres'), label='total variation df alpha=5e-4')
         # plt.plot(ld_derivative(testf, x0, alpha=1e-3, verbose=True, solver='lgmres'), label='total variation df alpha=1e-3')
-        #plt.plot(ld_derivative(testf, x0, alpha=1e-2, verbose=True, solver='lgmres'),
+        # plt.plot(ld_derivative(testf, x0, alpha=1e-2, verbose=True, solver='lgmres'),
         #         label='total variation df alpha=1e-2')
         plt.plot(ld_deriv, label='umfpack')
+        integrated_ld = integrate.cumtrapz(ld_deriv, x=x0, initial=testf[0])
+        plt.plot(integrated_ld, label='integrated')
+        print("mse between integrated ld and original fun: {}".format(mse(integrated_ld, testf)))
         plt.legend()
         plt.show()
 
