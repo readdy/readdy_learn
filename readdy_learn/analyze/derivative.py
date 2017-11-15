@@ -3,6 +3,7 @@ import numpy as np
 import scipy.integrate as integrate
 from scipy import sparse
 from scipy.sparse import linalg as splin
+from pynumtools.lgmres import lgmres
 import collections
 import matplotlib.pyplot as plt
 
@@ -315,10 +316,12 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                 if show_progress:
                     label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, lgmres' \
                         .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
-                [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7,
-                                           M=precond)
+                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7, M=precond)
+                info_i = 0
             else:
-                [s, info_i] = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+                s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+                info_i = 0
+                #s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
@@ -417,7 +420,7 @@ def estimate_alpha(f):
 
 
 def test_ld_derivative():
-    x0 = np.arange(0, 2.0 * np.pi, 0.05)
+    x0 = np.arange(0, 2.0 * np.pi, 0.005)
     xx = []
     for x in x0:
         if np.random.random() < .4:
@@ -430,7 +433,7 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=100, verbose=True, solver='bicgstab')
+        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=1000, verbose=True, solver='lgmres', precondition=False, tol=1e-16)
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
