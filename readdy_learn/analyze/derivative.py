@@ -369,6 +369,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             if not first_strike:
                 break
             first_strike = True
+        else:
+            first_strike = False
 
         prev_grad_norm = np.linalg.norm(g)
 
@@ -495,7 +497,7 @@ def test_ld_derivative():
 
     if True:
         ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
-                                 solver='lgmres', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
+                                 solver='bicgstab', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
 
         plt.plot(x0, testf, label='f')
         plt.plot(x0, true_deriv, label='df')
