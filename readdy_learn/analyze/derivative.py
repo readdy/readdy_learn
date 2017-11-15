@@ -3,6 +3,7 @@ import numpy as np
 import scipy.integrate as integrate
 from scipy import sparse
 from scipy.sparse import linalg as splin
+import scipy.optimize as so
 from pynumtools.lgmres import lgmres
 import collections
 import matplotlib.pyplot as plt
@@ -436,6 +437,45 @@ def estimate_alpha(f):
     return fa.noise_variance_
 
 
+def estimate_noise_variance(xs, ys):
+    fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
+    dfun_db = lambda t, b, c, d, e, g: np.exp(c * t)
+    dfun_dc = lambda t, b, c, d, e, g: t * b * np.exp(c * t)
+    dfun_dd = lambda t, b, c, d, e, g: t
+    dfun_de = lambda t, b, c, d, e, g: t * t
+    dfun_dg = lambda t, b, c, d, e, g: t * t * t
+    derivatives = [dfun_db, dfun_dc, dfun_dd, dfun_de, dfun_dg]
+
+    def jac(t, b, c, d, e, g):
+        result = np.array([np.array(f(t, b, c, d, e, g)) for f in derivatives])
+        return result.T
+
+    copt, _ = so.curve_fit(fun, xs, ys, maxfev=300000, jac=jac)
+
+    ff = lambda t: fun(t, *copt)
+    return np.var(ff(xs) - ys, ddof=1)
+
+
+def score_ld_derivative(alpha, xs, ys, **kw):
+    if not 'maxit' in kw.keys():
+        kw['maxit'] = 1000
+    if not 'linalg_solver_maxit' in kw.keys():
+        kw['linalg_solver_maxit'] = 10000
+    if not 'verbose' in kw.keys():
+        kw['verbose'] = False
+    if not 'solver' in kw.keys():
+        kw['solver'] = 'lgmres'
+    if not 'tol' in kw.keys():
+        kw['tol'] = 1e-12
+    if not 'atol' in kw.keys():
+        kw['atol'] = 1e-4
+    if not 'rtol' in kw.keys():
+        kw['rtol'] = 1e-6
+    ld_deriv = ld_derivative(ys, xs, alpha=alpha, **kw)
+    integrated_ld = integrate.cumtrapz(ld_deriv, x=xs, initial=ys[0])
+    return np.abs(estimate_noise_variance(xs, ys)-mse(integrated_ld, ys))
+
+
 def test_ld_derivative():
     x0 = np.arange(0, 2.0 * np.pi, 0.005)
     xx = []
@@ -443,27 +483,28 @@ def test_ld_derivative():
         if np.random.random() < .4:
             xx.append(x)
     x0 = np.array(xx)
-    x0 = np.arange(0, 2.0 * np.pi, 0.05)
+    # x0 = np.arange(0, 2.0 * np.pi, 0.005)
 
     testf = np.array([np.sin(x) for x in x0])
     testf = testf + np.random.normal(0.0, 0.04, x0.shape)
+    print("estimated noise variance: {}".format(estimate_noise_variance(x0, testf)))
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
         ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
                                  solver='lgmres', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
 
-        plt.plot(testf, label='f')
-        plt.plot(true_deriv, label='df')
+        plt.plot(x0, testf, label='f')
+        plt.plot(x0, true_deriv, label='df')
         # plt.plot(deriv, label='approx df')
         # plt.plot(dmidxs, Dmidderiv)
         # plt.plot(ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres'), label='total variation df alpha=5e-4')
         # plt.plot(ld_derivative(testf, x0, alpha=1e-3, verbose=True, solver='lgmres'), label='total variation df alpha=1e-3')
         # plt.plot(ld_derivative(testf, x0, alpha=1e-2, verbose=True, solver='lgmres'),
         #         label='total variation df alpha=1e-2')
-        plt.plot(ld_deriv, label='umfpack')
+        plt.plot(x0, ld_deriv, label='umfpack')
         integrated_ld = integrate.cumtrapz(ld_deriv, x=x0, initial=testf[0])
-        plt.plot(integrated_ld, label='integrated')
+        plt.plot(x0, integrated_ld, label='integrated')
         print("mse between integrated ld and original fun: {}".format(mse(integrated_ld, testf)))
         plt.legend()
         plt.show()
