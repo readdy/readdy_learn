@@ -294,6 +294,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         label.value = 'begin solver loop'
     # Main loop.
     relative_change = None
+    first_strike = False
     for ii in range(1, maxit + 1):
         # Diagonal matrix of weights, for linearizing E-L equation.
         E_n.setdiag(xs_diff * (1. / np.sqrt(np.diff(u) ** 2.0 + epsilon)))
@@ -352,8 +353,17 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             elif info_i < 0:
                 print("WARNING - illegal input or breakdown")
 
+        if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
+            linalg_solver_maxit = int(2 * linalg_solver_maxit)
+        else:
+            linalg_solver_maxit = int(.95 * linalg_solver_maxit)
+
         if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
             print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
+            if not first_strike:
+                break
+            first_strike = True
+
         prev_grad_norm = np.linalg.norm(g)
 
         # Update current solution
@@ -374,7 +384,6 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         box.close()
 
     return u
-
 
 def test_finite_differences():
     x0 = np.arange(0, 2.0 * np.pi, 0.05)
@@ -433,8 +442,8 @@ def test_ld_derivative():
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=1e-2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
-                                 solver='lgmres', precondition=False, tol=1e-16)
+        ld_deriv = ld_derivative(testf, x0, alpha=.04**2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
+                                 solver='lgmres', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
 
         plt.plot(testf, label='f')
         plt.plot(true_deriv, label='df')
