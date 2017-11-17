@@ -232,9 +232,10 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
         box = Box([label])
         display(box)
 
-    # require f(0) = 0
     if show_progress:
         label.value = 'copying data and setting f(0) = 0'
+
+    # require f(0) = 0
     data = np.copy(data) - data[0]
 
     data = data.squeeze()
@@ -279,7 +280,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     prev_grad_norm = None
 
     spsolve_term = None
-    if precondition or solver == 'spsolve' or solver == 'np':
+    if precondition or solver == 'spsolve' or solver == 'np' or True:
         if show_progress:
             if precondition:
                 label.value = 'computing preconditioner: getting integration operator'
@@ -328,7 +329,7 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                 if solver == 'lgmres_scipy':
                     s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
                 else:
-                    s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=10, inner_m=90)
+                    s = lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
@@ -497,7 +498,7 @@ def test_ld_derivative():
 
     if True:
         ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
-                                 solver='bicgstab', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
+                                 solver='spsolve', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
 
         plt.plot(x0, testf, label='f')
         plt.plot(x0, true_deriv, label='df')
