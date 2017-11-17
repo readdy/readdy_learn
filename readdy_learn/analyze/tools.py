@@ -115,6 +115,8 @@ class Trajectory(object):
         if fname is not None and os.path.exists(fname):
             archive = np.load(fname)
             self._counts, self._dcounts_dt = archive['counts'], archive['dcounts_dt']
+            if 'dt' in archive.keys():
+                self._time_step = archive['dt']
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
@@ -149,7 +151,7 @@ class Trajectory(object):
 
     def persist(self):
         if self._fname is not None:
-            np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt)
+            np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt, dt=self.time_step)
         else:
             raise ValueError("no file name set!")
 
