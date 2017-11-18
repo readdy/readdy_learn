@@ -221,8 +221,8 @@ def trapz(xs, ys):
     return result
 
 
-def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6, verbose=False,
-                  show_progress=True, solver='lgmres', precondition=True):
+def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
+                  verbose=False, show_progress=True, solver='lgmres', precondition=True):
     assert isinstance(data, np.ndarray)
 
     label = None
@@ -362,9 +362,9 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
             elif info_i < 0:
                 print("WARNING - illegal input or breakdown")
 
-        #if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
+        # if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
         #    linalg_solver_maxit = int(2 * linalg_solver_maxit)
-        #else:
+        # else:
         #    linalg_solver_maxit = int(.95 * linalg_solver_maxit)
 
         if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
@@ -385,16 +385,60 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
                 .format(ii, maxit, np.linalg.norm(g), atol, relative_change, rtol)
 
         if atol is not None and np.linalg.norm(g) < atol:
-            label.value = "ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g))
+            if show_progress:
+                label.value = "ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g))
             break
         if rtol is not None and relative_change < rtol:
-            label.value = "ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change)
+            if show_progress:
+                label.value = "ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change)
             break
 
     if show_progress:
         box.close()
 
     return u
+
+
+def estimate_noise_variance(xs, ys):
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.linear_model import LinearRegression as interp
+
+    poly_feat = PolynomialFeatures(degree=6)
+    regression = interp()  # interp(l1_ratio=[.1, .5, .7, .9, .95, .99, 1], n_alphas=100)
+    pipeline = Pipeline([("poly", poly_feat), ("regression", regression)])
+    pipeline.fit(xs[:, np.newaxis], ys)
+
+    ff = lambda t: pipeline.predict(t[:, np.newaxis])
+    return np.var(ff(xs) - ys, ddof=0), ff
+
+
+def best_ld_derivative(data, xs, alphas, njobs=8, **kw):
+    from pathos.multiprocessing import Pool
+    from readdy_learn.analyze.progress import Progress
+
+    prog = Progress(n=len(alphas), label='Find alpha')
+
+    derivs = []
+    alphas_unordered = []
+    with Pool(processes=njobs) as p:
+        for d in p.imap_unordered(lambda x: (x, ld_derivative(data, xs, **kw, alpha=x)), alphas, chunksize=1):
+            derivs.append(d[1])
+            alphas_unordered.append(d[0])
+            prog.increase(1)
+
+    errs = []
+    for ld in derivs:
+        integrated_ld = integrate.cumtrapz(ld, x=xs, initial=0) + data[0]
+        var, ff = estimate_noise_variance(xs, data)
+        _mse = mse(integrated_ld, data)
+        errs.append(np.abs(var - _mse))
+    errs = np.array([errs]).squeeze()
+    best = int(np.argmin(errs))
+    print("found alpha={} to be best with a difference of {} between mse and variance".format(alphas_unordered[best],
+                                                                                              errs[best]))
+    prog.finish()
+    return derivs[best]
 
 
 def test_finite_differences():
@@ -445,25 +489,6 @@ def estimate_alpha(f):
     return fa.noise_variance_
 
 
-def estimate_noise_variance(xs, ys):
-    fun = lambda t, b, c, d, e, g: b * np.exp(c * t) + d * t + e * t * t + g * t * t * t
-    dfun_db = lambda t, b, c, d, e, g: np.exp(c * t)
-    dfun_dc = lambda t, b, c, d, e, g: t * b * np.exp(c * t)
-    dfun_dd = lambda t, b, c, d, e, g: t
-    dfun_de = lambda t, b, c, d, e, g: t * t
-    dfun_dg = lambda t, b, c, d, e, g: t * t * t
-    derivatives = [dfun_db, dfun_dc, dfun_dd, dfun_de, dfun_dg]
-
-    def jac(t, b, c, d, e, g):
-        result = np.array([np.array(f(t, b, c, d, e, g)) for f in derivatives])
-        return result.T
-
-    copt, _ = so.curve_fit(fun, xs, ys, maxfev=300000, jac=jac)
-
-    ff = lambda t: fun(t, *copt)
-    return np.var(ff(xs) - ys, ddof=1)
-
-
 def score_ld_derivative(alpha, xs, ys, **kw):
     if not 'maxit' in kw.keys():
         kw['maxit'] = 1000
@@ -481,7 +506,7 @@ def score_ld_derivative(alpha, xs, ys, **kw):
         kw['rtol'] = 1e-6
     ld_deriv = ld_derivative(ys, xs, alpha=alpha, **kw)
     integrated_ld = integrate.cumtrapz(ld_deriv, x=xs, initial=ys[0])
-    return np.abs(estimate_noise_variance(xs, ys)-mse(integrated_ld, ys))
+    return np.abs(estimate_noise_variance(xs, ys) - mse(integrated_ld, ys))
 
 
 def test_ld_derivative():
@@ -495,12 +520,15 @@ def test_ld_derivative():
 
     testf = np.array([np.sin(x) for x in x0])
     testf = testf + np.random.normal(0.0, 0.08, x0.shape)
-    print("estimated noise variance: {}".format(estimate_noise_variance(x0, testf)))
+    print("estimated noise variance: {}".format(estimate_noise_variance(x0, testf)[0]))
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=2000, linalg_solver_maxit=50000, verbose=True,
-                                 solver='bicgstab', precondition=False, tol=1e-12, atol=1e-9, rtol=None)
+        kw = {'maxit': 2000, 'linalg_solver_maxit': 50000, 'verbose': False,
+              'solver': 'bicgstab', 'precondition': False, 'tol': 1e-12, 'atol': 1e-7, 'rtol': None,
+              'show_progress': False}
+        ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
+        # ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, **kw)
 
         plt.plot(x0, testf, label='f')
         plt.plot(x0, true_deriv, label='df')

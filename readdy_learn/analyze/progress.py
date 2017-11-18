@@ -1,7 +1,7 @@
 import progress_reporter as _pr
 
-class Progress(_pr.ProgressReporter):
 
+class Progress(_pr.ProgressReporter):
     def __init__(self, n=100, label=""):
         self._progress_register(amount_of_work=n, description=label)
 
