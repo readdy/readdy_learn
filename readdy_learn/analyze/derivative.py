@@ -5,6 +5,7 @@ from scipy import sparse
 from scipy.sparse import linalg as splin
 import scipy.optimize as so
 from pynumtools.lgmres import lgmres
+from pynumtools.finite_differences import get_fd_matrix_midpoints
 import collections
 import matplotlib.pyplot as plt
 
@@ -248,7 +249,8 @@ def ld_derivative(data, xs, alpha, maxit=1000, linalg_solver_maxit=100, tol=1e-4
     # differentiation operator
     if show_progress:
         label.value = 'obtaining differentiation operator'
-    D = get_differentiation_operator_midpoint(xs)
+    D = get_fd_matrix_midpoints(xs, k=1, window_width=5)
+    # D = #get_differentiation_operator_midpoint(xs)
     D_T = D.transpose().tocsc()
 
     def A(v):
@@ -489,16 +491,16 @@ def test_ld_derivative():
         if np.random.random() < .4:
             xx.append(x)
     x0 = np.array(xx)
-    # x0 = np.arange(0, 2.0 * np.pi, 0.005)
+    x0 = np.arange(0, 2.0 * np.pi, 0.005)
 
     testf = np.array([np.sin(x) for x in x0])
-    testf = testf + np.random.normal(0.0, 0.04, x0.shape)
+    testf = testf + np.random.normal(0.0, 0.08, x0.shape)
     print("estimated noise variance: {}".format(estimate_noise_variance(x0, testf)))
     true_deriv = [np.cos(x) for x in x0]
 
     if True:
-        ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=1000, linalg_solver_maxit=10000, verbose=True,
-                                 solver='bicgstab', precondition=False, tol=1e-12, atol=1e-4, rtol=1e-6)
+        ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, maxit=2000, linalg_solver_maxit=50000, verbose=True,
+                                 solver='bicgstab', precondition=False, tol=1e-12, atol=1e-9, rtol=None)
 
         plt.plot(x0, testf, label='f')
         plt.plot(x0, true_deriv, label='df')
