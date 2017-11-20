@@ -209,10 +209,10 @@ class ReactionAnalysis(object):
     def generate_trajectories(self, mode='gillespie', **kw):
         if mode == 'gillespie':
             for i in range(len(self._initial_states)):
-                self._trajs.append(self.generate_or_load_traj_gillespie(i, self._set_up_system, **kw))
+                self._trajs.append(self.generate_or_load_traj_gillespie(i, **kw))
         elif mode == 'LMA':
             for i in range(len(self._initial_states)):
-                self._trajs.append(self.generate_or_load_traj_lma(i, self._set_up_system, **kw))
+                self._trajs.append(self.generate_or_load_traj_lma(i, **kw))
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None):
         for ix, traj in enumerate(self._trajs):
