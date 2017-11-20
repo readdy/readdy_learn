@@ -427,7 +427,7 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
 
     for i in range(n_iters):
 
-        scale = np.power(10, i-1)
+        scale = np.power(10, i)
         print("current scale = {}".format(scale))
 
         alphas = np.linspace(curr_best_alpha - scale*.5*d, curr_best_alpha + scale*.5*d, len(alphas))
