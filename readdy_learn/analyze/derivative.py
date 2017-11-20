@@ -417,8 +417,6 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
     from pathos.multiprocessing import Pool
     from readdy_learn.analyze.progress import Progress
 
-    prog = Progress(n=len(alphas), label='Find alpha')
-
     assert len(alphas) > 0
     assert n_iters > 0
 
@@ -430,6 +428,7 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
     wuerger = lambda x: (x, ld_derivative(data, xs, **kwkopy, alpha=x))
 
     for i in range(n_iters):
+        prog = Progress(n=len(alphas), label='Find alpha')
 
         print("current level = {}, looking in [{}, {}]".format(i, np.min(alphas), np.max(alphas)))
 
