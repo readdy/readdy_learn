@@ -453,8 +453,9 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
         prog.finish()
 
         bestalpha = alphas_unordered[best]
-        prevalph = alphas_unordered[best-1] if best-1 >= 0 else alphas_unordered[0]
-        nextalph = alphas_unordered[best+1] if best+1 < len(alphas_unordered) else alphas_unordered[-1]
+        ix = np.argwhere(bestalpha)
+        prevalph = alphas_unordered[ix-1] if ix-1 >= 0 else alphas_unordered[0]
+        nextalph = alphas_unordered[ix+1] if ix+1 < len(alphas_unordered) else alphas_unordered[-1]
         alphas = np.linspace(prevalph, nextalph, num=len(alphas))
 
     return bestalpha, derivs[best]
