@@ -419,25 +419,24 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
 
     prog = Progress(n=len(alphas), label='Find alpha')
 
-    d = np.max(alphas) - np.min(alphas)
-    curr_best_alpha = .5*d
-
     assert len(alphas) > 0
     assert n_iters > 0
 
     kwkopy = dict(kw)
+    bestalpha = alphas[0]
+    derivs = []
+    best = 0
+
+    wuerger = lambda x: (x, ld_derivative(data, xs, **kwkopy, alpha=x))
 
     for i in range(n_iters):
 
-        scale = np.power(10, i)
-        print("current scale = {}".format(scale))
-
-        alphas = np.linspace(curr_best_alpha - scale*.5*d + np.min(alphas), curr_best_alpha + scale*.5*d + np.min(alphas), len(alphas))
+        print("current level = {}, looking in [{}, {}]".format(i, np.min(alphas), np.max(alphas)))
 
         derivs = []
         alphas_unordered = []
         with Pool(processes=njobs) as p:
-            for d in p.imap_unordered(lambda x: (x, ld_derivative(data, xs, **kwkopy, alpha=x)), alphas, chunksize=1):
+            for d in p.imap_unordered(wuerger, alphas, chunksize=1):
                 derivs.append(d[1])
                 alphas_unordered.append(d[0])
                 prog.increase(1)
@@ -453,9 +452,13 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
         print("found alpha={} to be best with a difference of {} between mse and "
               "variance".format(alphas_unordered[best], errs[best]))
         prog.finish()
-        curr_best_alpha = np.copy(alphas_unordered[best])
-        d = np.max(alphas) - np.min(alphas)
-    return alphas_unordered[best], derivs[best]
+
+        bestalpha = alphas_unordered[best]
+        prevalph = alphas_unordered[best-1] if best-1 >= 0 else alphas_unordered[0]
+        nextalph = alphas_unordered[best+1] if best+1 < len(alphas_unordered) else alphas_unordered[-1]
+        alphas = np.linspace(prevalph, nextalph, num=len(alphas))
+
+    return bestalpha, derivs[best]
 
 
 def test_finite_differences():
@@ -544,7 +547,7 @@ def test_ld_derivative():
         kw = {'maxit': 2000, 'linalg_solver_maxit': 50000, 'verbose': False,
               'solver': 'bicgstab', 'precondition': False, 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
               'show_progress': False}
-        #ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
+        # ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
         ld_deriv = ld_derivative(testf, x0, alpha=.001, **kw)
 
         plt.plot(x0, testf, label='f')
