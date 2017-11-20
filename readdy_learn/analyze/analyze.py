@@ -223,6 +223,17 @@ class ReactionAnalysis(object):
             for i in range(len(self._initial_states)):
                 self._trajs.append(self.generate_or_load_traj_lma(i, **kw))
 
+    def obtain_serialized_gillespie_trajectories(self, desired_n_counts=6000, alphas=None, n_steps=250,
+                                                 n_realizations=160, update_and_persist=False, njobs=8):
+        self._trajs = []
+
+        for n in range(len(self.initial_states)):
+            traj = self.generate_or_load_traj_gillespie(n, n_steps=n_steps, n_realizations=n_realizations,
+                                                        update_and_persist=update_and_persist, njobs=njobs)
+            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas)
+            self._best_alphas[n] = a
+            self._trajs.append(self.get_traj_fname(n))
+
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None):
         for ix, traj in enumerate(self._trajs):
             a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas)
