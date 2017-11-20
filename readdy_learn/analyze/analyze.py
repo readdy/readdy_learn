@@ -25,7 +25,7 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
-def obtain_derivative(traj, desired_n_counts=6000, alpha=1000):
+def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5):
     if traj.dcounts_dt is None:
         interp_degree = traj.interpolation_degree
         traj.interpolation_degree = None
@@ -41,11 +41,12 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000):
         used_alphas = []
         for species in range(traj.n_species):
             ys = strided_counts[:, species]
-            kw = {'maxit': 1000, 'linalg_solver_maxit': 1000000, 'tol': 1e-10, 'atol': 1e-10, 'rtol': None,
+            kw = {'maxit': maxit, 'linalg_solver_maxit': 1000000, 'tol': tol, 'atol': atol, 'rtol': None,
                   'precondition': False, 'solver': 'bicgstab'}
             if isinstance(alpha, np.ndarray):
                 if len(alpha) > 1:
-                    best_alpha, ld = deriv.best_ld_derivative(ys, strided_times, alpha, **kw)
+                    best_alpha, ld = deriv.best_ld_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
+                                                              **kw)
                 else:
                     alpha = alpha[0]
                     ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)

@@ -413,31 +413,45 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
-def best_ld_derivative(data, xs, alphas, njobs=8, **kw):
+def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
     from pathos.multiprocessing import Pool
     from readdy_learn.analyze.progress import Progress
 
     prog = Progress(n=len(alphas), label='Find alpha')
 
-    derivs = []
-    alphas_unordered = []
-    with Pool(processes=njobs) as p:
-        for d in p.imap_unordered(lambda x: (x, ld_derivative(data, xs, **kw, alpha=x)), alphas, chunksize=1):
-            derivs.append(d[1])
-            alphas_unordered.append(d[0])
-            prog.increase(1)
+    d = np.max(alphas) - np.min(alphas)
+    curr_best_alpha = .5*d
 
-    errs = []
-    for ld in derivs:
-        integrated_ld = integrate.cumtrapz(ld, x=xs, initial=0) + data[0]
-        var, ff = estimate_noise_variance(xs, data)
-        _mse = mse(integrated_ld, data)
-        errs.append(np.abs(var - _mse))
-    errs = np.array([errs]).squeeze()
-    best = int(np.argmin(errs))
-    print("found alpha={} to be best with a difference of {} between mse and variance".format(alphas_unordered[best],
-                                                                                              errs[best]))
-    prog.finish()
+    assert len(alphas) > 0
+    assert n_iters > 0
+
+    for i in range(n_iters):
+
+        scale = np.power(10, i-1)
+        print("current scale = {}".format(scale))
+
+        alphas = np.linspace(curr_best_alpha - scale*.5*d, curr_best_alpha + scale*.5*d, len(alphas))
+
+        derivs = []
+        alphas_unordered = []
+        with Pool(processes=njobs) as p:
+            for d in p.imap_unordered(lambda x: (x, ld_derivative(data, xs, **kw, alpha=x)), alphas, chunksize=1):
+                derivs.append(d[1])
+                alphas_unordered.append(d[0])
+                prog.increase(1)
+
+        errs = []
+        for ld in derivs:
+            integrated_ld = integrate.cumtrapz(ld, x=xs, initial=0) + data[0]
+            var, ff = estimate_noise_variance(xs, data)
+            _mse = mse(integrated_ld, data)
+            errs.append(np.abs(var - _mse))
+        errs = np.array([errs]).squeeze()
+        best = int(np.argmin(errs))
+        print("found alpha={} to be best with a difference of {} between mse and "
+              "variance".format(alphas_unordered[best], errs[best]))
+        prog.finish()
+        curr_best_alpha = np.copy(alphas_unordered[best])
     return alphas_unordered[best], derivs[best]
 
 
