@@ -8,6 +8,7 @@ import readdy_learn.analyze.tools as tools
 import readdy_learn.sample_tools as sample_tools
 import readdy_learn.analyze.derivative as deriv
 import readdy_learn.analyze.estimator as rlas
+import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 
 
 def estimate_noise_variance(xs, ys):
@@ -86,8 +87,8 @@ class ReactionAnalysis(object):
             }
         self._ld_derivative_config = ld_derivative_config
         for state in initial_states:
-            assert len(state) == n_species, "each state must be given for all species, but this one contained {} " \
-                                            "values".format(len(state))
+            assert len(np.squeeze(state)) == n_species, "each state must be given for all species, but this one " \
+                                                        "contained {} values".format(len(np.squeeze(state)))
         self._desired_rates = desired_rates
         self._bfc = bfc
         self._recompute = recompute
