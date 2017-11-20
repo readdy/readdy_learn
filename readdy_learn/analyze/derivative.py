@@ -438,7 +438,7 @@ def best_ld_derivative(data, xs, alphas, njobs=8, **kw):
     print("found alpha={} to be best with a difference of {} between mse and variance".format(alphas_unordered[best],
                                                                                               errs[best]))
     prog.finish()
-    return derivs[best]
+    return alphas_unordered[best], derivs[best]
 
 
 def test_finite_differences():
@@ -525,10 +525,10 @@ def test_ld_derivative():
 
     if True:
         kw = {'maxit': 2000, 'linalg_solver_maxit': 50000, 'verbose': False,
-              'solver': 'bicgstab', 'precondition': False, 'tol': 1e-12, 'atol': 1e-7, 'rtol': None,
+              'solver': 'bicgstab', 'precondition': False, 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
               'show_progress': False}
-        ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
-        # ld_deriv = ld_derivative(testf, x0, alpha=.04 ** 2, **kw)
+        #ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
+        ld_deriv = ld_derivative(testf, x0, alpha=.001, **kw)
 
         plt.plot(x0, testf, label='f')
         plt.plot(x0, true_deriv, label='df')
