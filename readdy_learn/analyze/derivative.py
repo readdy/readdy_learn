@@ -425,6 +425,8 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
     assert len(alphas) > 0
     assert n_iters > 0
 
+    kwkopy = dict(kw)
+
     for i in range(n_iters):
 
         scale = np.power(10, i)
@@ -435,7 +437,7 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
         derivs = []
         alphas_unordered = []
         with Pool(processes=njobs) as p:
-            for d in p.imap_unordered(lambda x: (x, ld_derivative(data, xs, **kw, alpha=x)), alphas, chunksize=1):
+            for d in p.imap_unordered(lambda x: (x, ld_derivative(data, xs, **kwkopy, alpha=x)), alphas, chunksize=1):
                 derivs.append(d[1])
                 alphas_unordered.append(d[0])
                 prog.increase(1)
