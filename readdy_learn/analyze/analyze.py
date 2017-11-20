@@ -204,6 +204,14 @@ class ReactionAnalysis(object):
     def best_alphas(self):
         return self._best_alphas
 
+    @property
+    def initial_states(self):
+        return self._initial_states
+
+    @initial_states.setter
+    def initial_states(self, value):
+        self._initial_states = value
+
     def get_traj_fname(self, n):
         return self._fname_prefix + "_traj_{}_".format(n) + self._fname_postfix + ".npz"
 
