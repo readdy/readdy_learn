@@ -452,6 +452,7 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
               "variance".format(alphas_unordered[best], errs[best]))
         prog.finish()
         curr_best_alpha = np.copy(alphas_unordered[best])
+        d = np.max(alphas) - np.min(alphas)
     return alphas_unordered[best], derivs[best]
 
 
