@@ -63,7 +63,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             used_alphas.append(best_alpha)
         traj.dcounts_dt = dx
         traj.interpolation_degree = interp_degree
-        traj.persist()
+        traj.persist(alpha=used_alphas)
         return used_alphas, traj
     else:
         print("traj already contains derivatives, skip this")
@@ -411,10 +411,11 @@ class ReactionAnalysis(object):
     def get_solve_fname(self, n):
         return self.fname_prefix + "_solution_{}_".format(n)+self.fname_postfix+".npy"
 
-    def solve(self, n, alpha, l1_ratio, tol=1e-12):
+    def solve(self, n, alpha, l1_ratio, tol=1e-12, recompute=False):
 
-        if not self.recompute and os.path.exists(self.get_solve_fname(n)):
-            return np.load(self.get_solve_fname(n))
+        if not recompute:
+            if not self.recompute and os.path.exists(self.get_solve_fname(n)):
+                return np.load(self.get_solve_fname(n))
 
         system = self._set_up_system(self.initial_states[n])
         traj = self._trajs[n]

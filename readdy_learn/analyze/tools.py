@@ -149,9 +149,9 @@ class Trajectory(object):
 
         return rate_chapman, xi, rate_per_volume
 
-    def persist(self):
+    def persist(self, **kw):
         if self._fname is not None:
-            np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt, dt=self.time_step)
+            np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt, dt=self.time_step, **kw)
         else:
             raise ValueError("no file name set!")
 
