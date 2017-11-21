@@ -70,6 +70,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             return used_alphas, traj
         else:
             traj.update()
+            traj.persist()
             return [], traj
     else:
         print("traj already contains derivatives, skip this")
