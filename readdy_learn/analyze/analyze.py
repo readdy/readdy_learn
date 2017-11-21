@@ -337,6 +337,8 @@ class ReactionAnalysis(object):
 
     def plot_concentration_curves(self, n, fname=None):
         traj = self._trajs[n]
+        if isinstance(traj, str):
+            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
         system = self._set_up_system(self._initial_states[n])
         config = system.get_trajectory_config()
         estimated = sample_tools.Suite.estimated_behavior(self._desired_rates, self._bfc, traj.counts[0], traj.times)
@@ -363,6 +365,8 @@ class ReactionAnalysis(object):
         if self._recompute or not os.path.exists(fname):
             system = self._set_up_system(self._initial_states[n])
             traj = self._trajs[n]
+            if isinstance(traj, str):
+                traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
             if initial_guess is None:
                 initial_guess = np.zeros_like(self._desired_rates)
             suite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self._interp_degree,
@@ -399,6 +403,8 @@ class ReactionAnalysis(object):
 
     def plot_derivatives(self, traj_n, n_points=None):
         traj = self._trajs[traj_n]
+        if isinstance(traj, str):
+            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
         init = self._initial_states[traj_n]
         system = self._set_up_system(init)
         suite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self._interp_degree,
