@@ -408,6 +408,32 @@ class ReactionAnalysis(object):
             cv.result = np.load(fname)
         return cv
 
+    def get_solve_fname(self, n):
+        return self.fname_prefix + "_solution_{}_".format(n)+self.fname_postfix+".npy"
+
+    def solve(self, n, alpha, l1_ratio, tol=1e-12):
+
+        if not self.recompute and os.path.exists(self.get_solve_fname(n)):
+            return np.load(self.get_solve_fname(n))
+
+        system = self._set_up_system(self.initial_states[n])
+        traj = self._trajs[n]
+        if isinstance(traj, str):
+            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
+            traj.update()
+
+        optsuite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self.interp_degree,
+                                                      tol=tol, alpha=alpha, l1_ratio=l1_ratio,
+                                                      init_xi=np.zeros_like(self.desired_rates))
+        estimator = optsuite.get_estimator(verbose=True, interp_degree=self.interp_degree)
+        estimator.fit(None)
+        if estimator.success_:
+            rates = estimator.coefficients_
+            np.save(self.get_solve_fname(n), rates)
+            return rates
+        else:
+            raise ValueError('*_*')
+
     def plot_derivatives(self, traj_n, n_points=None):
         traj = self._trajs[traj_n]
         if isinstance(traj, str):
