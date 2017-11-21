@@ -67,7 +67,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
         return used_alphas, traj
     else:
         print("traj already contains derivatives, skip this")
-        return traj
+        return [], traj
 
 
 class ReactionAnalysis(object):
@@ -232,7 +232,8 @@ class ReactionAnalysis(object):
             traj = self.generate_or_load_traj_gillespie(n, n_steps=n_steps, n_realizations=n_realizations,
                                                         update_and_persist=update_and_persist, njobs=njobs)
             a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, atol=atol)
-            self._best_alphas[n] = a
+            if a is not None and len(a) > 0:
+                self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None):
