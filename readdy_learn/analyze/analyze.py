@@ -388,7 +388,7 @@ class ReactionAnalysis(object):
 
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
         if test_n is None:
-            test_n = [i for i in range(len(self._trajs)) if i != train_n]
+            test_n = np.array([i for i in range(len(self._trajs)) if i != train_n])
         if initial_guess is None:
             initial_guess = np.zeros_like(self._desired_rates)
         fname = self.get_cv_fname(n_train=train_n)
