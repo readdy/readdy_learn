@@ -384,7 +384,7 @@ class ReactionAnalysis(object):
         return rates
 
     def get_cv_fname(self, n_train):
-        return self._fname_prefix + "_cv_train_{}_".format(n_train) + self._fname_postfix + ".npz"
+        return self._fname_prefix + "_cv_train_{}_".format(n_train) + self._fname_postfix + ".npy"
 
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
         if test_n is None:
