@@ -398,7 +398,7 @@ class ReactionAnalysis(object):
                                          verbose=False)
             traintraj.update()
         cv = rlas.CV(traintraj, self._bfc, alphas, l1_ratios, 5, initial_guess,
-                     test_traj=test_n, maxiter=300000, rescale=False, tol=tol, n_jobs=njobs)
+                     test_traj=self._trajs[test_n], maxiter=300000, rescale=False, tol=tol, n_jobs=njobs)
         if self._recompute or not os.path.exists(fname):
             cv.fit_cross_trajs()
             np.save(fname, cv.result)
