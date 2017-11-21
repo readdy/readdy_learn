@@ -392,7 +392,12 @@ class ReactionAnalysis(object):
         if initial_guess is None:
             initial_guess = np.zeros_like(self._desired_rates)
         fname = self.get_cv_fname(n_train=train_n)
-        cv = rlas.CV(self._trajs[train_n], self._bfc, alphas, l1_ratios, 5, initial_guess,
+        traintraj = self._trajs[train_n]
+        if isinstance(traintraj, str):
+            traintraj = tools.Trajectory(traintraj, self.timestep, interpolation_degree=self.interp_degree,
+                                         verbose=False)
+            traintraj.update()
+        cv = rlas.CV(traintraj, self._bfc, alphas, l1_ratios, 5, initial_guess,
                      test_traj=test_n, maxiter=300000, rescale=False, tol=tol, n_jobs=njobs)
         if self._recompute or not os.path.exists(fname):
             cv.fit_cross_trajs()
