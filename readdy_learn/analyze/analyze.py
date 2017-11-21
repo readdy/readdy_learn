@@ -241,6 +241,13 @@ class ReactionAnalysis(object):
                                                         update_and_persist=update_and_persist, njobs=njobs)
             a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, atol=atol,
                                      alpha_search_depth=alpha_search_depth, interp_degree=self.interp_degree)
+            if a is None or len(a) == 0:
+                if os.path.exists(self.get_traj_fname(n)):
+                    t = np.load(self.get_traj_fname(n))
+                    if "alpha" in t.keys():
+                        a = np.copy(t['alpha'])
+                    del t
+
             if a is not None and len(a) > 0:
                 self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
