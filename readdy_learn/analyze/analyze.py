@@ -25,46 +25,52 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
-def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5):
+def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
+                      interp_degree='regularized_derivative'):
     if traj.dcounts_dt is None:
-        interp_degree = traj.interpolation_degree
-        traj.interpolation_degree = None
-        traj.update()
-        stride = max(traj.counts.shape[0] // desired_n_counts, 1)
-        strided_times = traj.times[::stride]
-        strided_counts = traj.counts[::stride, :]
-        strided_dt = strided_times[1] - strided_times[0]
-        print("got {} counts (and {} corresp. time steps), dt=".format(strided_counts.shape[0], len(strided_times)),
-              strided_dt)
+        if interp_degree == 'regularized_derivative':
+            interp_degree = traj.interpolation_degree
+            traj.interpolation_degree = None
+            traj.update()
+            stride = max(traj.counts.shape[0] // desired_n_counts, 1)
+            strided_times = traj.times[::stride]
+            strided_counts = traj.counts[::stride, :]
+            strided_dt = strided_times[1] - strided_times[0]
+            print("got {} counts (and {} corresp. time steps), dt=".format(strided_counts.shape[0], len(strided_times)),
+                  strided_dt)
 
-        dx = np.empty(shape=(len(traj.times), traj.n_species))
-        used_alphas = []
-        for species in range(traj.n_species):
-            ys = strided_counts[:, species]
-            kw = {'maxit': maxit, 'linalg_solver_maxit': 10000000, 'tol': tol, 'atol': atol, 'rtol': None,
-                  'precondition': False, 'solver': 'bicgstab', 'verbose': False}
-            if isinstance(alpha, np.ndarray):
-                if len(alpha) > 1:
-                    best_alpha, ld = deriv.best_ld_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
-                                                              **kw)
+            dx = np.empty(shape=(len(traj.times), traj.n_species))
+
+            used_alphas = []
+            for species in range(traj.n_species):
+                ys = strided_counts[:, species]
+                kw = {'maxit': maxit, 'linalg_solver_maxit': 10000000, 'tol': tol, 'atol': atol, 'rtol': None,
+                      'precondition': False, 'solver': 'bicgstab', 'verbose': False}
+                if isinstance(alpha, np.ndarray):
+                    if len(alpha) > 1:
+                        best_alpha, ld = deriv.best_ld_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
+                                                                  **kw)
+                    else:
+                        alpha = alpha[0]
+                        ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
+                        best_alpha = alpha
                 else:
-                    alpha = alpha[0]
                     ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
                     best_alpha = alpha
-            else:
-                ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
-                best_alpha = alpha
-            # linearly interpolate to the full time range
-            integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + ys[0]
-            var, ff = estimate_noise_variance(strided_times, ys)
-            print("MSE =", deriv.mse(integrated_ld, ys), "noise variance =", var)
-            dx[:, species] = np.interp(traj.times, strided_times, ld)
+                # linearly interpolate to the full time range
+                integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + ys[0]
+                var, ff = estimate_noise_variance(strided_times, ys)
+                print("MSE =", deriv.mse(integrated_ld, ys), "noise variance =", var)
+                dx[:, species] = np.interp(traj.times, strided_times, ld)
 
-            used_alphas.append(best_alpha)
-        traj.dcounts_dt = dx
-        traj.interpolation_degree = interp_degree
-        traj.persist(alpha=used_alphas)
-        return used_alphas, traj
+                used_alphas.append(best_alpha)
+            traj.dcounts_dt = dx
+            traj.interpolation_degree = interp_degree
+            traj.persist(alpha=used_alphas)
+            return used_alphas, traj
+        else:
+            traj.update()
+            return [], traj
     else:
         print("traj already contains derivatives, skip this")
         return [], traj
@@ -233,7 +239,7 @@ class ReactionAnalysis(object):
             traj = self.generate_or_load_traj_gillespie(n, n_steps=n_steps, n_realizations=n_realizations,
                                                         update_and_persist=update_and_persist, njobs=njobs)
             a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, atol=atol,
-                                     alpha_search_depth=alpha_search_depth)
+                                     alpha_search_depth=alpha_search_depth, interp_degree=self.interp_degree)
             if a is not None and len(a) > 0:
                 self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
