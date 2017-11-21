@@ -225,13 +225,15 @@ class ReactionAnalysis(object):
                 self._trajs.append(self.generate_or_load_traj_lma(i, **kw))
 
     def obtain_serialized_gillespie_trajectories(self, desired_n_counts=6000, alphas=None, n_steps=250,
-                                                 n_realizations=160, update_and_persist=False, njobs=8, atol=1e-9):
+                                                 n_realizations=160, update_and_persist=False, njobs=8, atol=1e-9,
+                                                 alpha_search_depth=5):
         self._trajs = []
 
         for n in range(len(self.initial_states)):
             traj = self.generate_or_load_traj_gillespie(n, n_steps=n_steps, n_realizations=n_realizations,
                                                         update_and_persist=update_and_persist, njobs=njobs)
-            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, atol=atol)
+            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, atol=atol,
+                                     alpha_search_depth=alpha_search_depth)
             if a is not None and len(a) > 0:
                 self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
