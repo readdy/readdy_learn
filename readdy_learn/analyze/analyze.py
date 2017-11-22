@@ -331,6 +331,12 @@ class ReactionAnalysis(object):
             theta = np.array([f(data) for f in bfc.functions])
             return np.matmul(self._desired_rates, theta)
 
+        if isinstance(traj, int):
+            traj = self._trajs[traj]
+
+        if isinstance(traj, str):
+            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
+
         f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(15, 10))
         # f.suptitle("least squares fit for full trajectory (not well-mixed in the last time steps)")
         xs = traj.times
