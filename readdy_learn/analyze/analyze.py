@@ -252,11 +252,11 @@ class ReactionAnalysis(object):
                 self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
 
-    def obtain_lma_trajectories(self, target_time):
+    def obtain_lma_trajectories(self, target_time, noise_variance=0):
         self._trajs = []
 
         for n in range(len(self.initial_states)):
-            traj = self.generate_or_load_traj_lma(n, target_time)
+            traj = self.generate_or_load_traj_lma(n, target_time, noise_variance=noise_variance)
             _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree)
             self._trajs.append(self.get_traj_fname(n))
 
@@ -291,7 +291,7 @@ class ReactionAnalysis(object):
             traj.persist()
         return traj
 
-    def generate_or_load_traj_lma(self, n, target_time, tol=1e-12, update_and_persist=False):
+    def generate_or_load_traj_lma(self, n, target_time, update_and_persist=False, noise_variance=0):
         assert n < len(self._initial_states)
         init = self._initial_states[n]
         fname = self.get_traj_fname(n)
@@ -300,6 +300,8 @@ class ReactionAnalysis(object):
                 os.remove(fname)
             _, counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
                                                             self._timestep, target_time / self._timestep)
+            if noise_variance > 0:
+                counts = counts + np.random.normal(0.0, noise_variance, size=counts.shape)
         else:
             counts = fname
         stride = 1
