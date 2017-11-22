@@ -3,12 +3,11 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+import readdy_learn.analyze.derivative as deriv
+import readdy_learn.analyze.estimator as rlas
 import readdy_learn.analyze.generate as generate
 import readdy_learn.analyze.tools as tools
 import readdy_learn.sample_tools as sample_tools
-import readdy_learn.analyze.derivative as deriv
-import readdy_learn.analyze.estimator as rlas
-import readdy_learn.generate.generate_tools.kinetic_monte_carlo as kmc
 
 
 def estimate_noise_variance(xs, ys):
@@ -44,7 +43,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             used_alphas = []
             for species in range(traj.n_species):
                 ys = strided_counts[:, species]
-                kw = {'maxit': maxit, 'linalg_solver_maxit': 100000, 'tol': tol, 'atol': atol, 'rtol': None,
+                kw = {'maxit': maxit, 'linalg_solver_maxit': 1000000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'precondition': False, 'solver': 'bicgstab', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
