@@ -44,7 +44,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             used_alphas = []
             for species in range(traj.n_species):
                 ys = strided_counts[:, species]
-                kw = {'maxit': maxit, 'linalg_solver_maxit': 10000000, 'tol': tol, 'atol': atol, 'rtol': None,
+                kw = {'maxit': maxit, 'linalg_solver_maxit': 100000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'precondition': False, 'solver': 'bicgstab', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:

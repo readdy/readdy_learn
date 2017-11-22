@@ -295,7 +295,7 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
         spsolve_term = KT * K
 
     if show_progress:
-        label.value = 'begin solver loop'
+        label.value = 'begin solver loop for alpha={}'.format(alpha)
     # Main loop.
     relative_change = None
     first_strike = False
