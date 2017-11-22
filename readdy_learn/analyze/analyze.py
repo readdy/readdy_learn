@@ -310,16 +310,16 @@ class ReactionAnalysis(object):
         dt = self._timestep * stride
         traj = tools.Trajectory(counts, dt, interpolation_degree=self._interp_degree, verbose=False,
                                 fname=fname, **self._ld_derivative_config)
-        system = self._set_up_system(init)
-        traj.interpolation_degree = None
-        suite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self._interp_degree,
-                                                   tol=tol, init_xi=np.ones_like(self._desired_rates) * .0)
-        estimator = suite.get_estimator(verbose=True, interp_degree=self._interp_degree)
-        data, expected = estimator._get_slice(None)
-        theta = estimator.get_theta(data)
-        theta = np.transpose(theta, axes=(0, 2, 1))
-        dx = theta.dot(self._desired_rates)
-        traj.dcounts_dt = dx
+        # system = self._set_up_system(init)
+        # traj.interpolation_degree = None
+        # suite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self._interp_degree,
+        #                                            tol=tol, init_xi=np.ones_like(self._desired_rates) * .0)
+        # estimator = suite.get_estimator(verbose=True, interp_degree=self._interp_degree)
+        # data, expected = estimator._get_slice(None)
+        # theta = estimator.get_theta(data)
+        # theta = np.transpose(theta, axes=(0, 2, 1))
+        # dx = theta.dot(self._desired_rates)
+        # traj.dcounts_dt = dx
 
         traj.interpolation_degree = self._interp_degree
         if update_and_persist:
