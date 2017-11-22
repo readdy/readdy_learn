@@ -413,7 +413,7 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
-def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
+def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw):
     from pathos.multiprocessing import Pool
     from readdy_learn.analyze.progress import Progress
 
@@ -443,7 +443,10 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, **kw):
         errs = []
         for ld in derivs:
             integrated_ld = integrate.cumtrapz(ld, x=xs, initial=0) + data[0]
-            var, ff = estimate_noise_variance(xs, data)
+            if variance is not None:
+                var = variance
+            else:
+                var, ff = estimate_noise_variance(xs, data)
             _mse = mse(integrated_ld, data)
             errs.append(np.abs(var - _mse))
         errs = np.array([errs]).squeeze()
