@@ -252,6 +252,14 @@ class ReactionAnalysis(object):
                 self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
 
+    def obtain_lma_trajectories(self, target_time):
+        self._trajs = []
+
+        for n in range(len(self.initial_states)):
+            traj = self.generate_or_load_traj_lma(n, target_time)
+            _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree)
+            self._trajs.append(self.get_traj_fname(n))
+
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None):
         for ix, traj in enumerate(self._trajs):
             a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas)
