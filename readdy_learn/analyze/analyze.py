@@ -43,7 +43,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             used_alphas = []
             for species in range(traj.n_species):
                 ys = strided_counts[:, species]
-                kw = {'maxit': maxit, 'linalg_solver_maxit': 1000000, 'tol': tol, 'atol': atol, 'rtol': None,
+                kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'precondition': False, 'solver': 'bicgstab', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
@@ -254,13 +254,15 @@ class ReactionAnalysis(object):
                 self._best_alphas[n] = a
             self._trajs.append(self.get_traj_fname(n))
 
-    def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, verbose=False, njobs=8):
+    def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
+                                njobs=8, maxit=2000):
         self._trajs = []
 
         for n in range(len(self.initial_states)):
             traj = self.generate_or_load_traj_lma(n, target_time, noise_variance=noise_variance)
             _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
-                                     alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, njobs=njobs)
+                                     alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, njobs=njobs,
+                                     tol=tol, maxit=maxit)
             self._trajs.append(self.get_traj_fname(n))
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None):

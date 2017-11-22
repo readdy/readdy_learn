@@ -219,6 +219,15 @@ def trapz(xs, ys):
     return result
 
 
+def cumsimps(xs, ys):
+    result = np.empty(shape=xs.shape)
+    result[0] = 0
+    for i in range(len(xs)-1):
+        ix = i + 1
+        result[ix] = integrate.simps(ys[:ix], x=xs[:ix])
+    return result
+
+
 def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
                   verbose=False, show_progress=True, solver='lgmres', precondition=True):
     assert isinstance(data, np.ndarray)
@@ -253,13 +262,16 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
 
     def A(v):
         # integrate v from 0 to x
+        # return cumsimps(xs, v)
         return integrate.cumtrapz(y=v, x=xs, initial=0)
 
     def A_adjoint(w):
         # integrate w from x to L <=> int_0^Lw - int_0^xw
-        full_integral = integrate.trapz(w, xs)
+        full_integral = integrate.simps(w, x=xs)
         # assert np.isclose(full_integral, A(w)[-1]), "got {}, but expected {}".format(full_integral, A(w)[-1])
-        return np.ones_like(w) * full_integral - integrate.cumtrapz(w, xs, initial=0)
+        #
+
+        return np.ones_like(w) * full_integral - integrate.cumtrapz(w, xs, initial=0)# cumsimps(xs, w)#
 
     Aadj_A = lambda v: A_adjoint(A(v))
 
@@ -463,8 +475,8 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw
         bestalpha = alphas_unordered[best]
         ix = np.where(alphas == bestalpha)[0]
         assert alphas[ix] == bestalpha
-        prevalph = alphas[ix-1] if ix-1 >= 0 else alphas[0]
-        nextalph = alphas[ix+1] if ix+1 < len(alphas) else alphas[-1]
+        prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
+        nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
         alphas = np.linspace(prevalph, nextalph, num=len(alphas))
 
     return bestalpha, derivs[best]
