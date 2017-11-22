@@ -1,14 +1,12 @@
-import numpy as np
+import collections
 
+import matplotlib.pyplot as plt
+import numpy as np
 import scipy.integrate as integrate
+from pynumtools.finite_differences import get_fd_matrix_midpoints
+from pynumtools.lgmres import lgmres
 from scipy import sparse
 from scipy.sparse import linalg as splin
-import scipy.optimize as so
-from pynumtools.lgmres import lgmres
-from pynumtools.finite_differences import get_fd_matrix_midpoints
-import collections
-import matplotlib.pyplot as plt
-
 from sklearn.decomposition import FactorAnalysis
 
 
@@ -227,7 +225,7 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
 
     label = None
     if show_progress:
-        from ipywidgets import IntProgress, Label, Box
+        from ipywidgets import Label, Box
         from IPython.display import display
         label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
         box = Box([label])
@@ -434,8 +432,15 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw
 
         derivs = []
         alphas_unordered = []
-        with Pool(processes=njobs) as p:
-            for d in p.imap_unordered(wuerger, alphas, chunksize=1):
+        if njobs > 1:
+            with Pool(processes=njobs) as p:
+                for d in p.imap_unordered(wuerger, alphas, chunksize=1):
+                    derivs.append(d[1])
+                    alphas_unordered.append(d[0])
+                    prog.increase(1)
+        else:
+            for alpha in alphas:
+                d = wuerger(alpha)
                 derivs.append(d[1])
                 alphas_unordered.append(d[0])
                 prog.increase(1)
