@@ -357,6 +357,7 @@ class ReactionAnalysis(object):
         if outfile is not None:
             f.savefig(outfile)
         plt.show()
+        return traj
 
     def plot_concentration_curves(self, n, fname=None):
         traj = self._trajs[n]
