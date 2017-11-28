@@ -145,6 +145,31 @@ def get_differentiation_operator_midpoint(xs):
     # mid_xs = .5 * (xs[:-1] + xs[1:])
     return sparse.csc_matrix((D_data, (D_row_data, D_col_data)), shape=(n_nodes - 1, n_nodes))
 
+def get_cumtrapz_operator(xs):
+    """
+    Returns matrix representation of the cumulative trapezoidal rule, i.e. \int_0^x f
+    :param xs: grid
+    :return: (n-1, n)-matrix
+    """
+    n = len(xs)
+    data = np.zeros(shape=(int(.5 * (n ** 2 + n) - 1),))
+    row_data = np.empty_like(data)
+    col_data = np.empty_like(data)
+
+    current_row = np.zeros(1)
+
+    offset = 0
+    for row in range(n-1):
+        dx = xs[row+1] - xs[row]
+        current_row[-1] += dx
+        current_row = np.append(current_row, dx)
+        data[offset:offset + len(current_row)] = current_row
+        row_data[offset:offset + len(current_row)] = row
+        col_data[offset:offset + len(current_row)] = np.array([range(len(current_row))])
+        offset += len(current_row)
+    data *= .5
+    assert (len(data) == offset)
+    return sparse.csc_matrix((data, (row_data, col_data)), shape=(n - 1, n))
 
 def get_integration_operator(xs):
     n_nodes = len(xs)
@@ -230,7 +255,7 @@ def cumsimps(xs, ys):
 
 
 def tv_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
-                  verbose=False, show_progress=True, solver='lgmres', precondition=True):
+                  verbose=False, show_progress=True, solver='lgmres', precondition=True, plot=False):
     data = np.asarray(data, dtype=np.float64).squeeze()
     xs = np.asarray(xs, dtype=np.float64).squeeze()
     n = data.shape[0]
@@ -244,16 +269,10 @@ def tv_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
     #
     midpoints = np.concatenate((
         [xs[0] - .5 * (xs[1] - xs[0])],
-        xs[:-1] + .5 * np.diff(xs),
+        .5 * (xs[1:] + xs[:-1]),
         [xs[-1] + .5 * (xs[-1] - xs[-2])]
     )).squeeze()
-    midpoint_data = np.concatenate((
-        [data[0]],
-        .5 * (data[1:] + data[:-1]),
-        [data[-1]]
-    )).squeeze()
     assert midpoints.shape[0] == n + 1
-    assert midpoint_data.shape[0] == n + 1
 
     diff = get_fd_matrix_midpoints(midpoints, k=1, window_width=5)
     assert diff.shape[0] == n
@@ -263,18 +282,114 @@ def tv_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
     assert diff.shape[0] == n
     assert diff.shape[1] == n + 1
 
-    def A(v):
-        # integrate v from 0 to x
-        # on the original grid
-        return integrate.cumtrapz(y=v, x=xs)
+    # def A(v):
+    #     # integrate v from 0 to x
+    #     # on the original grid
+    #     return integrate.cumtrapz(y=v, x=midpoints)
+    #
+    # def A_adjoint(w):
+    #     # integrate w from x to L <=> int_0^Lw - int_0^xw
+    #     # on the midpoint grid
+    #     # initial = sum(w)?
+    #     full_integral = integrate.trapz(w, x=xs)
+    #     return np.ones(n + 1) * full_integral - integrate.cumtrapz(y=w, x=midpoints, initial=0)
 
-    def A_adjoint(w):
-        # integrate w from x to L <=> int_0^Lw - int_0^xw
-        # on the midpoint grid
-        full_integral = integrate.trapz(w, x=xs)
-        return np.ones(n + 1) * full_integral - np.concatenate(([.5 * np.sum(w)], (np.cumsum(w) - .5 * w) * dx))
+    A = get_cumtrapz_operator(midpoints)
+    AT = A.transpose(copy=True)
+
+    ATA = AT.dot(A)
 
     u = np.concatenate(([0], np.diff(data), [0]))
+    #Aadj_A = lambda v: A_adjoint(A(v))
+    Aadj_offset = AT*(data[0] - data)
+
+    E_n = sparse.dia_matrix((n, n), dtype=xs.dtype)
+    midpoints_diff = np.diff(midpoints)
+    prev_grad_norm = None
+
+    if plot:
+        iters = [np.copy(u)]
+
+    for ii in range(1, maxit + 1):
+
+        # Diagonal matrix of weights, for linearizing E-L equation.
+        E_n.setdiag(midpoints_diff * (1. / np.sqrt(np.diff(u) ** 2.0 + epsilon)))
+        # Q = E_n #DX *
+        L = diff_t * E_n * diff
+        # Gradient of functional.
+        g = ATA.dot(u) + Aadj_offset + alpha * L * u
+        # g = g + alpha * L * u
+
+        # solve linear equation.
+        info_i = 0
+        if solver == 'lgmres' or solver == 'lgmres_scipy':
+            if solver == 'lgmres_scipy':
+                s, info_i = splin.lgmres(A=alpha * L + ATA, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, outer_k=7)
+            else:
+                s = lgmres(A=alpha * L + ATA, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
+        elif solver == 'bicgstab':
+            [s, info_i] = splin.bicgstab(A=alpha * L + ATA, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
+        elif solver == 'spsolve':
+            # todo this behaves oddly
+            s = splin.spsolve((alpha * L + ATA), -g, use_umfpack=True)
+        elif solver == 'np':
+            # todo this behaves oddly
+            s = np.linalg.solve((alpha * L + ATA).todense().astype(np.float64), (-g).astype(np.float64))
+
+        relative_change = np.linalg.norm(s[0]) / np.linalg.norm(u)
+        if verbose:
+            print('iteration {0:4d}: relative change = {1:.3e}, gradient norm = {2:.3e}'
+                  .format(ii, relative_change, np.linalg.norm(g)))
+            if info_i > 0:
+                print("WARNING - convergence to tolerance not achieved!")
+            elif info_i < 0:
+                print("WARNING - illegal input or breakdown")
+
+        # if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
+        #    linalg_solver_maxit = int(2 * linalg_solver_maxit)
+        # else:
+        #    linalg_solver_maxit = int(.95 * linalg_solver_maxit)
+
+        if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
+            print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
+            if not first_strike:
+                break
+            first_strike = True
+        else:
+            first_strike = False
+
+        prev_grad_norm = np.linalg.norm(g)
+
+        # Update current solution
+        u = u + s
+
+        if show_progress:
+            label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}" \
+                .format(ii, maxit, np.linalg.norm(g), atol, relative_change, rtol)
+
+        if atol is not None and np.linalg.norm(g) < atol:
+            if show_progress:
+                label.value = "ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g))
+            break
+        if rtol is not None and relative_change < rtol:
+            if show_progress:
+                label.value = "ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change)
+            break
+
+        if plot:
+            iters.append(np.copy(u))
+
+    if show_progress:
+        box.close()
+
+    if plot:
+        for ii, it in enumerate(iters):
+            plt.plot(midpoints, it, label="iter {}".format(ii))
+        plt.legend()
+        plt.show()
+
+    return u
+
 
 
 def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
@@ -612,26 +727,38 @@ def test_ld_derivative():
     testf = testf + np.random.normal(0.0, 0.08, x0.shape)
     print("estimated noise variance: {}".format(estimate_noise_variance(x0, testf)[0]))
     true_deriv = [np.cos(x) for x in x0]
+    kw = {'maxit': 20, 'linalg_solver_maxit': 500000, 'verbose': True,
+          'solver': 'spsolve', 'precondition': False, 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
+          'show_progress': False}
 
     if True:
-        kw = {'maxit': 2000, 'linalg_solver_maxit': 50000, 'verbose': False,
-              'solver': 'bicgstab', 'precondition': False, 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
-              'show_progress': False}
-        # ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
-        ld_deriv = ld_derivative(testf, x0, alpha=.001, **kw)
-
-        plt.plot(x0, testf, label='f')
-        plt.plot(x0, true_deriv, label='df')
         # plt.plot(deriv, label='approx df')
         # plt.plot(dmidxs, Dmidderiv)
         # plt.plot(ld_derivative(testf, x0, alpha=5e-4, verbose=True, solver='lgmres'), label='total variation df alpha=5e-4')
         # plt.plot(ld_derivative(testf, x0, alpha=1e-3, verbose=True, solver='lgmres'), label='total variation df alpha=1e-3')
         # plt.plot(ld_derivative(testf, x0, alpha=1e-2, verbose=True, solver='lgmres'),
         #         label='total variation df alpha=1e-2')
-        plt.plot(x0, ld_deriv, label='umfpack')
-        integrated_ld = integrate.cumtrapz(ld_deriv, x=x0, initial=testf[0])
-        plt.plot(x0, integrated_ld, label='integrated')
-        print("mse between integrated ld and original fun: {}".format(mse(integrated_ld, testf)))
+        ## ld_deriv = best_ld_derivative(testf, x0, alphas=np.arange(.001, .008, .001), njobs=8, **kw)
+        #ld_deriv = ld_derivative(testf, x0, alpha=.001, **kw)
+
+        #plt.plot(x0, ld_deriv, label='umfpack')
+        #integrated_ld = integrate.cumtrapz(ld_deriv, x=x0, initial=testf[0])
+        #plt.plot(x0, integrated_ld, label='integrated')
+        #print("mse between integrated ld and original fun: {}".format(mse(integrated_ld, testf)))
+        K = get_cumtrapz_operator(x0)
+        xs = x0
+        xs = .5 * (xs[1:] + xs[:-1])
+
+        tv_deriv = tv_derivative(testf, x0, alpha=.01, plot=True, **kw)
+        tv_deriv_back = .5 * (tv_deriv[1:] + tv_deriv[:-1])
+
+        plt.figure()
+        plt.plot(x0, testf, label='f')
+        plt.plot(x0, true_deriv, label='df')
+        plt.plot(xs, K * true_deriv, label='K*df')
+
+        plt.plot(x0, tv_deriv_back, label='tv')
+
         plt.legend()
         plt.show()
 
