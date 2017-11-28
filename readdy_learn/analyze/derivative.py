@@ -781,7 +781,7 @@ def test_ld_derivative():
     print("estimated noise variance: {}".format(estimate_noise_variance(x0, testf)[0]))
     true_deriv = [np.cos(x) for x in x0]
     kw = {'maxit': 20, 'linalg_solver_maxit': 500000, 'verbose': True,
-          'solver': 'spsolve', 'precondition': False, 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
+          'solver': 'spsolve', 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
           'show_progress': False}
     kw_ld = {'maxit': 20, 'linalg_solver_maxit': 500000, 'verbose': True,
              'solver': 'bicgstab', 'precondition': False, 'tol': 1e-12, 'atol': 1e-9, 'rtol': None,
@@ -805,11 +805,11 @@ def test_ld_derivative():
         xs = x0
         xs = .5 * (xs[1:] + xs[:-1])
 
-        alpha, tv_deriv = best_tv_derivative(testf, x0, alphas=np.linspace(.0001, .1, num=10), n_iters=4, plot=False,
-                                             maxit=10, verbose=False, tol=1e-14, atol=1e-9, rtol=None, solver='spsolve',
-                                             variance=noise_variance)
-        #tv_deriv = tv_derivative(testf, x0, alpha=.01, plot=True, **kw)
-        #tv_deriv_back = .5 * (tv_deriv[1:] + tv_deriv[:-1])
+        #alpha, tv_deriv = best_tv_derivative(testf, x0, alphas=np.linspace(.0001, .1, num=10), n_iters=4, plot=False,
+        #                                     maxit=3, verbose=False, tol=1e-14, atol=1e-9, rtol=None, solver='spsolve',
+        #                                     variance=noise_variance)
+        tv_deriv = tv_derivative(testf, x0, alpha=.01, plot=True, **kw)
+        tv_deriv_back = .5 * (tv_deriv[1:] + tv_deriv[:-1])
 
         # ld_deriv = ld_derivative(testf, x0, alpha=.01, **kw)
 
@@ -818,7 +818,7 @@ def test_ld_derivative():
         plt.plot(x0, true_deriv, label='df')
         plt.plot(xs, K * true_deriv, label='K*df')
 
-        plt.plot(x0, tv_deriv, label='tv')
+        plt.plot(x0, tv_deriv_back, label='tv')
         # plt.plot(x0, ld_deriv, label='ld')
 
         plt.legend()
