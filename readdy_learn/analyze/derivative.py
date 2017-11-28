@@ -222,10 +222,59 @@ def trapz(xs, ys):
 def cumsimps(xs, ys):
     result = np.empty(shape=xs.shape)
     result[0] = 0
-    for i in range(len(xs)-1):
+    for i in range(len(xs) - 1):
         ix = i + 1
         result[ix] = integrate.simps(ys[:ix], x=xs[:ix])
+        integrate.romb()
     return result
+
+
+def tv_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
+                  verbose=False, show_progress=True, solver='lgmres', precondition=True):
+    data = np.asarray(data, dtype=np.float64).squeeze()
+    xs = np.asarray(xs, dtype=np.float64).squeeze()
+    n = data.shape[0]
+    assert xs.shape[0] == n, "the grid must have the same dimension as data"
+
+    epsilon = 1e-6
+
+    # grid of mid points between xs, extrapolating first and last node:
+    #
+    #    x--|--x--|---x---|-x-|-x
+    #
+    midpoints = np.concatenate((
+        [xs[0] - .5 * (xs[1] - xs[0])],
+        xs[:-1] + .5 * np.diff(xs),
+        [xs[-1] + .5 * (xs[-1] - xs[-2])]
+    )).squeeze()
+    midpoint_data = np.concatenate((
+        [data[0]],
+        .5 * (data[1:] + data[:-1]),
+        [data[-1]]
+    )).squeeze()
+    assert midpoints.shape[0] == n + 1
+    assert midpoint_data.shape[0] == n + 1
+
+    diff = get_fd_matrix_midpoints(midpoints, k=1, window_width=5)
+    assert diff.shape[0] == n
+    assert diff.shape[1] == n + 1
+
+    diff_t = diff.transpose(copy=True).tocsc()
+    assert diff.shape[0] == n
+    assert diff.shape[1] == n + 1
+
+    def A(v):
+        # integrate v from 0 to x
+        # on the original grid
+        return integrate.cumtrapz(y=v, x=xs)
+
+    def A_adjoint(w):
+        # integrate w from x to L <=> int_0^Lw - int_0^xw
+        # on the midpoint grid
+        full_integral = integrate.trapz(w, x=xs)
+        return np.ones(n + 1) * full_integral - np.concatenate(([.5 * np.sum(w)], (np.cumsum(w) - .5 * w) * dx))
+
+    u = np.concatenate(([0], np.diff(data), [0]))
 
 
 def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
@@ -258,7 +307,7 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
         label.value = 'obtaining differentiation operator'
     D = get_fd_matrix_midpoints(xs, k=1, window_width=5)
     # D = #get_differentiation_operator_midpoint(xs)
-    D_T = D.transpose().tocsc()
+    D_T = D.transpose(copy=True).tocsc()
 
     def A(v):
         # integrate v from 0 to x
@@ -267,11 +316,11 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
 
     def A_adjoint(w):
         # integrate w from x to L <=> int_0^Lw - int_0^xw
-        full_integral = integrate.simps(w, x=xs)
+        full_integral = integrate.trapz(w, x=xs)
         # assert np.isclose(full_integral, A(w)[-1]), "got {}, but expected {}".format(full_integral, A(w)[-1])
         #
 
-        return np.ones_like(w) * full_integral - integrate.cumtrapz(w, xs, initial=0)# cumsimps(xs, w)#
+        return np.ones_like(w) * full_integral - integrate.cumtrapz(w, xs, initial=0)  # cumsimps(xs, w)#
 
     Aadj_A = lambda v: A_adjoint(A(v))
 
