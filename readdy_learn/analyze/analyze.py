@@ -309,7 +309,7 @@ class ReactionAnalysis(object):
             _, counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
                                                             self._timestep, target_time / self._timestep)
             if noise_variance > 0:
-                counts = counts + np.random.normal(0.0, noise_variance, size=counts.shape)
+                counts = counts + np.random.normal(0.0, np.sqrt(noise_variance), size=counts.shape)
         else:
             counts = fname
         stride = 1
@@ -383,7 +383,8 @@ class ReactionAnalysis(object):
             traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
         system = self._set_up_system(self._initial_states[n])
         config = system.get_trajectory_config()
-        estimated = sample_tools.Suite.estimated_behavior(self._desired_rates, self._bfc, traj.counts[0], traj.times)
+        estimated = sample_tools.Suite.estimated_behavior(self._desired_rates, self._bfc,
+                                                          self.initial_states[n].squeeze(), traj.times)
 
         fig, ax1 = plt.subplots(nrows=1, ncols=1)
 
