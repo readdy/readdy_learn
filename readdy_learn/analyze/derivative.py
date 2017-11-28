@@ -314,6 +314,8 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
     if plot:
         iters = [np.copy(u)]
 
+    first_strike = False
+
     for ii in range(1, maxit + 1):
 
         # Diagonal matrix of weights, for linearizing E-L equation.
@@ -356,8 +358,15 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
 
         if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
             print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
-            if not first_strike:
-                break
+            if first_strike:
+                if u0 is not None:
+                    print("WARNING - due to increasing large gradient norm, restart with no u0")
+                    return tv_derivative(data, xs, u0=None, alpha=alpha, maxit=maxit,
+                                         linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
+                                         verbose=verbose, show_progress=show_progress, solver=solver, plot=plot)
+                else:
+                    print("ERROR - gradient gets out of hand, abort!")
+                    break
             first_strike = True
         else:
             first_strike = False
