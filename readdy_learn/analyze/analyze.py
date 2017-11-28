@@ -44,7 +44,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             for species in range(traj.n_species):
                 ys = strided_counts[:, species]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
-                      'precondition': False, 'solver': 'spsolve', 'verbose': verbose}
+                      'solver': 'spsolve', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
                         best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
