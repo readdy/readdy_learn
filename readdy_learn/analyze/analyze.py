@@ -48,7 +48,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
                         best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
-                                                                  variance=variance, njobs=njobs, best_alpha_iters=100,
+                                                                  variance=variance, best_alpha_iters=100,
                                                                   **kw)
                     else:
                         alpha = alpha[0]
