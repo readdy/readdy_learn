@@ -44,11 +44,12 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             for species in range(traj.n_species):
                 ys = strided_counts[:, species]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
-                      'precondition': False, 'solver': 'bicgstab', 'verbose': verbose}
+                      'precondition': False, 'solver': 'spsolve', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
-                        best_alpha, ld = deriv.best_ld_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
-                                                                  variance=variance, njobs=njobs, **kw)
+                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
+                                                                  variance=variance, njobs=njobs, best_alpha_iters=100,
+                                                                  **kw)
                     else:
                         alpha = alpha[0]
                         ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
@@ -265,9 +266,9 @@ class ReactionAnalysis(object):
                                      tol=tol, maxit=maxit)
             self._trajs.append(self.get_traj_fname(n))
 
-    def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None):
+    def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
         for ix, traj in enumerate(self._trajs):
-            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas)
+            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, maxit=maxit)
             self._best_alphas[ix] = a
 
     def generate_or_load_traj_gillespie(self, n, n_steps=250, n_realizations=160,
