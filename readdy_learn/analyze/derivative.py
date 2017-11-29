@@ -357,7 +357,7 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
         #    linalg_solver_maxit = int(.95 * linalg_solver_maxit)
 
         if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
-            print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
+            # print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
             if first_strike:
                 if u0 is not None:
                     print("WARNING - due to increasing large gradient norm, restart with no u0")
