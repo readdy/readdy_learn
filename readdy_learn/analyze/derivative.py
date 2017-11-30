@@ -721,7 +721,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
             current_best_tv = derivs[best]
             bestalpha = alphas[best]
             ix = np.where(alphas == bestalpha)[0]
-            assert alphas[ix] == bestalpha
+            assert alphas.squeeze()[ix] == bestalpha
             prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
             nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
             alphas = np.linspace(prevalph, nextalph, num=len(alphas))
