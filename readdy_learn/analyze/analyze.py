@@ -26,7 +26,7 @@ def estimate_noise_variance(xs, ys):
 
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      best_alpha_iters=5000):
+                      best_alpha_iters=5000, atol_final=1e-14):
     if traj.dcounts_dt is None:
         if interp_degree == 'regularized_derivative':
             interp_degree = traj.interpolation_degree
@@ -40,7 +40,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                   strided_dt)
 
             dx = np.empty(shape=(len(traj.times), traj.n_species))
-
+            x0 = np.asarray(x0).squeeze()
             used_alphas = []
             for species in range(traj.n_species):
                 ys = strided_counts[:, species]
@@ -50,7 +50,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                     if len(alpha) > 1:
                         best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
                                                                   variance=variance, best_alpha_iters=best_alpha_iters,
-                                                                  x0=x0, **kw)
+                                                                  x0=x0[species], atol_final=atol_final, **kw)
                     else:
                         alpha = alpha[0]
                         ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
@@ -257,7 +257,7 @@ class ReactionAnalysis(object):
             self._trajs.append(self.get_traj_fname(n))
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
-                                njobs=8, maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000):
+                                maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000):
         self._trajs = [None for _ in range(len(self.initial_states))]
 
         for n in range(len(self.initial_states)):
