@@ -260,7 +260,7 @@ class ReactionAnalysis(object):
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
                                 maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10):
         self._trajs = [None for _ in range(len(self.initial_states))]
-        if alphas is not None and len(alphas.squeeze().shape) == 1:
+        if alphas is not None and isinstance(alphas, np.ndarray) and len(alphas.squeeze().shape) == 1:
             alphas = [alphas for _ in range(self.n_species)]
         for n in range(len(self.initial_states)):
             if selection is None or n in selection:
