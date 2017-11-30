@@ -356,28 +356,28 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
         # else:
         #    linalg_solver_maxit = int(.95 * linalg_solver_maxit)
 
-        if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
-            # print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
-            if first_strike:
-                if u0 is not None:
-                    print("WARNING - due to increasing large gradient norm, restart with no u0")
-                    return tv_derivative(data, xs, u0=None, alpha=alpha, maxit=maxit,
-                                         linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
-                                         verbose=verbose, show_progress=show_progress, solver=solver, plot=plot)
-                else:
-                    if solver == 'bicgstab':
-                        print("ERROR - gradient gets out of hand, abort!")
-                    elif solver =='spsolve':
-                        return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
-                                             linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
-                                             verbose=verbose, show_progress=show_progress, solver='np', plot=plot)
-                    elif solver =='np':
-                        return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
-                                             linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
-                                             verbose=verbose, show_progress=show_progress, solver='bicgstab', plot=plot)
-            first_strike = True
-        else:
-            first_strike = False
+        # if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
+        #     # print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
+        #     if first_strike:
+        #         if u0 is not None:
+        #             print("WARNING - due to increasing large gradient norm, restart with no u0")
+        #             return tv_derivative(data, xs, u0=None, alpha=alpha, maxit=maxit,
+        #                                  linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
+        #                                  verbose=verbose, show_progress=show_progress, solver=solver, plot=plot)
+        #         else:
+        #             if solver == 'bicgstab':
+        #                 print("ERROR - gradient gets out of hand, abort!")
+        #             elif solver =='spsolve':
+        #                 return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
+        #                                      linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
+        #                                      verbose=verbose, show_progress=show_progress, solver='np', plot=plot)
+        #             elif solver =='np':
+        #                 return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
+        #                                      linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
+        #                                      verbose=verbose, show_progress=show_progress, solver='bicgstab', plot=plot)
+        #     first_strike = True
+        # else:
+        #     first_strike = False
 
         prev_grad_norm = np.linalg.norm(g)
 
