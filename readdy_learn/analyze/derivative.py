@@ -628,6 +628,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
         return d
 
     def score(tv):
+        print("eval score for x0={}".format(x0))
         d = .5 * (tv[1:] + tv[:-1])
         integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
         _mse = mse(integrated, data)
