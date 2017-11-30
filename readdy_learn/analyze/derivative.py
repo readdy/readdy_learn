@@ -659,7 +659,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
         xmin = x_s[minix]
 
         print("found alpha={} to be best with a difference of {} between mse and "
-                   "variance, alphas={}".format(xmin, smin, x_s))
+                   "variance, alphas={} with scores {}".format(xmin, smin, x_s, scores))
         current_best_tv = Fmin
         if minix == 0 or minix == 3:
             xb = xm
