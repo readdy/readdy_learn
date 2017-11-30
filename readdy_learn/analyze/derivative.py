@@ -599,7 +599,7 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
-def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, best_alpha_iters=100, **kw):
+def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, best_alpha_iters=100, x0=None, **kw):
     from readdy_learn.analyze.progress import Progress
 
     args = dict(kw)
@@ -627,7 +627,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, best_alpha_it
         errs = []
         for tv in derivs:
             d = .5 * (tv[1:] + tv[:-1])
-            integrated = integrate.cumtrapz(d, x=xs, initial=0) + data[0]
+            integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
             _mse = mse(integrated, data)
             errs.append(np.abs(var - _mse))
         errs = np.array([errs]).squeeze()

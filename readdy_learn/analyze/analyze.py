@@ -25,7 +25,8 @@ def estimate_noise_variance(xs, ys):
 
 
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
-                      interp_degree='regularized_derivative', variance=None, verbose=False, best_alpha_iters=5000):
+                      interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
+                      best_alpha_iters=5000):
     if traj.dcounts_dt is None:
         if interp_degree == 'regularized_derivative':
             interp_degree = traj.interpolation_degree
@@ -49,7 +50,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                     if len(alpha) > 1:
                         best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
                                                                   variance=variance, best_alpha_iters=best_alpha_iters,
-                                                                  **kw)
+                                                                  x0=x0, **kw)
                     else:
                         alpha = alpha[0]
                         ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
@@ -264,7 +265,7 @@ class ReactionAnalysis(object):
                 traj = self.generate_or_load_traj_lma(n, target_time, noise_variance=noise_variance)
                 _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
-                                         maxit=maxit, alpha_search_depth=search_depth,
+                                         maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
                                          best_alpha_iters=best_alpha_iters)
                 self._trajs[n] = self.get_traj_fname(n)
 
