@@ -257,7 +257,7 @@ class ReactionAnalysis(object):
             self._trajs.append(self.get_traj_fname(n))
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
-                                maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000):
+                                maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10):
         self._trajs = [None for _ in range(len(self.initial_states))]
 
         for n in range(len(self.initial_states)):
@@ -266,7 +266,7 @@ class ReactionAnalysis(object):
                 _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
-                                         best_alpha_iters=best_alpha_iters)
+                                         best_alpha_iters=best_alpha_iters, atol_final=atol_final)
                 self._trajs[n] = self.get_traj_fname(n)
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
@@ -453,7 +453,7 @@ class ReactionAnalysis(object):
         return cv
 
     def get_solve_fname(self, n):
-        return self.fname_prefix + "_solution_{}_".format(n)+self.fname_postfix+".npy"
+        return self.fname_prefix + "_solution_{}_".format(n) + self.fname_postfix + ".npy"
 
     def solve(self, n, alpha, l1_ratio, tol=1e-12, recompute=False):
 
