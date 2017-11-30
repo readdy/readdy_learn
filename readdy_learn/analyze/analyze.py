@@ -48,7 +48,8 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                       'solver': 'spsolve', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
-                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha, n_iters=alpha_search_depth,
+                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha[species],
+                                                                  n_iters=alpha_search_depth,
                                                                   variance=variance, best_alpha_iters=best_alpha_iters,
                                                                   x0=x0[species], atol_final=atol_final, **kw)
                     else:
@@ -259,7 +260,8 @@ class ReactionAnalysis(object):
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
                                 maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10):
         self._trajs = [None for _ in range(len(self.initial_states))]
-
+        if alphas is not None and len(alphas.squeeze().shape) == 1:
+            alphas = [alphas for _ in range(self.n_species)]
         for n in range(len(self.initial_states)):
             if selection is None or n in selection:
                 traj = self.generate_or_load_traj_lma(n, target_time, noise_variance=noise_variance)
