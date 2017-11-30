@@ -616,6 +616,10 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
     prog = Progress(n=len(alphas), label='Find alpha', nstages=n_iters)
 
     def F(alpha):
+        if isinstance(alpha, (list, tuple)):
+            alpha = alpha[0]
+        if isinstance(alpha, np.ndarray):
+            alpha = alpha.squeeze()[0]
         if current_best_tv is not None:
             d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
         else:
@@ -655,6 +659,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
 
         print("found alpha={} to be best with a difference of {} between mse and "
                    "variance".format(xmin, smin))
+        current_best_tv = Fmin
         if minix == 0 or minix == 3:
             xb = xm
             xm = xl
