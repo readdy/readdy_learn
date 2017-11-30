@@ -699,38 +699,38 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
         return xmin, .5 * (d[1:] + d[:-1])
 
     else:
-    for i in range(n_iters):
-        derivs = []
-        for alpha in alphas:
-            if current_best_tv is not None:
-                d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
-            else:
-                d = tv_derivative(data, xs, **args, alpha=alpha)
-            derivs.append(d)
-            prog.increase(1, stage=i)
-        errs = []
-        for tv in derivs:
-            d = .5 * (tv[1:] + tv[:-1])
-            integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
-            _mse = mse(integrated, data)
-            errs.append(np   .abs(var - _mse))
-        errs = np.array([errs]).squeeze()
-        best = int(np.argmin(errs))
-        print("found alpha={} to be best with a difference of {} between mse and "
-              "variance".format(alphas[best], errs[best]))
-        current_best_tv = derivs[best]
-        bestalpha = alphas[best]
-        ix = np.where(alphas == bestalpha)[0]
-        assert alphas[ix] == bestalpha
-        prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
-        nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
-        alphas = np.linspace(prevalph, nextalph, num=len(alphas))
-        prog.finish(stage=i)
+        for i in range(n_iters):
+            derivs = []
+            for alpha in alphas:
+                if current_best_tv is not None:
+                    d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
+                else:
+                    d = tv_derivative(data, xs, **args, alpha=alpha)
+                derivs.append(d)
+                prog.increase(1, stage=i)
+            errs = []
+            for tv in derivs:
+                d = .5 * (tv[1:] + tv[:-1])
+                integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
+                _mse = mse(integrated, data)
+                errs.append(np   .abs(var - _mse))
+            errs = np.array([errs]).squeeze()
+            best = int(np.argmin(errs))
+            print("found alpha={} to be best with a difference of {} between mse and "
+                  "variance".format(alphas[best], errs[best]))
+            current_best_tv = derivs[best]
+            bestalpha = alphas[best]
+            ix = np.where(alphas == bestalpha)[0]
+            assert alphas[ix] == bestalpha
+            prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
+            nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
+            alphas = np.linspace(prevalph, nextalph, num=len(alphas))
+            prog.finish(stage=i)
 
-    args['maxit'] = best_alpha_iters
-    args['atol'] = atol_final
-    d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
-    return bestalpha, .5*(d[1:]+d[:-1])
+        args['maxit'] = best_alpha_iters
+        args['atol'] = atol_final
+        d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
+        return bestalpha, .5*(d[1:]+d[:-1])
 
 
 def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw):
