@@ -615,38 +615,103 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
 
     prog = Progress(n=len(alphas), label='Find alpha', nstages=n_iters)
 
+    def F(alpha):
+        if current_best_tv is not None:
+            d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
+        else:
+            d = tv_derivative(data, xs, **args, alpha=alpha)
+        return d
+
+    def score(tv):
+        d = .5 * (tv[1:] + tv[:-1])
+        integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
+        _mse = mse(integrated, data)
+        return np.abs(var - _mse)
+
+    xa = np.min(alphas)
+    xb = np.max(alphas)
+    xm = .5*(xa+xb)
+    Fa = F(xa)
+    Fb = F(xb)
+    Fm = F(xm)
+    sa = score(Fa)
+    sb = score(Fb)
+    sm = score(Fm)
+
     for i in range(n_iters):
-        derivs = []
-        for alpha in alphas:
-            if current_best_tv is not None:
-                d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
-            else:
-                d = tv_derivative(data, xs, **args, alpha=alpha)
-            derivs.append(d)
-            prog.increase(1, stage=i)
-        errs = []
-        for tv in derivs:
-            d = .5 * (tv[1:] + tv[:-1])
-            integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
-            _mse = mse(integrated, data)
-            errs.append(np.abs(var - _mse))
-        errs = np.array([errs]).squeeze()
-        best = int(np.argmin(errs))
-        print("found alpha={} to be best with a difference of {} between mse and "
-              "variance".format(alphas[best], errs[best]))
-        current_best_tv = derivs[best]
-        bestalpha = alphas[best]
-        ix = np.where(alphas == bestalpha)[0]
-        assert alphas[ix] == bestalpha
-        prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
-        nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
-        alphas = np.linspace(prevalph, nextalph, num=len(alphas))
-        prog.finish(stage=i)
+        xl = .5*(xa + xm)
+        xr = .5*(xm + xb)
+        Fl = F(xl)
+        Fr = F(xr)
+        sl = score(Fl)
+        sr = score(Fr)
+        xs = np.array([xa, xb, xm, xl, xr])
+        scores = np.array([sa, sb, sm, sl, sr])
+        derivs = np.array([Fa, Fb, Fm, Fl, Fr])
+        minix = np.argmin(scores)
+        smin = scores[minix]
+        Fmin = derivs[minix]
+        xmin = xs[minix]
+        if smin == sa or smin == sl:
+            xb = xm
+            xm = xl
+            Fb = Fm
+            sb = sm
+            Fm = Fl
+            sm = sl
+        elif smin == sm:
+            xa = xl
+            xb = xr
+            Fa = Fl
+            sa = sl
+            Fb = Fr
+            sb = sr
+        elif smin == sr or smin == sb:
+            xa = xm
+            xm = xr
+            Fa = Fm
+            sa = sm
+            Fm = Fr
+            sm = sr
 
     args['maxit'] = best_alpha_iters
     args['atol'] = atol_final
-    d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
-    return bestalpha, .5*(d[1:]+d[:-1])
+    d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=xmin)
+    return xmin, .5 * (d[1:] + d[:-1])
+
+
+    # for i in range(n_iters):
+    #     derivs = []
+    #     for alpha in alphas:
+    #         if current_best_tv is not None:
+    #             d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
+    #         else:
+    #             d = tv_derivative(data, xs, **args, alpha=alpha)
+    #         derivs.append(d)
+    #         prog.increase(1, stage=i)
+    #     errs = []
+    #     for tv in derivs:
+    #         d = .5 * (tv[1:] + tv[:-1])
+    #         integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
+    #         _mse = mse(integrated, data)
+    #         errs.append(np   .abs(var - _mse))
+    #     errs = np.array([errs]).squeeze()
+    #     best = int(np.argmin(errs))
+    #     print("found alpha={} to be best with a difference of {} between mse and "
+    #           "variance".format(alphas[best], errs[best]))
+    #     current_best_tv = derivs[best]
+    #     bestalpha = alphas[best]
+    #     ix = np.where(alphas == bestalpha)[0]
+    #     assert alphas[ix] == bestalpha
+    #     prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
+    #     nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
+    #     alphas = np.linspace(prevalph, nextalph, num=len(alphas))
+    #     prog.finish(stage=i)
+    #
+    # args['maxit'] = best_alpha_iters
+    # args['atol'] = atol_final
+    # d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
+    # return bestalpha, .5*(d[1:]+d[:-1])
 
 
 def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw):
