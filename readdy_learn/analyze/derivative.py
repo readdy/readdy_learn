@@ -620,6 +620,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
             alpha = alpha[0]
         if isinstance(alpha, np.ndarray):
             alpha = alpha.squeeze()[0]
+        print("invoking F with alpha={}".format(alpha))
         if current_best_tv is not None:
             d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
         else:
@@ -649,13 +650,13 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
         Fr = F(xr)
         sl = score(Fl)
         sr = score(Fr)
-        xs = np.array([xa, xb, xm, xl, xr])
+        x_s = np.array([xa, xb, xm, xl, xr])
         scores = np.array([sa, sb, sm, sl, sr])
         derivs = np.array([Fa, Fb, Fm, Fl, Fr])
         minix = np.argmin(scores)
         smin = scores[minix]
         Fmin = derivs[minix]
-        xmin = xs[minix]
+        xmin = x_s[minix]
 
         print("found alpha={} to be best with a difference of {} between mse and "
                    "variance".format(xmin, smin))
