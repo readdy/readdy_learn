@@ -652,21 +652,21 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
         smin = scores[minix]
         Fmin = derivs[minix]
         xmin = xs[minix]
-        if smin == sa or smin == sl:
+        if minix == 0 or minix == 3:
             xb = xm
             xm = xl
             Fb = Fm
             sb = sm
             Fm = Fl
             sm = sl
-        elif smin == sm:
+        elif minix == 2:
             xa = xl
             xb = xr
             Fa = Fl
             sa = sl
             Fb = Fr
             sb = sr
-        elif smin == sr or smin == sb:
+        elif minix == 4 or minix == 1:
             xa = xm
             xm = xr
             Fa = Fm
