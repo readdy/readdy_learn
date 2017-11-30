@@ -365,8 +365,16 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
                                          linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
                                          verbose=verbose, show_progress=show_progress, solver=solver, plot=plot)
                 else:
-                    print("ERROR - gradient gets out of hand, abort!")
-                    break
+                    if solver == 'bicgstab':
+                        print("ERROR - gradient gets out of hand, abort!")
+                    elif solver =='spsolve':
+                        return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
+                                             linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
+                                             verbose=verbose, show_progress=show_progress, solver='np', plot=plot)
+                    elif solver =='np':
+                        return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
+                                             linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
+                                             verbose=verbose, show_progress=show_progress, solver='bicgstab', plot=plot)
             first_strike = True
         else:
             first_strike = False
