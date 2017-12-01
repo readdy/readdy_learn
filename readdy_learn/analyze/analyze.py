@@ -46,7 +46,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             dx = np.empty(shape=(len(traj.times), traj.n_species))
             x0 = np.asarray(x0).squeeze()
             used_alphas = []
-            for s in species:
+            for s in species if species.ndim > 0 else [species]:
                 ys = strided_counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'solver': 'spsolve', 'verbose': verbose}
