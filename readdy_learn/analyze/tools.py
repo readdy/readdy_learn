@@ -102,7 +102,6 @@ class Trajectory(object):
         self._n_basis_functions = 0
         self._n_time_steps = 0
         self._n_species = 0
-        self._dcounts_dt = None
         self._xi = None
         self._dirty = True
         self._verbose = verbose
@@ -118,8 +117,6 @@ class Trajectory(object):
             self._counts = archive['counts']
             self._n_time_steps = self.counts.shape[0]
             self._n_species = self.counts.shape[1]
-            if 'dcounts_dt' in archive.keys():
-                self._dcounts_dt = archive['dcounts_dt']
             for s in range(self.n_species):
                 if 'dcounts_dt_{}'.format(s) in archive.keys():
                     self._separate_derivs[s] = archive['dcounts_dt_{}'.format(s)]
@@ -167,7 +164,8 @@ class Trajectory(object):
             for s in range(self.n_species):
                 if s in self._separate_derivs.keys():
                     separate_derivs['dcounts_dt_{}'.format(s)] = self._separate_derivs[s]
-            np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt, dt=self.time_step, **kw)
+            np.savez(self._fname, counts=self.counts, dt=self.time_step, **kw,
+                     **separate_derivs)
         else:
             raise ValueError("no file name set!")
 
@@ -327,11 +325,18 @@ class Trajectory(object):
 
     @property
     def dcounts_dt(self):
-        return self._dcounts_dt
+        if len(self._separate_derivs.keys()) != self.n_species:
+            print("Dont have derivative (got {} but need {})".format(len(self._separate_derivs.keys()), self.n_species))
+            return None
+        deriv = np.empty_like(self.counts)
+        for s in range(self.n_species):
+            deriv[:, s] = self._separate_derivs[s]
+        return deriv
 
     @dcounts_dt.setter
     def dcounts_dt(self, value):
-        self._dcounts_dt = value
+        for s in range(self.n_species):
+            self._separate_derivs[s] = value[:, s]
 
     @property
     def theta(self):
