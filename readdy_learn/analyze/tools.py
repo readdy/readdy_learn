@@ -156,12 +156,12 @@ class Trajectory(object):
 
     def persist(self, **kw):
         if self._fname is not None:
-            separate_derivs = {}
+            derivs = {}
             for s in range(self.n_species):
                 if s in self._separate_derivs.keys():
-                    separate_derivs['dcounts_dt_{}'.format(s)] = self._separate_derivs[s]
+                    derivs['dcounts_dt_{}'.format(s)] = self._separate_derivs[s]
             np.savez(self._fname, counts=self.counts, dt=self.time_step, **kw,
-                     **separate_derivs)
+                     **derivs)
         else:
             raise ValueError("no file name set!")
 
@@ -195,8 +195,8 @@ class Trajectory(object):
             indices = np.insert(indices, 0, 0)
             if indices[-1] != len(counts) -1:
                 indices = np.append(indices, len(counts) - 1)
-            if s in self._separate_derivs:
-                interpolated[:, s] = self._separate_derivs[s]
+            if s in self.separate_derivs:
+                interpolated[:, s] = self.separate_derivs[s]
                 is_gradient = True
             elif self._interpolation_degree == 'pw_linear':
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
@@ -319,18 +319,18 @@ class Trajectory(object):
 
     @property
     def dcounts_dt(self):
-        if len(self._separate_derivs.keys()) != self.n_species:
-            print("Dont have derivative (got {} but need {})".format(len(self._separate_derivs.keys()), self.n_species))
+        if len(self.separate_derivs.keys()) != self.n_species:
+            print("Dont have derivative (got {} but need {})".format(len(self.separate_derivs.keys()), self.n_species))
             return None
         deriv = np.empty_like(self.counts)
         for s in range(self.n_species):
-            deriv[:, s] = self._separate_derivs[s]
+            deriv[:, s] = self.separate_derivs[s]
         return deriv
 
     @dcounts_dt.setter
     def dcounts_dt(self, value):
         for s in range(self.n_species):
-            self._separate_derivs[s] = value[:, s]
+            self.separate_derivs[s] = value[:, s]
 
     @property
     def theta(self):
