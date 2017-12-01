@@ -108,13 +108,21 @@ class Trajectory(object):
         self._verbose = verbose
         self._interpolation_degree = interpolation_degree
         self._fname = fname
+        self._separate_derivs = {}
         self.ld_derivative_config = {'atol': ld_derivative_atol, 'rtol': ld_derivative_rtol,
                                      'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
                                      'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit,
                                      'tol': ld_derivative_linalg_solver_tol, 'precondition': ld_derivative_use_preconditioner}
         if fname is not None and os.path.exists(fname):
             archive = np.load(fname)
-            self._counts, self._dcounts_dt = archive['counts'], archive['dcounts_dt']
+            self._counts = archive['counts']
+            self._n_time_steps = self.counts.shape[0]
+            self._n_species = self.counts.shape[1]
+            if 'dcounts_dt' in archive.keys():
+                self._dcounts_dt = archive['dcounts_dt']
+            for s in range(self.n_species):
+                if 'dcounts_dt_{}'.format(s) in archive.keys():
+                    self._separate_derivs[s] = archive['dcounts_dt_{}'.format(s)]
             if 'dt' in archive.keys():
                 self._time_step = archive['dt']
 
@@ -149,8 +157,16 @@ class Trajectory(object):
 
         return rate_chapman, xi, rate_per_volume
 
+    @property
+    def separate_derivs(self):
+        return self._separate_derivs
+
     def persist(self, **kw):
         if self._fname is not None:
+            separate_derivs = {}
+            for s in range(self.n_species):
+                if s in self._separate_derivs.keys():
+                    separate_derivs['dcounts_dt_{}'.format(s)] = self._separate_derivs[s]
             np.savez(self._fname, counts=self.counts, dcounts_dt=self.dcounts_dt, dt=self.time_step, **kw)
         else:
             raise ValueError("no file name set!")
@@ -185,9 +201,12 @@ class Trajectory(object):
             indices = np.insert(indices, 0, 0)
             if indices[-1] != len(counts) -1:
                 indices = np.append(indices, len(counts) - 1)
-
-            if self._interpolation_degree == 'pw_linear':
+            if s in self._separate_derivs:
+                interpolated[:, s] = self._separate_derivs[s]
+                is_gradient = True
+            elif self._interpolation_degree == 'pw_linear':
                 interpolated[:, s] = np.interp(X, X[indices], counts[indices])
+                is_gradient = False
             elif self._interpolation_degree == 'FD':
                 wwidth = 2
                 iix = 0
@@ -227,7 +246,7 @@ class Trajectory(object):
                 ff = lambda t: fun(t, *copt)
                 dff = lambda t: jac(t, *copt)
                 interpolated[:, s] = ff(X)
-                # is_gradient = True
+                is_gradient = False
             else:
                 poly_feat = PolynomialFeatures(degree=self._interpolation_degree)
                 regression = interp()
@@ -236,11 +255,10 @@ class Trajectory(object):
 
                 ys = pipeline.predict(X[:, np.newaxis])
                 interpolated[:, s] = ys
-
-        if not is_gradient:
-            return np.gradient(interpolated, axis=0) / self._time_step
-        else:
-            return interpolated
+                is_gradient = False
+            if not is_gradient:
+                interpolated[:, s] = np.gradient(interpolated, axis=0) / self._time_step
+        return interpolated
 
     def update(self):
         if self._dirty:

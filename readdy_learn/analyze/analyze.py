@@ -26,7 +26,9 @@ def estimate_noise_variance(xs, ys):
 
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      best_alpha_iters=5000, atol_final=1e-14):
+                      best_alpha_iters=5000, atol_final=1e-14, species=None):
+    if species is None:
+        species = [i for i in range(traj.n_species)]
     if traj.dcounts_dt is None:
         if interp_degree == 'regularized_derivative':
             interp_degree = traj.interpolation_degree
@@ -42,16 +44,16 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             dx = np.empty(shape=(len(traj.times), traj.n_species))
             x0 = np.asarray(x0).squeeze()
             used_alphas = []
-            for species in range(traj.n_species):
-                ys = strided_counts[:, species]
+            for s in species:
+                ys = strided_counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'solver': 'spsolve', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
-                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha[species],
+                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha[s],
                                                                   n_iters=alpha_search_depth,
                                                                   variance=variance, best_alpha_iters=best_alpha_iters,
-                                                                  x0=x0[species], atol_final=atol_final, **kw)
+                                                                  x0=x0[s], atol_final=atol_final, **kw)
                     else:
                         alpha = alpha[0]
                         ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
@@ -66,7 +68,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                 else:
                     var, ff = estimate_noise_variance(strided_times, ys)
                 print("MSE =", deriv.mse(integrated_ld, ys), "noise variance =", var)
-                dx[:, species] = np.interp(traj.times, strided_times, ld)
+                dx[:, s] = np.interp(traj.times, strided_times, ld)
 
                 used_alphas.append(best_alpha)
             traj.dcounts_dt = dx
@@ -258,7 +260,10 @@ class ReactionAnalysis(object):
             self._trajs.append(self.get_traj_fname(n))
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
-                                maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10):
+                                maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10,
+                                species=None):
+        if species is None:
+            species = [i for i in range(self.n_species)]
         self._trajs = [None for _ in range(len(self.initial_states))]
         if alphas is not None and isinstance(alphas, np.ndarray) and len(alphas.squeeze().shape) == 1:
             alphas = [alphas for _ in range(self.n_species)]
@@ -268,7 +273,7 @@ class ReactionAnalysis(object):
                 _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
-                                         best_alpha_iters=best_alpha_iters, atol_final=atol_final)
+                                         best_alpha_iters=best_alpha_iters, atol_final=atol_final, species=species)
                 self._trajs[n] = self.get_traj_fname(n)
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
@@ -481,7 +486,9 @@ class ReactionAnalysis(object):
         else:
             raise ValueError('*_*')
 
-    def plot_derivatives(self, traj_n, n_points=None):
+    def plot_derivatives(self, traj_n, n_points=None, species=None):
+        if species is None:
+            species = [i for i in range(self.n_species)]
         traj = self._trajs[traj_n]
         if isinstance(traj, str):
             traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
@@ -497,7 +504,7 @@ class ReactionAnalysis(object):
         theta = np.transpose(theta, axes=(0, 2, 1))
         dx = theta.dot(self._desired_rates)
 
-        for s in range(traj.n_species):
+        for s in species:
             if n_points is None:
                 plt.plot(traj.times, dx[:, s], 'k--')
                 plt.plot(traj.times, traj.dcounts_dt[:, s], label="dx for species {}".format(s))
