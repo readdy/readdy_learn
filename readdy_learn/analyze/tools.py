@@ -416,7 +416,7 @@ class Trajectory(object):
 
     @property
     def n_species(self):
-        return self._n_species
+        return self.counts.shape[1]
 
 
 class CVResult(object):
