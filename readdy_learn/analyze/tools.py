@@ -100,8 +100,6 @@ class Trajectory(object):
         self._large_theta = None
         self._large_theta_norm_squared = 0
         self._n_basis_functions = 0
-        self._n_time_steps = 0
-        self._n_species = 0
         self._xi = None
         self._dirty = True
         self._verbose = verbose
@@ -115,8 +113,6 @@ class Trajectory(object):
         if fname is not None and os.path.exists(fname):
             archive = np.load(fname)
             self._counts = archive['counts']
-            self._n_time_steps = self.counts.shape[0]
-            self._n_species = self.counts.shape[1]
             for s in range(self.n_species):
                 if 'dcounts_dt_{}'.format(s) in archive.keys():
                     self._separate_derivs[s] = archive['dcounts_dt_{}'.format(s)]
@@ -266,8 +262,6 @@ class Trajectory(object):
                                                                         np.min(self.counts[np.nonzero(self.counts)])))
             self._xi = None
             self._n_basis_functions = len(self._thetas)
-            self._n_time_steps = self.counts.shape[0]
-            self._n_species = self.counts.shape[1]
 
             # todo this is garbage: np.gradient(self.counts, axis=0) / self._time_step
             self._dcounts_dt = self.calculate_dX()
@@ -283,7 +277,7 @@ class Trajectory(object):
         string += "counts.shape={}, box_size={}, time_step={}, n_basis_functions={}, large_theta.shape={}, " \
                   "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}" \
             .format(self.counts.shape, self._box_size, self.time_step, self.n_basis_functions, self._large_theta.shape,
-                    self._n_time_steps, self._n_species, self._dirty, self._dcounts_dt.shape)
+                    self.n_time_steps, self.n_species, self._dirty, self._dcounts_dt.shape)
         string += ")"
         return string
 
@@ -348,7 +342,7 @@ class Trajectory(object):
 
     @property
     def n_time_steps(self):
-        return self._n_time_steps
+        return self.counts.shape[0]
 
     @counts.setter
     def counts(self, value):
@@ -372,9 +366,9 @@ class Trajectory(object):
         def conversion(concentration):
             if len(concentration.shape) == 1:
                 concentration = np.expand_dims(concentration, axis=0)
-                result = np.zeros((1, self._n_species))
+                result = np.zeros((1, self.n_species))
             else:
-                result = np.zeros((concentration.shape[0], self._n_species))
+                result = np.zeros((concentration.shape[0], self.n_species))
             result[:, type1] = -concentration[:, type1]
             result[:, type2] = concentration[:, type1]
             return result.squeeze()
@@ -386,9 +380,9 @@ class Trajectory(object):
         def fusion(concentration):
             if len(concentration.shape) == 1:
                 concentration = np.expand_dims(concentration, axis=0)
-                result = np.zeros((1, self._n_species))
+                result = np.zeros((1, self.n_species))
             else:
-                result = np.zeros((concentration.shape[0], self._n_species))
+                result = np.zeros((concentration.shape[0], self.n_species))
             delta = concentration[:, type_from1] * concentration[:, type_from2]
             result[:, type_from1] = -delta
             result[:, type_from2] = -delta
@@ -402,9 +396,9 @@ class Trajectory(object):
         def fission(concentration):
             if len(concentration.shape) == 1:
                 concentration = np.expand_dims(concentration, axis=0)
-                result = np.zeros((1, self._n_species))
+                result = np.zeros((1, self.n_species))
             else:
-                result = np.zeros((concentration.shape[0], self._n_species))
+                result = np.zeros((concentration.shape[0], self.n_species))
             delta = concentration[:, type_from]
             result[:, type_from] = -delta
             result[:, type_to1] = delta
