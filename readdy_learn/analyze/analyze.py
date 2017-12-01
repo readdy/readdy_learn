@@ -70,7 +70,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                 else:
                     var, ff = estimate_noise_variance(strided_times, ys)
                 print("MSE =", deriv.mse(integrated_ld, ys), "noise variance =", var)
-                traj.separate_derivs[s] = np.interp(traj.times, strided_times, ld)
+                traj.separate_derivs[int(s)] = np.interp(traj.times, strided_times, ld)
 
                 used_alphas.append(best_alpha)
             traj.interpolation_degree = interp_degree
