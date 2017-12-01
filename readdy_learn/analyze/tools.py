@@ -264,7 +264,6 @@ class Trajectory(object):
             self._n_basis_functions = len(self._thetas)
 
             # todo this is garbage: np.gradient(self.counts, axis=0) / self._time_step
-            self._dcounts_dt = self.calculate_dX()
             if len(self._thetas) > 0:
                 self._last_alpha = .01
                 self._large_theta = np.array([f(self._counts) for f in self._thetas])
@@ -275,9 +274,9 @@ class Trajectory(object):
         self.update()
         string = "Trajectory("
         string += "counts.shape={}, box_size={}, time_step={}, n_basis_functions={}, large_theta.shape={}, " \
-                  "n_time_steps={}, n_species={}, dirty={}, dcounts_dt.shape={}" \
+                  "n_time_steps={}, n_species={}, dirty={}" \
             .format(self.counts.shape, self._box_size, self.time_step, self.n_basis_functions, self._large_theta.shape,
-                    self.n_time_steps, self.n_species, self._dirty, self._dcounts_dt.shape)
+                    self.n_time_steps, self.n_species, self._dirty)
         string += ")"
         return string
 
