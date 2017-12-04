@@ -682,6 +682,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw
         print("found alpha={} to be best with a difference of {} between mse and "
               "variance".format(alphas[best], errs[best]))
         current_best_tv = derivs[best]
+        current_best_tv = None
         bestalpha = alphas[best]
         ix = np.where(alphas == bestalpha)[0]
         assert alphas.squeeze()[ix] == bestalpha
