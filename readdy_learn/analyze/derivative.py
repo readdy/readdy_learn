@@ -690,7 +690,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw
         current_best_tv = derivs[best]
         # current_best_tv = None
         bestalpha = alphas[best]
-        ix = np.where(alphas == bestalpha)[0]
+        ix = np.asarray(np.where(alphas == bestalpha)[0]).squeeze()[0]
         print("got ix {}".format(ix))
         # assert alphas.squeeze()[ix] == bestalpha
         prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
