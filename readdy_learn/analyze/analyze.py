@@ -36,7 +36,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
         species = [i for i in range(traj.n_species)]
     species = np.array(species).squeeze()
     print("obtaining derivative for species {}".format(species))
-    if traj.dcounts_dt is None and not override:
+    if traj.dcounts_dt is None or override:
         if interp_degree == 'regularized_derivative':
             interp_degree = traj.interpolation_degree
             traj.interpolation_degree = None
