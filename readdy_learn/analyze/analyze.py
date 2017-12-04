@@ -56,7 +56,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                     continue
                 ys = strided_counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
-                      'solver': 'spsolve', 'verbose': verbose}
+                      'solver': 'spsolve', 'verbose': False, 'show_progress': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
                         if subdivisions is None:
@@ -66,13 +66,15 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                                                               x0=x0[s], **kw)
                         else:
                             assert isinstance(subdivisions, int)
+                            interp = deriv.interpolate(strided_times, strided_counts)
                             subys = list(split(ys, subdivisions))
                             subtimes = list(split(strided_times, subdivisions))
+                            subinterp = list(split(interp, subdivisions))
                             ld = None
                             subalphs = []
                             for i in range(subdivisions):
                                 print("----------------------------- subdiv {} ----------------------------".format(i))
-                                init = x0[s] if ld is None else ld[-1]
+                                init = x0[s] if ld is None else subinterp[i][0]
                                 print("got initial value {}".format(init))
                                 subalph, subld, subscores = deriv.best_tv_derivative(subys[i], subtimes[i], alpha,
                                                                                      n_iters=alpha_search_depth,
