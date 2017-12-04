@@ -246,16 +246,6 @@ def trapz(xs, ys):
     return result
 
 
-def cumsimps(xs, ys):
-    result = np.empty(shape=xs.shape)
-    result[0] = 0
-    for i in range(len(xs) - 1):
-        ix = i + 1
-        result[ix] = integrate.simps(ys[:ix], x=xs[:ix])
-        integrate.romb()
-    return result
-
-
 def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
                   verbose=False, show_progress=True, solver='lgmres', plot=False):
     label = None

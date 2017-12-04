@@ -74,7 +74,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                             subalphs = []
                             for i in range(subdivisions):
                                 print("----------------------------- subdiv {} ----------------------------".format(i))
-                                init = x0[s] if ld is None else subinterp[i][0]
+                                init = x0[s] if ld is None else ld[-1] #subinterp[i][0]
                                 print("got initial value {}".format(init))
                                 subalph, subld, subscores = deriv.best_tv_derivative(subys[i], subtimes[i], alpha,
                                                                                      n_iters=alpha_search_depth,
