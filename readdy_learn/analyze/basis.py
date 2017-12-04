@@ -71,6 +71,21 @@ class FissionReaction(object):
         return result.squeeze()
 
 
+class DecayReaction(object):
+    def __init__(self, type_from, n_species):
+        self.type_from = type_from
+        self.n_species = n_species
+
+    def __call__(self, concentration):
+        if len(concentration.shape) == 1:
+            concentration = np.expand_dims(concentration, axis=0)
+            result = np.zeros((1, self.n_species))
+        else:
+            result = np.zeros((concentration.shape[0], self.n_species))
+        result[:, self.type_from] = -concentration[:, self.type_from]
+        return result.squeeze()
+
+
 class BasisFunctionConfiguration(object):
     def __init__(self, n_species):
         self._basis_functions = []
@@ -95,3 +110,7 @@ class BasisFunctionConfiguration(object):
 
     def add_intercept(self, type):
         self._basis_functions.append(Intercept(type, self._n_species))
+
+
+    def add_decay(self, type_from):
+        self._basis_functions.append(DecayReaction(type_from, self._n_species))
