@@ -66,7 +66,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                                                               x0=x0[s], **kw)
                         else:
                             assert isinstance(subdivisions, int)
-                            interp = deriv.interpolate(strided_times, strided_counts)
+                            interp = deriv.interpolate(strided_times, ys)
                             subys = list(split(ys, subdivisions))
                             subtimes = list(split(strided_times, subdivisions))
                             subinterp = list(split(interp, subdivisions))
