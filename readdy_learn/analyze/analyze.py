@@ -64,7 +64,8 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                     ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
                     best_alpha = alpha
                 # linearly interpolate to the full time range
-                integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + ys[0]
+                integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + \
+                                x0[s] if x0 is not None else ys[0]
                 if variance is not None:
                     var = variance
                 else:
