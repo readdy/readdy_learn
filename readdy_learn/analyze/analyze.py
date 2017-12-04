@@ -472,6 +472,14 @@ class ReactionAnalysis(object):
     def get_cv_fname(self, n_train):
         return self._fname_prefix + "_cv_train_{}_".format(n_train) + self._fname_postfix + ".npy"
 
+    def get_traj(self, n):
+        traj = self._trajs[n]
+        if isinstance(traj, str):
+            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree,
+                                    verbose=False)
+            traj.update()
+        return traj
+
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
         if test_n is None:
             test_n = [self._trajs[i] for i in range(len(self._trajs)) if i != train_n]
