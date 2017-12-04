@@ -110,7 +110,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             traj.persist()
             return [], traj
     else:
-        print("traj already contains derivatives, skip this")
+        print("traj already contains derivatives and override is {}, skip this".format(override))
         return [], traj
 
 
