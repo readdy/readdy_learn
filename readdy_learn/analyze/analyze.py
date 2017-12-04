@@ -68,7 +68,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                             assert isinstance(subdivisions, int)
                             subys = list(split(ys, subdivisions))
                             subtimes = list(split(strided_times, subdivisions))
-                            ld = []
+                            ld = None
                             subalphs = []
                             for i in range(subdivisions):
                                 print("----------------------------- subdiv {} ----------------------------".format(i))
@@ -79,9 +79,11 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                                                                      variance=variance,
                                                                                      x0=init, **kw)
                                 print("found alpha={}".format(subalph))
-                                ld.append(subld)
+                                if ld is not None:
+                                    ld = np.append(ld, subld)
+                                else:
+                                    ld = subld
                                 subalphs.append(subalph)
-                            ld = np.array(ld).squeeze()
                             best_alpha = subalphs
                     else:
                         alpha = alpha[0]
