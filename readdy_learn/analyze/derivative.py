@@ -554,6 +554,22 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
     return u
 
 
+def interpolate(xs, ys, degree=6):
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.linear_model import LinearRegression as interp
+
+    poly_feat = PolynomialFeatures(degree=degree)
+    regression = interp()  # interp(l1_ratio=[.1, .5, .7, .9, .95, .99, 1], n_alphas=100)
+    pipeline = Pipeline([("poly", poly_feat), ("regression", regression)])
+    pipeline.fit(xs[:, np.newaxis], ys)
+
+    def ff(t):
+        return pipeline.predict(t[:, np.newaxis])
+
+    return ff(xs)
+
+
 def estimate_noise_variance(xs, ys):
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import PolynomialFeatures
@@ -869,7 +885,7 @@ def test_ld_derivative():
 
         # ld_deriv = ld_derivative(testf, x0, alpha=.01, **kw)
 
-        plt.figure()
+        plt.figure(figsize=(15, 15))
         plt.plot(x0, testf, label='f')
         plt.plot(x0, true_deriv, label='df')
         plt.plot(xs, K * true_deriv, label='K*df')
