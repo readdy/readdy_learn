@@ -259,6 +259,7 @@ def cumsimps(xs, ys):
 def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1e-4, atol=1e-4, rtol=1e-6,
                   verbose=False, show_progress=True, solver='lgmres', plot=False):
     label = None
+    box = None
     if show_progress:
         from ipywidgets import Label, Box
         from IPython.display import display
@@ -309,22 +310,14 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
 
     E_n = sparse.dia_matrix((n, n), dtype=xs.dtype)
     midpoints_diff = np.diff(midpoints)
-    prev_grad_norm = None
-
+    iters = []
     if plot:
         iters = [np.copy(u)]
 
-    first_strike = False
-
     for ii in range(1, maxit + 1):
-
-        # Diagonal matrix of weights, for linearizing E-L equation.
         E_n.setdiag(midpoints_diff * (1. / np.sqrt(np.diff(u) ** 2.0 + epsilon)))
-        # Q = E_n #DX *
         L = diff_t * E_n * diff
-        # Gradient of functional.
         g = ATA.dot(u) + Aadj_offset + alpha * L * u
-        # g = g + alpha * L * u
 
         # solve linear equation.
         info_i = 0
@@ -336,10 +329,8 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
         elif solver == 'bicgstab':
             [s, info_i] = splin.bicgstab(A=alpha * L + ATA, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
         elif solver == 'spsolve':
-            # todo this behaves oddly
             s = splin.spsolve((alpha * L + ATA), -g, use_umfpack=True)
         elif solver == 'np':
-            # todo this behaves oddly
             s = np.linalg.solve((alpha * L + ATA).todense().astype(np.float64), (-g).astype(np.float64))
 
         relative_change = np.linalg.norm(s[0]) / np.linalg.norm(u)
@@ -350,36 +341,6 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
                 print("WARNING - convergence to tolerance not achieved!")
             elif info_i < 0:
                 print("WARNING - illegal input or breakdown")
-
-        # if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm:
-        #    linalg_solver_maxit = int(2 * linalg_solver_maxit)
-        # else:
-        #    linalg_solver_maxit = int(.95 * linalg_solver_maxit)
-
-        # if prev_grad_norm is not None and np.linalg.norm(g) > prev_grad_norm and np.linalg.norm(g) > 1:
-        #     # print("WARNING - increasing large gradient norm: {} -> {}".format(prev_grad_norm, np.linalg.norm(g)))
-        #     if first_strike:
-        #         if u0 is not None:
-        #             print("WARNING - due to increasing large gradient norm, restart with no u0")
-        #             return tv_derivative(data, xs, u0=None, alpha=alpha, maxit=maxit,
-        #                                  linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
-        #                                  verbose=verbose, show_progress=show_progress, solver=solver, plot=plot)
-        #         else:
-        #             if solver == 'bicgstab':
-        #                 print("ERROR - gradient gets out of hand, abort!")
-        #             elif solver =='spsolve':
-        #                 return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
-        #                                      linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
-        #                                      verbose=verbose, show_progress=show_progress, solver='np', plot=plot)
-        #             elif solver =='np':
-        #                 return tv_derivative(data, xs, u0=u0, alpha=alpha, maxit=maxit,
-        #                                      linalg_solver_maxit=linalg_solver_maxit, tol=tol, atol=atol, rtol=rtol,
-        #                                      verbose=verbose, show_progress=show_progress, solver='bicgstab', plot=plot)
-        #     first_strike = True
-        # else:
-        #     first_strike = False
-
-        prev_grad_norm = np.linalg.norm(g)
 
         # Update current solution
         u = u + s
@@ -607,6 +568,81 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
+# if False:
+#        def F(alpha):
+#            if isinstance(alpha, (list, tuple)):
+#                alpha = alpha[0]
+#            if isinstance(alpha, np.ndarray):
+#                alpha = alpha.squeeze()[0]
+#            print("invoking F with alpha={}".format(alpha))
+#            if current_best_tv is not None:
+#                d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
+#            else:
+#                d = tv_derivative(data, xs, **args, alpha=alpha)
+#            return d
+#
+#        def score(tv):
+#            print("eval score for x0={}".format(x0))
+#            d = .5 * (tv[1:] + tv[:-1])
+#            integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
+#            _mse = mse(integrated, data)
+#            return np.abs(var - _mse)
+#
+#        xa = np.min(alphas)
+#        xb = np.max(alphas)
+#        xm = .5*(xa+xb)
+#        Fa = F(xa)
+#        Fb = F(xb)
+#        Fm = F(xm)
+#        sa = score(Fa)
+#        sb = score(Fb)
+#        sm = score(Fm)
+#
+#        for i in range(n_iters):
+#            xl = .5*(xa + xm)
+#            xr = .5*(xm + xb)
+#            Fl = F(xl)
+#            Fr = F(xr)
+#            sl = score(Fl)
+#            sr = score(Fr)
+#            x_s = np.array([xa, xb, xm, xl, xr])
+#            scores = np.array([sa, sb, sm, sl, sr])
+#            derivs = np.array([Fa, Fb, Fm, Fl, Fr])
+#            minix = np.argmin(scores)
+#            smin = scores[minix]
+#            Fmin = derivs[minix]
+#            xmin = x_s[minix]
+#
+#            print("found alpha={} to be best with a difference of {} between mse and "
+#                       "variance, alphas={} with scores {}".format(xmin, smin, x_s, scores))
+#            # current_best_tv = Fmin
+#            if minix == 0 or minix == 3:
+#                xb = xm
+#                xm = xl
+#                Fb = Fm
+#                sb = sm
+#                Fm = Fl
+#                sm = sl
+#            elif minix == 2:
+#                xa = xl
+#                xb = xr
+#                Fa = Fl
+#                sa = sl
+#                Fb = Fr
+#                sb = sr
+#            elif minix == 4 or minix == 1:
+#                xa = xm
+#                xm = xr
+#                Fa = Fm
+#                sa = sm
+#                Fm = Fr
+#                sm = sr
+#
+#        d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=xmin)
+#        return xmin, .5 * (d[1:] + d[:-1])
+#
+#    else:
+
 def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw):
     from readdy_learn.analyze.progress import Progress
 
@@ -625,111 +661,37 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw
 
     scores = []
 
-    if False:
-        def F(alpha):
-            if isinstance(alpha, (list, tuple)):
-                alpha = alpha[0]
-            if isinstance(alpha, np.ndarray):
-                alpha = alpha.squeeze()[0]
-            print("invoking F with alpha={}".format(alpha))
+    for i in range(n_iters):
+        derivs = []
+        for alpha in alphas:
             if current_best_tv is not None:
                 d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
             else:
                 d = tv_derivative(data, xs, **args, alpha=alpha)
-            return d
-
-        def score(tv):
-            print("eval score for x0={}".format(x0))
+            derivs.append(d)
+            prog.increase(1, stage=i)
+        errs = []
+        for ix, tv in enumerate(derivs):
             d = .5 * (tv[1:] + tv[:-1])
             integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
             _mse = mse(integrated, data)
-            return np.abs(var - _mse)
+            errs.append(np.abs(var - _mse))
+            scores.append([alphas[ix], errs[-1]])
+        errs = np.array([errs]).squeeze()
+        best = int(np.argmin(errs))
+        print("found alpha={} to be best with a difference of {} between mse and "
+              "variance".format(alphas[best], errs[best]))
+        current_best_tv = derivs[best]
+        bestalpha = alphas[best]
+        ix = np.where(alphas == bestalpha)[0]
+        assert alphas.squeeze()[ix] == bestalpha
+        prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
+        nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
+        alphas = np.linspace(prevalph, nextalph, num=len(alphas))
+        prog.finish(stage=i)
 
-        xa = np.min(alphas)
-        xb = np.max(alphas)
-        xm = .5*(xa+xb)
-        Fa = F(xa)
-        Fb = F(xb)
-        Fm = F(xm)
-        sa = score(Fa)
-        sb = score(Fb)
-        sm = score(Fm)
-
-        for i in range(n_iters):
-            xl = .5*(xa + xm)
-            xr = .5*(xm + xb)
-            Fl = F(xl)
-            Fr = F(xr)
-            sl = score(Fl)
-            sr = score(Fr)
-            x_s = np.array([xa, xb, xm, xl, xr])
-            scores = np.array([sa, sb, sm, sl, sr])
-            derivs = np.array([Fa, Fb, Fm, Fl, Fr])
-            minix = np.argmin(scores)
-            smin = scores[minix]
-            Fmin = derivs[minix]
-            xmin = x_s[minix]
-
-            print("found alpha={} to be best with a difference of {} between mse and "
-                       "variance, alphas={} with scores {}".format(xmin, smin, x_s, scores))
-            # current_best_tv = Fmin
-            if minix == 0 or minix == 3:
-                xb = xm
-                xm = xl
-                Fb = Fm
-                sb = sm
-                Fm = Fl
-                sm = sl
-            elif minix == 2:
-                xa = xl
-                xb = xr
-                Fa = Fl
-                sa = sl
-                Fb = Fr
-                sb = sr
-            elif minix == 4 or minix == 1:
-                xa = xm
-                xm = xr
-                Fa = Fm
-                sa = sm
-                Fm = Fr
-                sm = sr
-
-        d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=xmin)
-        return xmin, .5 * (d[1:] + d[:-1])
-
-    else:
-        for i in range(n_iters):
-            derivs = []
-            for alpha in alphas:
-                if current_best_tv is not None:
-                    d = tv_derivative(data, xs, u0=current_best_tv, **args, alpha=alpha)
-                else:
-                    d = tv_derivative(data, xs, **args, alpha=alpha)
-                derivs.append(d)
-                prog.increase(1, stage=i)
-            errs = []
-            for ix, tv in enumerate(derivs):
-                d = .5 * (tv[1:] + tv[:-1])
-                integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
-                _mse = mse(integrated, data)
-                errs.append(np.abs(var - _mse))
-                scores.append([alphas[ix], errs[-1]])
-            errs = np.array([errs]).squeeze()
-            best = int(np.argmin(errs))
-            print("found alpha={} to be best with a difference of {} between mse and "
-                  "variance".format(alphas[best], errs[best]))
-            current_best_tv = derivs[best]
-            bestalpha = alphas[best]
-            ix = np.where(alphas == bestalpha)[0]
-            assert alphas.squeeze()[ix] == bestalpha
-            prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
-            nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
-            alphas = np.linspace(prevalph, nextalph, num=len(alphas))
-            prog.finish(stage=i)
-
-        d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
-        return bestalpha, .5*(d[1:]+d[:-1]), np.array(scores).squeeze()
+    d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
+    return bestalpha, .5 * (d[1:] + d[:-1]), np.array(scores).squeeze()
 
 
 def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw):
@@ -860,7 +822,7 @@ def score_ld_derivative(alpha, xs, ys, **kw):
 
 
 def test_ld_derivative():
-    noise_variance = .08*.08
+    noise_variance = .08 * .08
     x0 = np.arange(0, 2.0 * np.pi, 0.005)
     xx = []
     for x in x0:
@@ -898,7 +860,7 @@ def test_ld_derivative():
         xs = x0
         xs = .5 * (xs[1:] + xs[:-1])
 
-        #alpha, tv_deriv = best_tv_derivative(testf, x0, alphas=np.linspace(.0001, .1, num=10), n_iters=4, plot=False,
+        # alpha, tv_deriv = best_tv_derivative(testf, x0, alphas=np.linspace(.0001, .1, num=10), n_iters=4, plot=False,
         #                                     maxit=3, verbose=False, tol=1e-14, atol=1e-9, rtol=None, solver='spsolve',
         #                                     variance=noise_variance)
         tv_deriv = tv_derivative(testf, x0, alpha=.01, plot=True, **kw)
@@ -916,7 +878,6 @@ def test_ld_derivative():
 
         plt.legend()
         plt.show()
-
 
         # deriv_sm = ld_derivative(testf, timestep=0.05, alpha=5e-4, verbose=False)
         # deriv_lrg = ld_derivative(testf, timestep=0.05, alpha=1e-1)
