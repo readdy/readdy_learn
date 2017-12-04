@@ -24,9 +24,14 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
+def split(a, n):
+    k, m = divmod(len(a), n)
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      best_alpha_iters=5000, atol_final=1e-14, species=None, override=False):
+                      best_alpha_iters=5000, atol_final=1e-14, species=None, override=False, subdivisions=None):
     if species is None:
         species = [i for i in range(traj.n_species)]
     species = np.array(species).squeeze()
@@ -43,7 +48,6 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             print("got {} counts (and {} corresp. time steps), dt=".format(strided_counts.shape[0], len(strided_times)),
                   strided_dt)
 
-            dx = np.empty(shape=(len(traj.times), traj.n_species))
             x0 = np.asarray(x0).squeeze()
             used_alphas = []
             for s in species if species.ndim > 0 else [species]:
@@ -55,10 +59,31 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                       'solver': 'spsolve', 'verbose': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
-                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha,
-                                                                  n_iters=alpha_search_depth,
-                                                                  variance=variance, best_alpha_iters=best_alpha_iters,
-                                                                  x0=x0[s], atol_final=atol_final, **kw)
+                        if subdivisions is None:
+                            best_alpha, ld, scores = deriv.best_tv_derivative(ys, strided_times, alpha,
+                                                                              n_iters=alpha_search_depth,
+                                                                              variance=variance,
+                                                                              best_alpha_iters=best_alpha_iters,
+                                                                              x0=x0[s], atol_final=atol_final, **kw)
+                        else:
+                            assert isinstance(subdivisions, int)
+                            subys = split(ys, subdivisions)
+                            subtimes = split(strided_times, subdivisions)
+                            ld = []
+                            subalphs = []
+                            for i in range(subdivisions):
+                                print("----------------------------- subdiv {} ----------------------------".format(i))
+                                subalph, subld, subscores = deriv.best_tv_derivative(subys, subtimes, alpha,
+                                                                                     n_iters=alpha_search_depth,
+                                                                                     variance=variance,
+                                                                                     best_alpha_iters=best_alpha_iters,
+                                                                                     x0=x0[s],
+                                                                                     atol_final=atol_final, **kw)
+                                print("found alpha={}".format(subalph))
+                                ld.append(subld)
+                                subalphs.append(subalph)
+                            ld = np.array(ld).squeeze()
+                            best_alpha = subalphs
                     else:
                         alpha = alpha[0]
                         ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)

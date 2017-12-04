@@ -607,7 +607,7 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
-def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=None, best_alpha_iters=100, x0=None, **kw):
+def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw):
     from readdy_learn.analyze.progress import Progress
 
     args = dict(kw)
@@ -622,6 +622,8 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
     current_best_tv = None
 
     prog = Progress(n=len(alphas), label='Find alpha', nstages=n_iters)
+
+    scores = []
 
     if False:
         def F(alpha):
@@ -693,8 +695,6 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
                 Fm = Fr
                 sm = sr
 
-        args['maxit'] = best_alpha_iters
-        args['atol'] = atol_final
         d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=xmin)
         return xmin, .5 * (d[1:] + d[:-1])
 
@@ -709,11 +709,12 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
                 derivs.append(d)
                 prog.increase(1, stage=i)
             errs = []
-            for tv in derivs:
+            for ix, tv in enumerate(derivs):
                 d = .5 * (tv[1:] + tv[:-1])
                 integrated = integrate.cumtrapz(d, x=xs, initial=0) + (x0 if x0 is not None else data[0])
                 _mse = mse(integrated, data)
-                errs.append(np   .abs(var - _mse))
+                errs.append(np.abs(var - _mse))
+                scores.append([alphas[ix], errs[-1]])
             errs = np.array([errs]).squeeze()
             best = int(np.argmin(errs))
             print("found alpha={} to be best with a difference of {} between mse and "
@@ -727,10 +728,8 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, atol_final=1e-12, variance=N
             alphas = np.linspace(prevalph, nextalph, num=len(alphas))
             prog.finish(stage=i)
 
-        args['maxit'] = best_alpha_iters
-        args['atol'] = atol_final
         d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
-        return bestalpha, .5*(d[1:]+d[:-1])
+        return bestalpha, .5*(d[1:]+d[:-1]), np.array(scores).squeeze()
 
 
 def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw):
