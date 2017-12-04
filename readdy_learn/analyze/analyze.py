@@ -26,12 +26,12 @@ def estimate_noise_variance(xs, ys):
 
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      best_alpha_iters=5000, atol_final=1e-14, species=None):
+                      best_alpha_iters=5000, atol_final=1e-14, species=None, override=False):
     if species is None:
         species = [i for i in range(traj.n_species)]
     species = np.array(species).squeeze()
     print("obtaining derivative for species {}".format(species))
-    if traj.dcounts_dt is None:
+    if traj.dcounts_dt is None and not override:
         if interp_degree == 'regularized_derivative':
             interp_degree = traj.interpolation_degree
             traj.interpolation_degree = None
@@ -262,7 +262,7 @@ class ReactionAnalysis(object):
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
                                 maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10,
-                                species=None):
+                                species=None, override=False):
         if species is None:
             species = [i for i in range(self.n_species)]
         self._trajs = [None for _ in range(len(self.initial_states))]
@@ -272,7 +272,8 @@ class ReactionAnalysis(object):
                 _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
-                                         best_alpha_iters=best_alpha_iters, atol_final=atol_final, species=species)
+                                         best_alpha_iters=best_alpha_iters, atol_final=atol_final, species=species,
+                                         override=override)
                 self._trajs[n] = self.get_traj_fname(n)
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
