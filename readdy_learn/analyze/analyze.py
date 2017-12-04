@@ -66,16 +66,18 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                                                               x0=x0[s], **kw)
                         else:
                             assert isinstance(subdivisions, int)
-                            subys = split(ys, subdivisions)
-                            subtimes = split(strided_times, subdivisions)
+                            subys = list(split(ys, subdivisions))
+                            subtimes = list(split(strided_times, subdivisions))
                             ld = []
                             subalphs = []
                             for i in range(subdivisions):
                                 print("----------------------------- subdiv {} ----------------------------".format(i))
-                                subalph, subld, subscores = deriv.best_tv_derivative(subys, subtimes, alpha,
+                                init = x0[s] if len(ld) == 0 else ld[-1][-1, s]
+                                print("got initial value {}".format(init))
+                                subalph, subld, subscores = deriv.best_tv_derivative(subys[i], subtimes[i], alpha,
                                                                                      n_iters=alpha_search_depth,
                                                                                      variance=variance,
-                                                                                     x0=x0[s], **kw)
+                                                                                     x0=init, **kw)
                                 print("found alpha={}".format(subalph))
                                 ld.append(subld)
                                 subalphs.append(subalph)
