@@ -412,7 +412,7 @@ class ReactionAnalysis(object):
                 ax1.plot(traj.times, estimated[:, type_id], "k--",
                          label=None if type_id != 3 else "law of mass action solution")
                 integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
-                                + self.initial_states[n].squeeze()[species]
+                                + self.initial_states[n].squeeze()[type_id]
                 ax1.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
         ax1.legend(loc="upper right")
         if fname is not None:
