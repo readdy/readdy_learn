@@ -692,8 +692,14 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw
         bestalpha = alphas[best]
         ix = np.where(alphas == bestalpha)[0][0]
         print("got ix {}".format(ix))
-        prevalph = alphas[ix - 1] if ix - 1 >= 0 else alphas[0]
-        nextalph = alphas[ix + 1] if ix + 1 < len(alphas) else alphas[-1]
+        if ix - 1 >= 0:
+            prevalph = alphas[ix - 1]
+        else:
+            prevalph = .5*alphas[0]
+        if ix + 1 < len(alphas):
+            nextalph = alphas[ix + 1]
+        else:
+            nextalph = 1.5*alphas[-1]
         alphas = np.linspace(prevalph, nextalph, num=len(alphas))
         prog.finish(stage=i)
 
