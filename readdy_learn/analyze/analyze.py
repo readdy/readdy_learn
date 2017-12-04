@@ -47,6 +47,9 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             x0 = np.asarray(x0).squeeze()
             used_alphas = []
             for s in species if species.ndim > 0 else [species]:
+                if s in traj.separate_derivs.keys() and not override:
+                    print("skipping species {} as it already has derivatives".format(s))
+                    continue
                 ys = strided_counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'solver': 'spsolve', 'verbose': verbose}
