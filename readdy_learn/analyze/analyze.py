@@ -31,7 +31,7 @@ def split(a, n):
 
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      species=None, override=False, subdivisions=None):
+                      species=None, override=False, subdivisions=None, reuse_deriv=True):
     if species is None:
         species = [i for i in range(traj.n_species)]
     species = np.array(species).squeeze()
@@ -63,6 +63,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                             best_alpha, ld, scores = deriv.best_tv_derivative(ys, strided_times, alpha,
                                                                               n_iters=alpha_search_depth,
                                                                               variance=variance,
+                                                                              reuse_deriv=reuse_deriv,
                                                                               x0=x0[s], **kw)
                         else:
                             assert isinstance(subdivisions, int)
@@ -79,6 +80,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                 subalph, subld, subscores = deriv.best_tv_derivative(subys[i], subtimes[i], alpha,
                                                                                      n_iters=alpha_search_depth,
                                                                                      variance=variance,
+                                                                                     reuse_deriv=reuse_deriv,
                                                                                      x0=init, **kw)
                                 print("found alpha={}".format(subalph))
                                 if ld is not None:
@@ -89,10 +91,10 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                             best_alpha = subalphs
                     else:
                         alpha = alpha[0]
-                        ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
+                        ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
                         best_alpha = alpha
                 else:
-                    ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
+                    ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
                     best_alpha = alpha
                 # linearly interpolate to the full time range
                 integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + \

@@ -649,7 +649,7 @@ def estimate_noise_variance(xs, ys):
 #
 #    else:
 
-def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw):
+def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, reuse_deriv=True, **kw):
     from readdy_learn.analyze.progress import Progress
 
     args = dict(kw)
@@ -687,8 +687,10 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, **kw
         best = int(np.argmin(errs))
         print("found alpha={} to be best with a difference of {} between mse and "
               "variance".format(alphas[best], errs[best]))
-        current_best_tv = derivs[best]
-        # current_best_tv = None
+        if reuse_deriv:
+            current_best_tv = derivs[best]
+        else:
+            current_best_tv = None
         bestalpha = alphas[best]
         ix = np.where(alphas == bestalpha)[0][0]
         print("got ix {}".format(ix))
