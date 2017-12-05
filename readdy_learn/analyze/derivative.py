@@ -251,6 +251,7 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
     label = None
     box = None
     if show_progress:
+        print("calculating tv derivative with solver={}".format(solver))
         from ipywidgets import Label, Box
         from IPython.display import display
         label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
@@ -878,8 +879,12 @@ def test_ld_derivative():
         # alpha, tv_deriv = best_tv_derivative(testf, x0, alphas=np.linspace(.0001, .1, num=10), n_iters=4, plot=False,
         #                                     maxit=3, verbose=False, tol=1e-14, atol=1e-9, rtol=None, solver='spsolve',
         #                                     variance=noise_variance)
+        tv_deriv0 = tv_derivative(testf, x0, alpha=.001, plot=True, **kw)
+        tv_deriv0_back = .5 * (tv_deriv0[1:] + tv_deriv0[:-1])
         tv_deriv = tv_derivative(testf, x0, alpha=.01, plot=True, **kw)
         tv_deriv_back = .5 * (tv_deriv[1:] + tv_deriv[:-1])
+        tv_deriv2 = tv_derivative(testf, x0, alpha=.5, plot=True, **kw)
+        tv_deriv2_back = .5 * (tv_deriv2[1:] + tv_deriv2[:-1])
 
         # ld_deriv = ld_derivative(testf, x0, alpha=.01, **kw)
 
@@ -888,7 +893,9 @@ def test_ld_derivative():
         plt.plot(x0, true_deriv, label='df')
         plt.plot(xs, K * true_deriv, label='K*df')
 
-        plt.plot(x0, tv_deriv_back, label='tv')
+        plt.plot(x0, tv_deriv_back, label='tv, alpha=.01')
+        plt.plot(x0, tv_deriv2_back, label='tv, alpha=.5')
+        plt.plot(x0, tv_deriv0_back, label='tv, alpha=.001')
         # plt.plot(x0, ld_deriv, label='ld')
 
         plt.legend()
