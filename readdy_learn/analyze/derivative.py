@@ -251,7 +251,6 @@ def tv_derivative(data, xs, u0=None, alpha=10, maxit=1000, linalg_solver_maxit=1
     label = None
     box = None
     if show_progress:
-        print("calculating tv derivative with solver={}".format(solver))
         from ipywidgets import Label, Box
         from IPython.display import display
         label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
