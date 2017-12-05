@@ -296,7 +296,7 @@ class ReactionAnalysis(object):
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
                                 maxit=2000, search_depth=10, selection=None, species=None, override=False,
-                                subdivisions=None):
+                                subdivisions=None, reuse_deriv=True):
         if species is None:
             species = [i for i in range(self.n_species)]
         self._trajs = [None for _ in range(len(self.initial_states))]
@@ -306,7 +306,8 @@ class ReactionAnalysis(object):
                 _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
-                                         species=species, override=override, subdivisions=subdivisions)
+                                         species=species, override=override, subdivisions=subdivisions,
+                                         reuse_deriv=reuse_deriv)
                 self._trajs[n] = self.get_traj_fname(n)
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
