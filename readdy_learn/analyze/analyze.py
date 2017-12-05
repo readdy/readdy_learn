@@ -31,7 +31,7 @@ def split(a, n):
 
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      species=None, override=False, subdivisions=None, reuse_deriv=True):
+                      species=None, override=False, subdivisions=None, reuse_deriv=True, solver='spsolve'):
     if species is None:
         species = [i for i in range(traj.n_species)]
     species = np.array(species).squeeze()
@@ -56,7 +56,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                     continue
                 ys = strided_counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
-                      'solver': 'spsolve', 'verbose': False, 'show_progress': verbose}
+                      'solver': solver, 'verbose': False, 'show_progress': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
                         if subdivisions is None:
@@ -296,7 +296,7 @@ class ReactionAnalysis(object):
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
                                 maxit=2000, search_depth=10, selection=None, species=None, override=False,
-                                subdivisions=None, reuse_deriv=True):
+                                subdivisions=None, reuse_deriv=True, solver='spsolve'):
         if species is None:
             species = [i for i in range(self.n_species)]
         self._trajs = [None for _ in range(len(self.initial_states))]
@@ -307,7 +307,7 @@ class ReactionAnalysis(object):
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
                                          species=species, override=override, subdivisions=subdivisions,
-                                         reuse_deriv=reuse_deriv)
+                                         reuse_deriv=reuse_deriv, solver=solver)
                 self._trajs[n] = self.get_traj_fname(n)
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
