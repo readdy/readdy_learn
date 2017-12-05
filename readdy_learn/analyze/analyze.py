@@ -416,7 +416,7 @@ class ReactionAnalysis(object):
         plt.show()
         return traj
 
-    def plot_concentration_curves(self, n, fname=None, species=None):
+    def plot_concentration_curves(self, n, fname=None, species=None, plot_estimated=True):
         if species is None:
             species = [i for i in range(self.n_species)]
         traj = self._trajs[n]
@@ -438,9 +438,10 @@ class ReactionAnalysis(object):
                 ax1.plot(traj.times, traj.counts[:, type_id], label="concentration " + t)
                 ax1.plot(traj.times, estimated[:, type_id], "k--",
                          label=None if type_id != 3 else "law of mass action solution")
-                integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
-                                + self.initial_states[n].squeeze()[type_id]
-                ax1.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
+                if plot_estimated:
+                    integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
+                                    + self.initial_states[n].squeeze()[type_id]
+                    ax1.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
         ax1.legend(loc="upper right")
         if fname is not None:
             fig.savefig(fname)
