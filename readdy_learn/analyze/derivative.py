@@ -698,11 +698,11 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, reus
         if ix - 1 >= 0:
             prevalph = alphas[ix - 1]
         else:
-            prevalph = .5*alphas[0]
+            prevalph = alphas[0]
         if ix + 1 < len(alphas):
             nextalph = alphas[ix + 1]
         else:
-            nextalph = 1.5*alphas[-1]
+            nextalph = alphas[-1]
         alphas = np.linspace(prevalph, nextalph, num=len(alphas))
         prog.finish(stage=i)
 
