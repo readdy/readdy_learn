@@ -66,11 +66,16 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                                                               reuse_deriv=reuse_deriv,
                                                                               x0=x0[s], **kw)
                         else:
-                            assert isinstance(subdivisions, int)
                             interp = deriv.interpolate(strided_times, ys)
-                            subys = list(split(ys, subdivisions))
-                            subtimes = list(split(strided_times, subdivisions))
-                            subinterp = list(split(interp, subdivisions))
+                            if isinstance(subdivisions, int):
+                                subys = list(split(ys, subdivisions))
+                                subtimes = list(split(strided_times, subdivisions))
+                                subinterp = list(split(interp, subdivisions))
+                            else:
+                                assert isinstance(subdivisions, (tuple, list))
+                                subys = [ys[selection] for selection in subdivisions]
+                                subtimes = [strided_times[selection] for selection in subdivisions]
+                                subinterp = [interp[selection] for selection in subdivisions]
                             ld = None
                             subalphs = []
                             for i in range(subdivisions):
@@ -89,6 +94,8 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                                     ld = subld
                                 subalphs.append(subalph)
                             best_alpha = subalphs
+
+
                     else:
                         alpha = alpha[0]
                         ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
