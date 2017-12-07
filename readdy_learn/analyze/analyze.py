@@ -68,17 +68,19 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                         else:
                             interp = deriv.interpolate(strided_times, ys)
                             if isinstance(subdivisions, int):
+                                print("using uniform subdiv")
                                 subys = list(split(ys, subdivisions))
                                 subtimes = list(split(strided_times, subdivisions))
                                 subinterp = list(split(interp, subdivisions))
                             else:
                                 assert isinstance(subdivisions, (tuple, list))
+                                print("using non-uniform subdiv")
                                 subys = [ys[selection] for selection in subdivisions]
                                 subtimes = [strided_times[selection] for selection in subdivisions]
                                 subinterp = [interp[selection] for selection in subdivisions]
                             ld = None
                             subalphs = []
-                            for i in range(subdivisions):
+                            for i in range(subdivisions if isinstance(subdivisions, int) else len(subdivisions)):
                                 print("----------------------------- subdiv {} ----------------------------".format(i))
                                 init = x0[s] if ld is None else subinterp[i][0]
                                 print("got initial value {}".format(init))
