@@ -265,6 +265,10 @@ class ReactionAnalysis(object):
     def initial_states(self):
         return self._initial_states
 
+    @property
+    def trajs(self):
+        return self._trajs
+
     @initial_states.setter
     def initial_states(self, value):
         self._initial_states = value
