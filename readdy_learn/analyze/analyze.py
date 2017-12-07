@@ -273,12 +273,15 @@ class ReactionAnalysis(object):
         return self._fname_prefix + "_traj_{}_".format(n) + self._fname_postfix + ".npz"
 
     def generate_trajectories(self, mode='gillespie', **kw):
-        if mode == 'gillespie':
-            for i in range(len(self._initial_states)):
-                self._trajs.append(self.generate_or_load_traj_gillespie(i, **kw))
-        elif mode == 'LMA':
-            for i in range(len(self._initial_states)):
-                self._trajs.append(self.generate_or_load_traj_lma(i, **kw))
+        for i in range(len(self._initial_states)):
+            self.generty_trajectory(i, mode, **kw)
+
+    def generty_trajectory(self, n, mode, **kw):
+        traj = self.generate_or_load_traj_gillespie(n, **kw) if mode == 'gillespie' \
+            else self.generate_or_load_traj_lma(n, **kw)
+        while len(self._trajs) <= n:
+            self._trajs.append(None)
+        self._trajs[n] = traj
 
     def obtain_serialized_gillespie_trajectories(self, desired_n_counts=6000, alphas=None, n_steps=250,
                                                  n_realizations=160, update_and_persist=False, njobs=8, atol=1e-9,
