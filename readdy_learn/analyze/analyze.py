@@ -276,9 +276,9 @@ class ReactionAnalysis(object):
         for i in range(len(self._initial_states)):
             self.generate_trajectory(i, mode, **kw)
 
-    def generate_trajectory(self, n, mode, **kw):
-        traj = self.generate_or_load_traj_gillespie(n, **kw) if mode == 'gillespie' \
-            else self.generate_or_load_traj_lma(n, **kw)
+    def generate_trajectory(self, n, mode, *args, **kw):
+        traj = self.generate_or_load_traj_gillespie(n, *args, **kw) if mode == 'gillespie' \
+            else self.generate_or_load_traj_lma(n, *args, **kw)
         while len(self._trajs) <= n:
             self._trajs.append(None)
         self._trajs[n] = traj
