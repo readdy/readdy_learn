@@ -24,14 +24,19 @@ def estimate_noise_variance(xs, ys):
     return np.var(ff(xs) - ys, ddof=0), ff
 
 
+def split(a, n):
+    k, m = divmod(len(a), n)
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+
 def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
-                      best_alpha_iters=5000, atol_final=1e-14, species=None):
+                      species=None, override=False, subdivisions=None, reuse_deriv=True, solver='spsolve'):
     if species is None:
         species = [i for i in range(traj.n_species)]
     species = np.array(species).squeeze()
     print("obtaining derivative for species {}".format(species))
-    if traj.dcounts_dt is None:
+    if traj.dcounts_dt is None or override:
         if interp_degree == 'regularized_derivative':
             interp_degree = traj.interpolation_degree
             traj.interpolation_degree = None
@@ -43,28 +48,66 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             print("got {} counts (and {} corresp. time steps), dt=".format(strided_counts.shape[0], len(strided_times)),
                   strided_dt)
 
-            dx = np.empty(shape=(len(traj.times), traj.n_species))
             x0 = np.asarray(x0).squeeze()
             used_alphas = []
             for s in species if species.ndim > 0 else [species]:
+                if int(s) in traj.separate_derivs.keys() and not override:
+                    print("skipping species {} as it already has derivatives".format(s))
+                    continue
                 ys = strided_counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
-                      'solver': 'spsolve', 'verbose': verbose}
+                      'solver': solver, 'verbose': False, 'show_progress': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
-                        best_alpha, ld = deriv.best_tv_derivative(ys, strided_times, alpha,
-                                                                  n_iters=alpha_search_depth,
-                                                                  variance=variance, best_alpha_iters=best_alpha_iters,
-                                                                  x0=x0[s], atol_final=atol_final, **kw)
+                        if subdivisions is None:
+                            best_alpha, ld, scores = deriv.best_tv_derivative(ys, strided_times, alpha,
+                                                                              n_iters=alpha_search_depth,
+                                                                              variance=variance,
+                                                                              reuse_deriv=reuse_deriv,
+                                                                              x0=x0[s], **kw)
+                        else:
+                            interp = deriv.interpolate(strided_times, ys)
+                            if isinstance(subdivisions, int):
+                                print("using uniform subdiv")
+                                subys = list(split(ys, subdivisions))
+                                subtimes = list(split(strided_times, subdivisions))
+                                subinterp = list(split(interp, subdivisions))
+                            else:
+                                assert isinstance(subdivisions, (tuple, list))
+                                print("using non-uniform subdiv")
+                                subys = [ys[selection] for selection in subdivisions]
+                                subtimes = [strided_times[selection] for selection in subdivisions]
+                                subinterp = [interp[selection] for selection in subdivisions]
+                            ld = None
+                            subalphs = []
+                            for i in range(subdivisions if isinstance(subdivisions, int) else len(subdivisions)):
+                                print("----------------------------- subdiv {} ----------------------------".format(i))
+                                init = x0[s] if ld is None else subinterp[i][0]
+                                print("got initial value {}".format(init))
+                                subalph, subld, subscores = deriv.best_tv_derivative(subys[i], subtimes[i], alpha,
+                                                                                     n_iters=alpha_search_depth,
+                                                                                     variance=variance,
+                                                                                     reuse_deriv=reuse_deriv,
+                                                                                     x0=init, **kw)
+                                print("found alpha={}".format(subalph))
+                                if ld is not None:
+                                    ld = np.append(ld, subld)
+                                else:
+                                    ld = subld
+                                subalphs.append(subalph)
+                            best_alpha = subalphs
+
+
                     else:
                         alpha = alpha[0]
-                        ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
+                        ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
                         best_alpha = alpha
                 else:
-                    ld = deriv.ld_derivative(ys, strided_times, alpha=alpha, **kw)
+                    ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
                     best_alpha = alpha
                 # linearly interpolate to the full time range
-                integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + ys[0]
+                integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + \
+                                x0[s] if x0 is not None else ys[0]
                 if variance is not None:
                     var = variance
                 else:
@@ -81,7 +124,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             traj.persist()
             return [], traj
     else:
-        print("traj already contains derivatives, skip this")
+        print("traj already contains derivatives and override is {}, skip this".format(override))
         return [], traj
 
 
@@ -224,6 +267,10 @@ class ReactionAnalysis(object):
     def initial_states(self):
         return self._initial_states
 
+    @property
+    def trajs(self):
+        return self._trajs
+
     @initial_states.setter
     def initial_states(self, value):
         self._initial_states = value
@@ -232,12 +279,15 @@ class ReactionAnalysis(object):
         return self._fname_prefix + "_traj_{}_".format(n) + self._fname_postfix + ".npz"
 
     def generate_trajectories(self, mode='gillespie', **kw):
-        if mode == 'gillespie':
-            for i in range(len(self._initial_states)):
-                self._trajs.append(self.generate_or_load_traj_gillespie(i, **kw))
-        elif mode == 'LMA':
-            for i in range(len(self._initial_states)):
-                self._trajs.append(self.generate_or_load_traj_lma(i, **kw))
+        for i in range(len(self._initial_states)):
+            self.generate_trajectory(i, mode, **kw)
+
+    def generate_trajectory(self, n, mode, *args, **kw):
+        traj = self.generate_or_load_traj_gillespie(n, *args, **kw) if mode == 'gillespie' \
+            else self.generate_or_load_traj_lma(n, *args, **kw)
+        while len(self._trajs) <= n:
+            self._trajs.append(None)
+        self._trajs[n] = traj
 
     def obtain_serialized_gillespie_trajectories(self, desired_n_counts=6000, alphas=None, n_steps=250,
                                                  n_realizations=160, update_and_persist=False, njobs=8, atol=1e-9,
@@ -261,8 +311,8 @@ class ReactionAnalysis(object):
             self._trajs.append(self.get_traj_fname(n))
 
     def obtain_lma_trajectories(self, target_time, alphas=None, noise_variance=0, atol=1e-9, tol=1e-12, verbose=False,
-                                maxit=2000, search_depth=10, selection=None, best_alpha_iters=10000, atol_final=1e-10,
-                                species=None):
+                                maxit=2000, search_depth=10, selection=None, species=None, override=False,
+                                subdivisions=None, reuse_deriv=True, solver='spsolve'):
         if species is None:
             species = [i for i in range(self.n_species)]
         self._trajs = [None for _ in range(len(self.initial_states))]
@@ -272,7 +322,8 @@ class ReactionAnalysis(object):
                 _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
-                                         best_alpha_iters=best_alpha_iters, atol_final=atol_final, species=species)
+                                         species=species, override=override, subdivisions=subdivisions,
+                                         reuse_deriv=reuse_deriv, solver=solver)
                 self._trajs[n] = self.get_traj_fname(n)
 
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
@@ -384,7 +435,7 @@ class ReactionAnalysis(object):
         plt.show()
         return traj
 
-    def plot_concentration_curves(self, n, fname=None, species=None):
+    def plot_concentration_curves(self, n, fname=None, species=None, plot_estimated=True):
         if species is None:
             species = [i for i in range(self.n_species)]
         traj = self._trajs[n]
@@ -406,9 +457,10 @@ class ReactionAnalysis(object):
                 ax1.plot(traj.times, traj.counts[:, type_id], label="concentration " + t)
                 ax1.plot(traj.times, estimated[:, type_id], "k--",
                          label=None if type_id != 3 else "law of mass action solution")
-                integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
-                                + self.initial_states[n].squeeze()[species]
-                ax1.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
+                if plot_estimated:
+                    integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
+                                    + self.initial_states[n].squeeze()[type_id]
+                    ax1.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
         ax1.legend(loc="upper right")
         if fname is not None:
             fig.savefig(fname)
@@ -441,6 +493,14 @@ class ReactionAnalysis(object):
 
     def get_cv_fname(self, n_train):
         return self._fname_prefix + "_cv_train_{}_".format(n_train) + self._fname_postfix + ".npy"
+
+    def get_traj(self, n):
+        traj = self._trajs[n]
+        if isinstance(traj, str):
+            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree,
+                                    verbose=False)
+            traj.update()
+        return traj
 
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
         if test_n is None:
@@ -518,3 +578,93 @@ class ReactionAnalysis(object):
                 plt.plot(traj.times[::stride], traj.separate_derivs[s][::stride], label="dx for species {}".format(s))
         plt.legend()
         plt.show()
+
+
+def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
+    xs = {}
+    ys = {}
+    allys = {}
+    for r in cv.result:
+        l1_ratio = r['l1_ratio']
+        if len(r['scores']) > 0:
+            if l1_ratio in xs.keys():
+                xs[l1_ratio].append(r['alpha'])
+                ys[l1_ratio].append(r['scores'][mainscore])
+                allys[l1_ratio].append(r['scores'])
+            else:
+                xs[l1_ratio] = [r['alpha']]
+                ys[l1_ratio] = [r['scores'][mainscore]]
+                allys[l1_ratio] = [r['scores']]
+    f, ax = plt.subplots(figsize=(20, 20))
+    for l1_ratio in xs.keys():
+        l1xs = np.array(xs[l1_ratio])
+        l1ys = np.array(ys[l1_ratio])
+        l1allys = np.array([np.array(arr) for arr in allys[l1_ratio]]).T
+        sorts = np.argsort(l1xs)
+        l1xs = l1xs[sorts]
+        l1ys = l1ys[sorts]
+
+        l1allys = [arr[sorts] for arr in l1allys]
+        if l1_ratio == best_params_ix_l1 or best_params_ix_l1 is None:
+            ax.plot(l1xs, -l1ys, label='score l1={}'.format(l1_ratio))
+
+            for ix, _ys in enumerate(l1allys):
+                if np.argmin(-_ys) != 0:
+                    # print("found one: {} with argmin {}".format(ix, np.argmin(_ys)))
+                    pass
+                # ax.plot(l1xs, -_ys, label='test set {}'.format(ix))
+                pass
+    f.suptitle('Cross-validation scores')
+    ax.set_ylabel('score')
+    ax.set_xlabel('$\\alpha$')
+    plt.legend()
+    plt.show()
+
+
+def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green'):
+    assert len(desired_rates) == len(estimated_rates)
+    N = len(desired_rates)
+    ind = np.arange(N)
+    width = .35
+    fig, ax = plt.subplots()
+    bar1 = ax.bar(ind, desired_rates, width, color=color1)
+    bar2 = ax.bar(ind + width, estimated_rates, width, color=color2)
+    ax.set_xticks(ind + width / 2)
+    ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
+    ax.set_xticklabels(["{}".format(i) for i in ind])
+    plt.show()
+
+
+def best_params(cv, test_traj=None):
+    current_best_score = -1
+    alpha = -1
+    l1_ratio = -1
+
+    for r in cv.result:
+        if len(r['scores']) > 0:
+            if test_traj is None:
+                current_score = np.mean(r['scores'])
+            else:
+                current_score = r['scores'][test_traj]
+            if current_best_score >= 0:
+                if -current_score < current_best_score:
+                    current_best_score = -current_score
+                    alpha = r['alpha']
+                    l1_ratio = r['l1_ratio']
+            else:
+                current_best_score = -current_score
+                alpha = r['alpha']
+                l1_ratio = r['l1_ratio']
+    return alpha, l1_ratio, current_best_score
+
+
+def do_the_cv(analysis, n, alphas, l1_ratios, tol=1e-12, solvetol=1e-15, plot_cv_for=None, best_params_ix=None,
+              best_params_ix_l1=None, cutoff=1e-8, recompute=False):
+    cv_n = analysis.elastic_net(n, alphas, l1_ratios, tol=tol)
+    if plot_cv_for is not None:
+        plot_cv_results(cv_n, mainscore=plot_cv_for, best_params_ix_l1=best_params_ix_l1)
+    alpha, l1_ratio, score = best_params(cv_n, best_params_ix)
+    print("params: alpha={}, l1={} with corresponding score {}".format(alpha, l1_ratio, score))
+    rates = analysis.solve(n, alpha, l1_ratio, tol=solvetol, recompute=recompute)
+    rates[np.where(rates <= cutoff)] = 0
+    return rates
