@@ -42,7 +42,8 @@ _epsilon = np.sqrt(np.finfo(float).eps)
 
 class ReaDDyElasticNetEstimator(BaseEstimator):
     def __init__(self, trajs, basis_function_configuration, alpha=1.0, l1_ratio=1.0, init_xi=None,
-                 verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options=None, rescale=True, tol=1e-16):
+                 verbose=False, maxiter=15000, approx_jac=True, method='SLSQP', options=None, rescale=True, tol=1e-16,
+                 constrained=True):
         """
 
         :param trajs:
@@ -73,6 +74,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         self.method = method
         self.options = options if options is not None else {}
         self.tol = tol
+        self.constrained = constrained
 
     def _get_slice(self, traj_range):
         if traj_range is not None:
@@ -149,7 +151,10 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
 
         large_theta = self.get_theta(data)
 
-        bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
+        if self.constrained:
+            bounds = [(0., None)] * self.basis_function_configuration.n_basis_functions
+        else:
+            bounds = None
         init_xi = self.init_xi
 
         jac = False if self.approx_jac else \

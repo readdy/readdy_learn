@@ -37,13 +37,14 @@ class Suite(object):
         return Suite(system_generator, bfc=bfc, alpha=alpha, l1_ratio=l1_ratio, maxiter=maxiter, tol=tol,
                      interp_degree=interp_degree, init_xi=init_xi)
 
-    def get_estimator(self, timestep=-1, interp_degree=10, verbose=False):
+    def get_estimator(self, timestep=-1, interp_degree=10, verbose=False, constrained=True):
 
         if self._trajectory is not None:
             self._trajectory.update()
             est = ReaDDyElasticNetEstimator(self._trajectory, self._bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                             maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
-                                            options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi)
+                                            options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi,
+                                            constrained=constrained)
             return est
         else:
             if timestep <= 0:

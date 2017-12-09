@@ -467,7 +467,7 @@ class ReactionAnalysis(object):
     def get_solve_fname(self, n):
         return self.fname_prefix + "_solution_{}_".format(n) + self.fname_postfix + ".npy"
 
-    def solve(self, n, alpha, l1_ratio, tol=1e-12, recompute=False):
+    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False):
 
         if not recompute:
             if not self.recompute and os.path.exists(self.get_solve_fname(n)):
@@ -482,7 +482,7 @@ class ReactionAnalysis(object):
         optsuite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self.interp_degree,
                                                       tol=tol, alpha=alpha, l1_ratio=l1_ratio,
                                                       init_xi=np.zeros_like(self.desired_rates))
-        estimator = optsuite.get_estimator(verbose=True, interp_degree=self.interp_degree)
+        estimator = optsuite.get_estimator(verbose=True, interp_degree=self.interp_degree, constrained=constrained)
         estimator.fit(None)
         if estimator.success_:
             rates = estimator.coefficients_
