@@ -12,8 +12,8 @@ class ConversionReaction(object):
             result = np.zeros((1, self.n_species))
         else:
             result = np.zeros((concentration.shape[0], self.n_species))
-        result[:, self.type1] = -concentration[:, self.type1]
-        result[:, self.type2] = concentration[:, self.type1]
+        result[:, self.type1] += -concentration[:, self.type1]
+        result[:, self.type2] += concentration[:, self.type1]
         return result.squeeze()
 
 
@@ -31,9 +31,9 @@ class FusionReaction(object):
         else:
             result = np.zeros((concentration.shape[0], self.n_species))
         delta = concentration[:, self.type_from1] * concentration[:, self.type_from2]
-        result[:, self.type_from1] = -delta
-        result[:, self.type_from2] = -delta
-        result[:, self.type_to] = delta
+        result[:, self.type_from1] += -delta
+        result[:, self.type_from2] += -delta
+        result[:, self.type_to] += delta
         return result.squeeze()
 
 
@@ -65,9 +65,9 @@ class FissionReaction(object):
         else:
             result = np.zeros((concentration.shape[0], self.n_species))
         delta = concentration[:, self.type_from]
-        result[:, self.type_from] = -delta
-        result[:, self.type_to1] = delta
-        result[:, self.type_to2] = delta
+        result[:, self.type_from] += -delta
+        result[:, self.type_to1] += delta
+        result[:, self.type_to2] += delta
         return result.squeeze()
 
 
