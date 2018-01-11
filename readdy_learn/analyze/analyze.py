@@ -289,6 +289,92 @@ class ReactionAnalysis(object):
             self._trajs.append(None)
         self._trajs[n] = traj
 
+    def plot_cv_results(cv, mainscore=0):
+        xs = {}
+        ys = {}
+        allys = {}
+        for r in cv.result:
+            l1_ratio = r['l1_ratio']
+            if len(r['scores']) > 0:
+                if l1_ratio in xs.keys():
+                    xs[l1_ratio].append(r['alpha'])
+                    ys[l1_ratio].append(r['scores'][mainscore])
+                    allys[l1_ratio].append(r['scores'])
+                else:
+                    xs[l1_ratio] = [r['alpha']]
+                    ys[l1_ratio] = [r['scores'][mainscore]]
+                    allys[l1_ratio] = [r['scores']]
+        f, ax = plt.subplots(figsize=(20, 20))
+        for l1_ratio in xs.keys():
+            l1xs = np.array(xs[l1_ratio])
+            l1ys = np.array(ys[l1_ratio])
+            l1allys = np.array([np.array(arr) for arr in allys[l1_ratio]]).T
+            sorts = np.argsort(l1xs)
+            l1xs = l1xs[sorts]
+            l1ys = l1ys[sorts]
+
+            l1allys = [arr[sorts] for arr in l1allys]
+            if l1_ratio == 1:
+                ax.plot(l1xs, -l1ys, label='score l1={}'.format(l1_ratio))
+
+                for ix, _ys in enumerate(l1allys):
+                    if np.argmin(-_ys) != 0:
+                        # print("found one: {} with argmin {}".format(ix, np.argmin(_ys)))
+                        pass
+                    # ax.plot(l1xs, -_ys, label='test set {}'.format(ix))
+                    pass
+        f.suptitle('Cross-validation scores')
+        ax.set_ylabel('score')
+        ax.set_xlabel('$\\alpha$')
+        plt.legend()
+        plt.show()
+
+    def plot_rates_bar(self, desired_rates, estimated_rates):
+        assert len(desired_rates) == len(estimated_rates)
+        N = len(desired_rates)
+        ind = np.arange(N)
+        width = .35
+        fig, ax = plt.subplots()
+        bar1 = ax.bar(ind, desired_rates, width, color='blue')
+        bar2 = ax.bar(ind + width, estimated_rates, width, color='green')
+        ax.set_xticks(ind + width / 2)
+        ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
+        ax.set_xticklabels(["{}".format(i) for i in ind])
+        plt.show()
+
+    def best_params(self, cv, scoreidx=None):
+        current_best_score = -1
+        alpha = -1
+        l1_ratio = -1
+
+        for r in cv.result:
+            if len(r['scores']) > 0:
+                if scoreidx is None:
+                    currscore = np.mean(r['scores'])
+                else:
+                    currscore = r['scores'][scoreidx]
+                if current_best_score >= 0:
+                    if -currscore < current_best_score:
+                        current_best_score = -currscore
+                        alpha = r['alpha']
+                        l1_ratio = r['l1_ratio']
+                else:
+                    current_best_score = -currscore
+                    alpha = r['alpha']
+                    l1_ratio = r['l1_ratio']
+        return alpha, l1_ratio, current_best_score
+
+    def do_the_cv(self, n, alphas, l1_ratios, tol=1e-12, solvetol=1e-15, plot_cv_for=None, best_params_ix=None):
+        cv_n = self.elastic_net(n, alphas, l1_ratios, tol=tol)
+        if plot_cv_for is not None:
+            plot_cv_results(cv_n, mainscore=plot_cv_for)
+        alpha, l1_ratio, score = best_params(cv_n, best_params_ix)
+        print("params: alpha={}, l1={} with corresponding score {}".format(alpha, l1_ratio, score))
+        cutoff = 1e-8
+        rates = self.solve(n, alpha, l1_ratio, tol=solvetol, recompute=True)
+        rates[np.where(rates <= cutoff)] = 0
+        return rates
+
     def obtain_serialized_gillespie_trajectories(self, desired_n_counts=6000, alphas=None, n_steps=250,
                                                  n_realizations=160, update_and_persist=False, njobs=8, atol=1e-9,
                                                  alpha_search_depth=5):
