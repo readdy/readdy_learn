@@ -518,7 +518,7 @@ class ReactionAnalysis(object):
 
         if outfile is not None:
             f.savefig(outfile)
-        plt.show()
+        #plt.show()
         return traj
 
     def plot_concentration_curves(self, n, fname=None, species=None, plot_estimated=True):
@@ -532,24 +532,25 @@ class ReactionAnalysis(object):
         estimated = sample_tools.Suite.estimated_behavior(self._desired_rates, self._bfc,
                                                           self.initial_states[n].squeeze(), traj.times)
 
-        fig, ax1 = plt.subplots(nrows=1, ncols=1)
+        #fig, ax1 = plt.subplots(nrows=1, ncols=1)
 
-        fig.suptitle('Training trajectory')
-        ax1.set_xlabel('time')
-        ax1.set_ylabel('concentration')
+        #fig.suptitle('Training trajectory')
+        plt.xlabel('time')
+        plt.ylabel('concentration')
+
         for t in config.types.keys():
             type_id = config.types[t]
             if type_id in species:
-                ax1.plot(traj.times, traj.counts[:, type_id], label="concentration " + t)
-                ax1.plot(traj.times, estimated[:, type_id], "k--",
+                plt.plot(traj.times, traj.counts[:, type_id], label="concentration " + t)
+                plt.plot(traj.times, estimated[:, type_id], "k--",
                          label=None if type_id != 3 else "law of mass action solution")
                 if plot_estimated:
                     integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
                                     + self.initial_states[n].squeeze()[type_id]
-                    ax1.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
-        ax1.legend(loc="upper right")
+                    plt.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
+        #plt.legend(loc="upper right")
         if fname is not None:
-            fig.savefig(fname)
+            plt.savefig(fname)
 
     def get_lsq_fname(self, n):
         return self._fname_prefix + "_lsq_{}_".format(n) + self._fname_postfix + ".npz"
@@ -593,6 +594,7 @@ class ReactionAnalysis(object):
             test_n = [self._trajs[i] for i in range(len(self._trajs)) if i != train_n]
         else:
             test_n = [self._trajs[test_n]]
+            print(test_n)
         if initial_guess is None:
             initial_guess = np.zeros_like(self._desired_rates)
         fname = self.get_cv_fname(n_train=train_n)
@@ -663,7 +665,7 @@ class ReactionAnalysis(object):
                 plt.plot(traj.times[::stride], dx[:, s][::stride], 'k--')
                 plt.plot(traj.times[::stride], traj.separate_derivs[s][::stride], label="dx for species {}".format(s))
         plt.legend()
-        plt.show()
+        #plt.show()
 
 
 def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
@@ -704,7 +706,7 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
     ax.set_ylabel('score')
     ax.set_xlabel('$\\alpha$')
     plt.legend()
-    plt.show()
+    #plt.show()
 
 
 def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green'):
@@ -718,7 +720,7 @@ def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green'
     ax.set_xticks(ind + width / 2)
     ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
     ax.set_xticklabels(["{}".format(i) for i in ind])
-    plt.show()
+    #plt.show()
 
 
 def best_params(cv, test_traj=None):
