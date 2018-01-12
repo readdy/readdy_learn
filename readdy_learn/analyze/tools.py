@@ -254,6 +254,21 @@ class Trajectory(object):
                 interpolated[:, s] = np.gradient(interpolated, axis=0) / self._time_step
         return interpolated
 
+    def fd_derivatives(self):
+        X = self.times
+        if self.dcounts_dt is not None:
+            return self.dcounts_dt
+        for s in range(self.n_species):
+            counts = self.counts[:, s]
+            interpolated = np.empty_like(counts)
+            indices = 1 + np.where(counts[:-1] != counts[1:])[0]
+            indices = np.insert(indices, 0, 0)
+            if indices[-1] != len(counts) -1:
+                indices = np.append(indices, len(counts) - 1)
+            interpolated = np.interp(X, X[indices], counts[indices])
+            interpolated = np.gradient(interpolated) / self._time_step
+            self.separate_derivs[s] = interpolated
+
     def update(self):
         if self._dirty:
             self._dirty = False

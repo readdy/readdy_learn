@@ -705,7 +705,7 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, reus
         alphas = np.linspace(prevalph, nextalph, num=len(alphas))
         prog.finish(stage=i)
 
-    d = tv_derivative(data, xs, u0=derivs[best], **args, alpha=bestalpha)
+    d = tv_derivative(data, xs, u0=None, **args, alpha=bestalpha)
     return bestalpha, .5 * (d[1:] + d[:-1]), np.array(scores).squeeze()
 
 

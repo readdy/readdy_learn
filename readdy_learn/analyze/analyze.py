@@ -55,7 +55,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                     print("skipping species {} as it already has derivatives".format(s))
                     continue
                 ys = strided_counts[:, s]
-                kw = {'maxit': maxit, 'linalg_solver_maxit': 50000, 'tol': tol, 'atol': atol, 'rtol': None,
+                kw = {'maxit': maxit, 'linalg_solver_maxit': 500000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'solver': solver, 'verbose': False, 'show_progress': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
@@ -412,6 +412,24 @@ class ReactionAnalysis(object):
                                          reuse_deriv=reuse_deriv, solver=solver)
                 self._trajs[n] = self.get_traj_fname(n)
 
+    def calcuate_lma_fd_derivative(self, n, target_time):
+        init = self._initial_states[n]
+        _, counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
+                                                        self._timestep, target_time / self._timestep)
+        stride = 1
+        if self._target_n_counts is not None:
+            if not isinstance(counts, str):
+                stride = int(counts.shape[0] // self._target_n_counts)
+                counts = counts[::stride]
+        dt = self._timestep * stride
+        traj = tools.Trajectory(counts, dt, interpolation_degree=self._interp_degree, verbose=False,
+                                fname=None, **self._ld_derivative_config)
+        traj.fd_derivatives()
+
+        other_traj = self.get_traj(n)
+        other_traj._separate_derivs = traj.separate_derivs
+        other_traj.persist()
+
     def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
         for ix, traj in enumerate(self._trajs):
             a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, maxit=maxit)
@@ -481,7 +499,19 @@ class ReactionAnalysis(object):
             traj.persist()
         return traj
 
-    def plot_results(self, traj, rates, title=None, outfile=None):
+    def _flatten(self, container):
+        import collections
+        result = []
+        if isinstance(container, collections.Iterable):
+            for x in container:
+                items = self._flatten(x)
+                result += items
+        else:
+            result.append(container)
+
+        return result
+
+    def plot_results(self, n, rates, title=None, outfile=None):
         from scipy.integrate import odeint
         bfc = self._bfc
 
@@ -492,7 +522,7 @@ class ReactionAnalysis(object):
         def fun_reference(data, _):
             theta = np.array([f(data) for f in bfc.functions])
             return np.matmul(self._desired_rates, theta)
-
+        traj = n
         if isinstance(traj, int):
             traj = self._trajs[traj]
 
@@ -500,13 +530,13 @@ class ReactionAnalysis(object):
             traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
             traj.update()
 
-        f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(15, 10))
+        f, axees = plt.subplots(nrows=3, ncols=2, figsize=(15, 10))
         # f.suptitle("least squares fit for full trajectory (not well-mixed in the last time steps)")
         xs = traj.times
-        num_solution = odeint(fun, traj.counts[0], xs)
-        reference_soln = odeint(fun_reference, traj.counts[0], xs)
-        axes = [ax1, ax2, ax3, ax4]
-        labels = ["A", "B", "C", "D"]
+        num_solution = odeint(fun, self.initial_states[n].squeeze(), xs)
+        reference_soln = odeint(fun_reference, self.initial_states[n].squeeze(), xs)
+        axes = self._flatten(axees)
+        labels = ["{}".format(i) for i in range(traj.n_species)]
         if title is not None:
             f.suptitle(title)
         for i in range(traj.n_species):
@@ -582,11 +612,16 @@ class ReactionAnalysis(object):
         return self._fname_prefix + "_cv_train_{}_".format(n_train) + self._fname_postfix + ".npy"
 
     def get_traj(self, n):
+        while len(self._trajs) <= n:
+            self._trajs.append(None)
         traj = self._trajs[n]
+        if traj is None:
+            traj = self.get_traj_fname(n)
         if isinstance(traj, str):
             traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree,
                                     verbose=False)
             traj.update()
+            self._trajs[n] = traj
         return traj
 
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
@@ -683,7 +718,7 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
                 xs[l1_ratio] = [r['alpha']]
                 ys[l1_ratio] = [r['scores'][mainscore]]
                 allys[l1_ratio] = [r['scores']]
-    f, ax = plt.subplots(figsize=(20, 20))
+    f, ax = plt.subplots()#figsize=(20, 20))
     for l1_ratio in xs.keys():
         l1xs = np.array(xs[l1_ratio])
         l1ys = np.array(ys[l1_ratio])
@@ -706,21 +741,21 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
     ax.set_ylabel('score')
     ax.set_xlabel('$\\alpha$')
     plt.legend()
-    #plt.show()
+    plt.show()
 
 
-def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green'):
+def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green', figsize=(10,5)):
     assert len(desired_rates) == len(estimated_rates)
     N = len(desired_rates)
     ind = np.arange(N)
     width = .35
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
     bar1 = ax.bar(ind, desired_rates, width, color=color1)
     bar2 = ax.bar(ind + width, estimated_rates, width, color=color2)
     ax.set_xticks(ind + width / 2)
     ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
     ax.set_xticklabels(["{}".format(i) for i in ind])
-    #plt.show()
+    plt.show()
 
 
 def best_params(cv, test_traj=None):
@@ -746,13 +781,15 @@ def best_params(cv, test_traj=None):
     return alpha, l1_ratio, current_best_score
 
 
-def do_the_cv(analysis, n, alphas, l1_ratios, tol=1e-12, solvetol=1e-15, plot_cv_for=None, best_params_ix=None,
+def do_the_cv(analysis, train_n, test_n, alphas, l1_ratios, tol=1e-12, solvetol=1e-15, plot_cv_for=None, best_params_ix=None,
               best_params_ix_l1=None, cutoff=1e-8, recompute=False):
-    cv_n = analysis.elastic_net(n, alphas, l1_ratios, tol=tol)
+    print("train_n {} test_n {}".format(train_n, test_n))
+    cv_n = analysis.elastic_net(train_n, alphas, l1_ratios, tol=tol, test_n=test_n)
     if plot_cv_for is not None:
         plot_cv_results(cv_n, mainscore=plot_cv_for, best_params_ix_l1=best_params_ix_l1)
     alpha, l1_ratio, score = best_params(cv_n, best_params_ix)
     print("params: alpha={}, l1={} with corresponding score {}".format(alpha, l1_ratio, score))
-    rates = analysis.solve(n, alpha, l1_ratio, tol=solvetol, recompute=recompute)
+    print("train_n {}".format(train_n))
+    rates = analysis.solve(train_n, alpha, l1_ratio, tol=solvetol, recompute=recompute)
     rates[np.where(rates <= cutoff)] = 0
-    return rates
+    return rates, cv_n
