@@ -412,7 +412,7 @@ class ReactionAnalysis(object):
                                          reuse_deriv=reuse_deriv, solver=solver)
                 self._trajs[n] = self.get_traj_fname(n)
 
-    def calcuate_lma_fd_derivative(self, n, target_time):
+    def calculate_lma_fd_derivative(self, n, target_time):
         init = self._initial_states[n]
         _, counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
                                                         self._timestep, target_time / self._timestep)
@@ -530,7 +530,7 @@ class ReactionAnalysis(object):
             traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
             traj.update()
 
-        f, axees = plt.subplots(nrows=3, ncols=2, figsize=(15, 10))
+        f, axees = plt.subplots(nrows=5, ncols=2, figsize=(15, 10))
         # f.suptitle("least squares fit for full trajectory (not well-mixed in the last time steps)")
         xs = traj.times
         num_solution = odeint(fun, self.initial_states[n].squeeze(), xs)
