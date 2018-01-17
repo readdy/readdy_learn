@@ -694,11 +694,11 @@ class ReactionAnalysis(object):
 
         for s in species:
             if n_points is None:
-                plt.plot(traj.times, dx[:, s], 'k--')
                 plt.plot(traj.times, traj.separate_derivs[s], label="dx for species {}".format(s))
+                plt.plot(traj.times, dx[:, s], 'k--')
             else:
-                plt.plot(traj.times[::stride], dx[:, s][::stride], 'k--')
                 plt.plot(traj.times[::stride], traj.separate_derivs[s][::stride], label="dx for species {}".format(s))
+                plt.plot(traj.times[::stride], dx[:, s][::stride], 'k--')
         plt.legend()
         #plt.show()
 
