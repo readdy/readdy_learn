@@ -755,7 +755,7 @@ def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green'
     ax.set_xticks(ind + width / 2)
     ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
     ax.set_xticklabels(["{}".format(i) for i in ind])
-    plt.show()
+    #plt.show()
 
 
 def best_params(cv, test_traj=None):
