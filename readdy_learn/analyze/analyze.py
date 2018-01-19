@@ -469,7 +469,7 @@ class ReactionAnalysis(object):
             if os.path.exists(fname):
                 os.remove(fname)
             counts = None
-            for _ in realizations:
+            for _ in range(realizations):
                 _, _counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
                                                                 self._timestep, target_time / self._timestep)
                 if noise_variance > 0:
