@@ -461,17 +461,25 @@ class ReactionAnalysis(object):
             traj.persist()
         return traj
 
-    def generate_or_load_traj_lma(self, n, target_time, update_and_persist=False, noise_variance=0):
+    def generate_or_load_traj_lma(self, n, target_time, update_and_persist=False, noise_variance=0, realizations=1):
         assert n < len(self._initial_states)
         init = self._initial_states[n]
         fname = self.get_traj_fname(n)
         if self._recompute_traj or not os.path.exists(fname):
             if os.path.exists(fname):
                 os.remove(fname)
-            _, counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
-                                                            self._timestep, target_time / self._timestep)
-            if noise_variance > 0:
-                counts = counts + np.random.normal(0.0, np.sqrt(noise_variance), size=counts.shape)
+            counts = None
+            for _ in realizations:
+                _, _counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
+                                                                self._timestep, target_time / self._timestep)
+                if noise_variance > 0:
+                    _counts = _counts + np.random.normal(0.0, np.sqrt(noise_variance), size=_counts.shape)
+                if counts is None:
+                    counts = _counts
+                else:
+                    counts += _counts
+            counts /= float(realizations)
+
         else:
             counts = fname
         stride = 1
