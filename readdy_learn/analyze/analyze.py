@@ -501,7 +501,7 @@ class ReactionAnalysis(object):
             traj.update()
             traj.persist()
 
-        while len(self.trajs) < n+1:
+        while len(self.trajs) < n + 1:
             self.trajs.append(None)
         self.trajs[n] = traj
         return traj
@@ -529,6 +529,7 @@ class ReactionAnalysis(object):
         def fun_reference(data, _):
             theta = np.array([f(data) for f in bfc.functions])
             return np.matmul(self._desired_rates, theta)
+
         traj = n
         if isinstance(traj, int):
             traj = self._trajs[traj]
@@ -555,7 +556,7 @@ class ReactionAnalysis(object):
 
         if outfile is not None:
             f.savefig(outfile)
-        #plt.show()
+        # plt.show()
         return traj
 
     def plot_concentration_curves(self, n, fname=None, species=None, plot_estimated=True):
@@ -569,9 +570,9 @@ class ReactionAnalysis(object):
         estimated = sample_tools.Suite.estimated_behavior(self._desired_rates, self._bfc,
                                                           self.initial_states[n].squeeze(), traj.times)
 
-        #fig, ax1 = plt.subplots(nrows=1, ncols=1)
+        # fig, ax1 = plt.subplots(nrows=1, ncols=1)
 
-        #fig.suptitle('Training trajectory')
+        # fig.suptitle('Training trajectory')
         plt.xlabel('time')
         plt.ylabel('concentration')
 
@@ -585,7 +586,7 @@ class ReactionAnalysis(object):
                     integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
                                     + self.initial_states[n].squeeze()[type_id]
                     plt.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
-        #plt.legend(loc="upper right")
+        # plt.legend(loc="upper right")
         if fname is not None:
             plt.savefig(fname)
 
@@ -605,7 +606,8 @@ class ReactionAnalysis(object):
 
         estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=0., l1_ratio=1.,
                                                    maxiter=30000, method='SLSQP', verbose=True, approx_jac=False,
-                                                   options={'ftol': tol}, rescale=False, init_xi=np.zeros_like(self.desired_rates),
+                                                   options={'ftol': tol}, rescale=False,
+                                                   init_xi=np.zeros_like(self.desired_rates),
                                                    constrained=True)
 
         estimator.fit(None)
@@ -689,7 +691,8 @@ class ReactionAnalysis(object):
 
         estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=alpha, l1_ratio=l1_ratio,
                                                    maxiter=30000, method='SLSQP', verbose=verbose, approx_jac=False,
-                                                   options={'ftol': tol}, rescale=False, init_xi=np.zeros_like(self.desired_rates),
+                                                   options={'ftol': tol}, rescale=False,
+                                                   init_xi=np.zeros_like(self.desired_rates),
                                                    constrained=constrained)
 
         estimator.fit(None)
@@ -725,7 +728,7 @@ class ReactionAnalysis(object):
                 plt.plot(traj.times[::stride], traj.separate_derivs[s][::stride], label="dx for species {}".format(s))
                 plt.plot(traj.times[::stride], dx[:, s][::stride], 'k--')
         plt.legend()
-        #plt.show()
+        # plt.show()
 
 
 def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
@@ -765,6 +768,7 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
     plt.xlabel('$\\alpha$')
     plt.legend()
 
+
 def plot_cv_results2(cv):
     xs = {}
     ys = {}
@@ -803,7 +807,7 @@ def plot_cv_results2(cv):
     plt.legend()
 
 
-def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green', figsize=(10,5)):
+def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green', figsize=(10, 5)):
     assert len(desired_rates) == len(estimated_rates)
     N = len(desired_rates)
     ind = np.arange(N)
@@ -814,33 +818,54 @@ def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green'
     ax.set_xticks(ind + width / 2)
     ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
     ax.set_xticklabels(["{}".format(i) for i in ind])
-    #plt.show()
+    # plt.show()
 
 
-def best_params(cv, test_traj=None):
+def cluster_along_arg(samples, arg_key, arg_values):
+    """
+    Transform list of samples into a dictionary that maps
+    from arg_value (described by arg_key) to the clustered
+    samples list.
+    """
+    clustered_samples = dict()
+    for arg_value in arg_values:
+        clustered_samples[arg_value] = []
+
+    for sample in samples:
+        for arg_value in arg_values:
+            if sample[arg_key] == arg_value:
+                clustered_samples[arg_value].append(sample)
+
+    return clustered_samples
+
+
+def best_params(cv):
     current_best_score = -1
-    alpha = -1
-    l1_ratio = -1
+    best_alpha = -1
+    best_l1_ratio = -1
 
-    for r in cv.result:
-        if len(r['scores']) > 0:
-            if test_traj is None:
-                current_score = np.mean(r['scores'])
-            else:
-                current_score = r['scores'][test_traj]
-            if current_best_score >= 0:
-                if -current_score < current_best_score:
-                    current_best_score = -current_score
-                    alpha = r['alpha']
-                    l1_ratio = r['l1_ratio']
-            else:
-                current_best_score = -current_score
-                alpha = r['alpha']
-                l1_ratio = r['l1_ratio']
-    return alpha, l1_ratio, current_best_score
+    l1_dict = cluster_along_arg(cv.result, "l1_ratio", cv.l1_ratios)
+    alphas_dict = {}
+    for l1_ratio in l1_dict.keys():
+        alphas_dict[l1_ratio] = cluster_along_arg(l1_dict[l1_ratio], "alpha", cv.alphas)
+
+    for l1_ratio in l1_dict.keys():
+        for alpha in cv.alphas:
+            cv_data = alphas_dict[l1_ratio][alpha]
+            scores = []
+            for d in cv_data:
+                scores.append(d['scores'][0])
+            scores = np.array(scores)
+            meanscore = np.mean(scores)
+            if meanscore > current_best_score:
+                best_alpha = alpha
+                best_l1_ratio = l1_ratio
+                current_best_score = meanscore
+    return best_alpha, best_l1_ratio, -current_best_score
 
 
-def do_the_cv(analysis, train_n, test_n, alphas, l1_ratios, tol=1e-12, solvetol=1e-15, plot_cv_for=None, best_params_ix=None,
+def do_the_cv(analysis, train_n, test_n, alphas, l1_ratios, tol=1e-12, solvetol=1e-15, plot_cv_for=None,
+              best_params_ix=None,
               best_params_ix_l1=None, cutoff=1e-8, recompute=False):
     print("train_n {} test_n {}".format(train_n, test_n))
     cv_n = analysis.elastic_net(train_n, alphas, l1_ratios, tol=tol, test_n=test_n)
