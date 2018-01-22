@@ -58,7 +58,7 @@ class RegulationNetwork(object):
 
         initial_states = [
             [1, 0, 0, 1, 0, 0, 1, 0, 0], [1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1, 2, 1, 0, 2.5, 1, 0, 2],
-            [1, 1, 2, 1, 0, 0, 1, 4, 0]
+            [1, 1, 2, 1, 0, 0, 1, 3, 0]
         ]
         self.initial_states = [_np.array([arr]) for arr in initial_states]
 
@@ -240,11 +240,11 @@ class RegulationNetwork(object):
     def compute_gradient_derivatives(self, analysis):
         for t in range(len(self.initial_states)):
             traj = analysis.get_traj(t)
-            for sp in [0, 3, 6]:
-                dx = _np.zeros_like(traj.counts[:, sp])
-                print("species {} dx.shape {}".format(sp, dx.shape))
-                traj.separate_derivs[sp] = dx
-            for sp in [1, 2, 4, 5, 7, 8]:
+            #for sp in [0, 3, 6]:
+            #    dx = _np.zeros_like(traj.counts[:, sp])
+            #    print("species {} dx.shape {}".format(sp, dx.shape))
+            #    traj.separate_derivs[sp] = dx
+            for sp in [1, 2, 4, 5, 7, 8, 0, 3, 6]:
                 x = traj.counts[:, sp]
                 dx = _np.zeros_like(x)
                 dt = traj.time_step
