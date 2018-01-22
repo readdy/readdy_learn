@@ -258,22 +258,6 @@ class CV(object):
                 print("status %s: %s" % (estimator.result_.status, estimator.result_.message))
                 print("%s / %s iterations" % (estimator.result_.nit, self.maxiter))
 
-        # trajs = [self.traj] + list(self.test_traj)
-        # for train_idx, test_idx in splitter.split(trajs):
-        #     estimator = ReaDDyElasticNetEstimator([trajs[ix] for ix in train_idx], self.bfc, -1, alpha=alpha,
-        #                                           l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-        #                                           method=self.method)
-        #     # fit the whole thing
-        #     estimator.fit(None)
-        #     if estimator.success_:
-        #         for idx in test_idx:
-        #             testimator = ReaDDyElasticNetEstimator(trajs[idx], self.bfc, -1, alpha=alpha,
-        #                                                    l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-        #                                                    method=self.method)
-        #             testimator.coefficients_ = estimator.coefficients_
-        #             scores.append(
-        #                 testimator.score(range(0, trajs[idx].n_time_steps), trajs[idx].dcounts_dt)
-        #             )
         return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
 
     def fit_cross_trajs(self):
