@@ -674,7 +674,8 @@ class ReactionAnalysis(object):
         return cv
 
     def get_solve_fname(self, n):
-        return self.fname_prefix + "_solution_{}_".format(n) + self.fname_postfix + ".npy"
+        nstr = "_".join(str(ns) for ns in n)
+        return self.fname_prefix + "_solution_{}_".format(nstr) + self.fname_postfix + ".npy"
 
     def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True):
         if not isinstance(n, (list, tuple)):
