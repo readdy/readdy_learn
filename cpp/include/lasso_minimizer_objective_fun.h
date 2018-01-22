@@ -48,14 +48,15 @@ void least_squares_function(input_array &result, const input_array &propensities
                             const input_array &dX);
 
 input_array elastic_net_objective_function_jac(const input_array &propensities,
-                                               const double alpha, const double l1_ratio, const input_array &theta,
-                                               const input_array &dX);
+                                               const double alpha, const double l1_ratio,
+                                               const std::vector<input_array> &theta,
+                                               const std::vector<input_array> &dX);
 
 double elastic_net_objective_function(const input_array &propensities, const double alpha, const double l1_ratio,
-                                      const input_array &theta, const input_array &dX);
+                                      const std::vector<input_array> &theta, const std::vector<input_array> &dX);
 
 double lasso_cost_fun(const input_array &propensities, const double alpha,
-                      const input_array &theta, const input_array &dX);
+                      const std::vector<input_array> &theta, const std::vector<input_array> &dX);
 
 
 }

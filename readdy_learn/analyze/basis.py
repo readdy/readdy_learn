@@ -101,16 +101,20 @@ class BasisFunctionConfiguration(object):
 
     def add_conversion(self, type1, type2):
         self._basis_functions.append(ConversionReaction(type1, type2, self._n_species))
+        return self
 
     def add_fusion(self, type_from1, type_from2, type_to):
         self._basis_functions.append(FusionReaction(type_from1, type_from2, type_to, self._n_species))
+        return self
 
     def add_fission(self, type_from, type_to1, type_to2):
         self._basis_functions.append(FissionReaction(type_from, type_to1, type_to2, self._n_species))
+        return self
 
     def add_intercept(self, type):
         self._basis_functions.append(Intercept(type, self._n_species))
-
+        return self
 
     def add_decay(self, type_from):
         self._basis_functions.append(DecayReaction(type_from, self._n_species))
+        return self

@@ -29,7 +29,7 @@ def split(a, n):
     return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
 
-def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
+def obtain_derivative(traj, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha_search_depth=5,
                       interp_degree='regularized_derivative', variance=None, verbose=False, x0=None,
                       species=None, override=False, subdivisions=None, reuse_deriv=True, solver='spsolve'):
     if species is None:
@@ -41,12 +41,8 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
             interp_degree = traj.interpolation_degree
             traj.interpolation_degree = None
             traj.update()
-            stride = max(traj.counts.shape[0] // desired_n_counts, 1)
-            strided_times = traj.times[::stride]
-            strided_counts = traj.counts[::stride, :]
-            strided_dt = strided_times[1] - strided_times[0]
-            print("got {} counts (and {} corresp. time steps), dt=".format(strided_counts.shape[0], len(strided_times)),
-                  strided_dt)
+            print("got {} counts (and {} corresp. time steps), dt=".format(traj.counts.shape[0], len(traj.times)),
+                  traj.time_step)
 
             x0 = np.asarray(x0).squeeze()
             used_alphas = []
@@ -54,29 +50,29 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
                 if int(s) in traj.separate_derivs.keys() and not override:
                     print("skipping species {} as it already has derivatives".format(s))
                     continue
-                ys = strided_counts[:, s]
+                ys = traj.counts[:, s]
                 kw = {'maxit': maxit, 'linalg_solver_maxit': 500000, 'tol': tol, 'atol': atol, 'rtol': None,
                       'solver': solver, 'verbose': False, 'show_progress': verbose}
                 if isinstance(alpha, np.ndarray):
                     if len(alpha) > 1:
                         if subdivisions is None:
-                            best_alpha, ld, scores = deriv.best_tv_derivative(ys, strided_times, alpha,
+                            best_alpha, ld, scores = deriv.best_tv_derivative(ys, traj.times, alpha,
                                                                               n_iters=alpha_search_depth,
                                                                               variance=variance,
                                                                               reuse_deriv=reuse_deriv,
                                                                               x0=x0[s], **kw)
                         else:
-                            interp = deriv.interpolate(strided_times, ys)
+                            interp = deriv.interpolate(traj.times, ys)
                             if isinstance(subdivisions, int):
                                 print("using uniform subdiv")
                                 subys = list(split(ys, subdivisions))
-                                subtimes = list(split(strided_times, subdivisions))
+                                subtimes = list(split(traj.times, subdivisions))
                                 subinterp = list(split(interp, subdivisions))
                             else:
                                 assert isinstance(subdivisions, (tuple, list))
                                 print("using non-uniform subdiv")
                                 subys = [ys[selection] for selection in subdivisions]
-                                subtimes = [strided_times[selection] for selection in subdivisions]
+                                subtimes = [traj.times[selection] for selection in subdivisions]
                                 subinterp = [interp[selection] for selection in subdivisions]
                             ld = None
                             subalphs = []
@@ -100,20 +96,20 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
 
                     else:
                         alpha = alpha[0]
-                        ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
+                        ld = deriv.tv_derivative(ys, traj.times, alpha=alpha, **kw)
                         best_alpha = alpha
                 else:
-                    ld = deriv.tv_derivative(ys, strided_times, alpha=alpha, **kw)
+                    ld = deriv.tv_derivative(ys, traj.times, alpha=alpha, **kw)
                     best_alpha = alpha
                 # linearly interpolate to the full time range
-                integrated_ld = deriv.integrate.cumtrapz(ld, x=strided_times, initial=0) + \
+                integrated_ld = deriv.integrate.cumtrapz(ld, x=traj.times, initial=0) + \
                                 x0[s] if x0 is not None else ys[0]
                 if variance is not None:
                     var = variance
                 else:
-                    var, ff = estimate_noise_variance(strided_times, ys)
+                    var, ff = estimate_noise_variance(traj.times, ys)
                 print("MSE =", deriv.mse(integrated_ld, ys), "noise variance =", var)
-                traj.separate_derivs[int(s)] = np.interp(traj.times, strided_times, ld)
+                traj.separate_derivs[int(s)] = np.interp(traj.times, traj.times, ld)
 
                 used_alphas.append(best_alpha)
             traj.interpolation_degree = interp_degree
@@ -130,7 +126,7 @@ def obtain_derivative(traj, desired_n_counts=6000, alpha=1000, atol=1e-10, tol=1
 
 class ReactionAnalysis(object):
     def __init__(self, bfc, desired_rates, initial_states, set_up_system, recompute=False, recompute_traj=False,
-                 fname_prefix="", fname_postfix="", n_species=4, target_n_counts=150, timestep=5e-4,
+                 fname_prefix="", fname_postfix="", n_species=4, timestep=5e-4,
                  interp_degree='regularized_derivative', ld_derivative_config=None):
         if initial_states is None or len(initial_states) <= 1:
             raise ValueError("needs at least two initial states!")
@@ -156,7 +152,6 @@ class ReactionAnalysis(object):
         self._fname_prefix = fname_prefix
         self._fname_postfix = fname_postfix
         self._n_species = n_species
-        self._target_n_counts = target_n_counts
         self._timestep = timestep
         self._interp_degree = interp_degree
         self._trajs = []
@@ -186,14 +181,6 @@ class ReactionAnalysis(object):
     @timestep.setter
     def timestep(self, value):
         self._timestep = value
-
-    @property
-    def target_n_counts(self):
-        return self._target_n_counts
-
-    @target_n_counts.setter
-    def target_n_counts(self, value):
-        self._target_n_counts = value
 
     @property
     def n_species(self):
@@ -405,7 +392,7 @@ class ReactionAnalysis(object):
         for n in range(len(self.initial_states)):
             if selection is None or n in selection:
                 traj = self.generate_or_load_traj_lma(n, target_time, noise_variance=noise_variance)
-                _, _ = obtain_derivative(traj, desired_n_counts=self.target_n_counts, interp_degree=self.interp_degree,
+                _, _ = obtain_derivative(traj, interp_degree=self.interp_degree,
                                          alpha=alphas, atol=atol, variance=noise_variance, verbose=verbose, tol=tol,
                                          maxit=maxit, alpha_search_depth=search_depth, x0=self.initial_states[n],
                                          species=species, override=override, subdivisions=subdivisions,
@@ -416,13 +403,7 @@ class ReactionAnalysis(object):
         init = self._initial_states[n]
         _, counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
                                                         self._timestep, target_time / self._timestep)
-        stride = 1
-        if self._target_n_counts is not None:
-            if not isinstance(counts, str):
-                stride = int(counts.shape[0] // self._target_n_counts)
-                counts = counts[::stride]
-        dt = self._timestep * stride
-        traj = tools.Trajectory(counts, dt, interpolation_degree=self._interp_degree, verbose=False,
+        traj = tools.Trajectory(counts, self.timestep, interpolation_degree=self._interp_degree, verbose=False,
                                 fname=None, **self._ld_derivative_config)
         traj.fd_derivatives()
 
@@ -448,13 +429,7 @@ class ReactionAnalysis(object):
                                                               n_realizations=n_realizations, njobs=njobs)
         else:
             counts = fname
-        stride = 1
-        if self._target_n_counts is not None:
-            if not isinstance(counts, str):
-                stride = int(counts.shape[0] // self._target_n_counts)
-                counts = counts[::stride]
-        dt = self._timestep * stride
-        traj = tools.Trajectory(counts, dt, interpolation_degree=self._interp_degree, verbose=False,
+        traj = tools.Trajectory(counts, self.timestep, interpolation_degree=self._interp_degree, verbose=False,
                                 fname=fname, **self._ld_derivative_config)
         if update_and_persist:
             traj.update()
@@ -468,27 +443,13 @@ class ReactionAnalysis(object):
         if self._recompute_traj or not os.path.exists(fname):
             if os.path.exists(fname):
                 os.remove(fname)
-            counts = None
-            for _ in range(realizations):
-                _, _counts = generate.generate_continuous_counts(self._desired_rates, init, self._bfc,
-                                                                self._timestep, target_time / self._timestep)
-                if noise_variance > 0:
-                    _counts = _counts + np.random.normal(0.0, np.sqrt(noise_variance), size=_counts.shape)
-                if counts is None:
-                    counts = _counts
-                else:
-                    counts += _counts
-            counts /= float(realizations)
+            _, counts = generate.generate_continuous_counts(self.desired_rates, init, self.bfc, self.timestep,
+                                                            target_time / self.timestep,
+                                                            noise_variance=noise_variance, n_realizations=realizations)
 
         else:
             counts = fname
-        stride = 1
-        if self._target_n_counts is not None:
-            if not isinstance(counts, str):
-                stride = int(counts.shape[0] // self._target_n_counts)
-                counts = counts[::stride]
-        dt = self._timestep * stride
-        traj = tools.Trajectory(counts, dt, interpolation_degree=self._interp_degree, verbose=False,
+        traj = tools.Trajectory(counts, self.timestep, interpolation_degree=self._interp_degree, verbose=False,
                                 fname=fname, **self._ld_derivative_config)
         # system = self._set_up_system(init)
         # traj.interpolation_degree = None
