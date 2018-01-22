@@ -704,18 +704,17 @@ class ReactionAnalysis(object):
     def plot_derivatives(self, traj_n, n_points=None, species=None):
         if species is None:
             species = [i for i in range(self.n_species)]
-        traj = self._trajs[traj_n]
-        if isinstance(traj, str):
-            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
+        traj = self.get_traj(traj_n)
         init = self._initial_states[traj_n]
         system = self._set_up_system(init)
+
         suite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self._interp_degree,
                                                    tol=1e-12, init_xi=np.ones_like(self._desired_rates) * .0)
         if n_points is not None:
             stride = max(len(traj.times) // n_points, 1)
         estimator = suite.get_estimator(verbose=True, interp_degree=self._interp_degree)
         data, expected = estimator._get_slice(None)
-        theta = estimator.get_theta(data[traj_n])
+        theta = estimator.get_theta(data)
         theta = np.transpose(theta, axes=(0, 2, 1))
         dx = theta.dot(self._desired_rates)
 
