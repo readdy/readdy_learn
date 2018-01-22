@@ -226,54 +226,50 @@ class CV(object):
         self.tol = tol
 
     def compute_cv_result_cross_trajs(self, params):
+        alpha, l1_ratio, (train_ix, test_ix) = params
+        scores = []
+
+        train_trajs = [self.trajs[ix] for ix in train_ix]
+        test_trajs = [self.trajs[ix] for ix in test_ix]
+        estimator = ReaDDyElasticNetEstimator(train_trajs, self.bfc, alpha=alpha, maxiter=self.maxiter,
+                                              l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
+                                              method=self.method, rescale=self.rescale, tol=self.tol)
+        # fit the whole thing
+        estimator.fit(None)
+        if estimator.success_:
+            testimator = ReaDDyElasticNetEstimator(test_trajs, self.bfc, alpha=alpha,
+                                                   l1_ratio=l1_ratio, init_xi=self.init_xi,
+                                                   verbose=self.verbose,
+                                                   method=self.method, rescale=self.rescale, tol=self.tol)
+            testimator.coefficients_ = estimator.coefficients_
+            ttraj = testimator.trajs[0]
+            score = testimator.score(range(0, ttraj.n_time_steps), ttraj.dcounts_dt)
+            scores.append(score)
+
+        else:
+            print("no success for alpha={}, l1_ratio={}".format(alpha, l1_ratio))
+            print("status %s: %s" % (estimator.result_.status, estimator.result_.message))
+            print("%s / %s iterations" % (estimator.result_.nit, self.maxiter))
+
+        return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio, 'train_trajs': train_ix, 'test_trajs': test_ix}
+
+    def fit_cross_trajs(self):
+        from readdy_learn.analyze.progress import Progress
         from sklearn.model_selection import LeaveOneOut
 
         loo = LeaveOneOut()
-
-        alpha, l1_ratio = params
-        scores = []
-
-        N = np.array(range(len(self.trajs)), dtype=int)
-
-        for train_ix, test_ix in loo.split(N):
-            train_trajs = [self.trajs[ix] for ix in train_ix]
-            test_trajs = [self.trajs[ix] for ix in test_ix]
-            estimator = ReaDDyElasticNetEstimator(train_trajs, self.bfc, alpha=alpha, maxiter=self.maxiter,
-                                                  l1_ratio=l1_ratio, init_xi=self.init_xi, verbose=self.verbose,
-                                                  method=self.method, rescale=self.rescale, tol=self.tol)
-            # fit the whole thing
-            estimator.fit(None)
-            if estimator.success_:
-                testimator = ReaDDyElasticNetEstimator(test_trajs, self.bfc, alpha=alpha,
-                                                       l1_ratio=l1_ratio, init_xi=self.init_xi,
-                                                       verbose=self.verbose,
-                                                       method=self.method, rescale=self.rescale, tol=self.tol)
-                testimator.coefficients_ = estimator.coefficients_
-                ttraj = testimator.trajs[0]
-                score = testimator.score(range(0, ttraj.n_time_steps), ttraj.dcounts_dt)
-                scores.append(score)
-
-            else:
-                print("no success for alpha={}, l1_ratio={}".format(alpha, l1_ratio))
-                print("status %s: %s" % (estimator.result_.status, estimator.result_.message))
-                print("%s / %s iterations" % (estimator.result_.nit, self.maxiter))
-
-        return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio}
-
-    def fit_cross_trajs(self):
-        params = itertools.product(self.alphas, self.l1_ratios)
+        train_sets = []
+        for train, test in loo.split(np.array(range(len(self.trajs)), dtype=int)):
+            train_sets.append((train, test))
+        params = itertools.product(self.alphas, self.l1_ratios, train_sets)
         result = []
-        if self.show_progress:
-            from ipywidgets import IntProgress
-            from IPython.display import display
-            f = IntProgress(min=0, max=len(self.alphas) * len(self.l1_ratios) - 1)
-            display(f)
+        progress = Progress(n=len(self.alphas) * len(self.l1_ratios) * len(train_sets))
+
         with Pool(processes=self.n_jobs) as p:
             for idx, res in enumerate(p.imap_unordered(self.compute_cv_result_cross_trajs, params, 1)):
                 result.append(res)
-                if self.show_progress:
-                    f.value = idx
-        f.close()
+                progress.increase()
+        progress.finish()
         self.result = result
 
     def compute_cv_result(self, params):

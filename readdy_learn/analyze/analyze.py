@@ -649,8 +649,6 @@ class ReactionAnalysis(object):
             cv.result = np.load(persist_fname)
         return cv
 
-
-
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
         if test_n is None:
             test_n = [self._trajs[i] for i in range(len(self._trajs)) if i != train_n]
@@ -678,18 +676,17 @@ class ReactionAnalysis(object):
         return self.fname_prefix + "_solution_{}_".format(n) + self.fname_postfix + ".npy"
 
     def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False):
+        if not isinstance(n, (list, tuple)):
+            n = [n]
 
         if not recompute:
             if not self.recompute and os.path.exists(self.get_solve_fname(n)):
                 return np.load(self.get_solve_fname(n))
 
         system = self._set_up_system(self.initial_states[n])
-        traj = self._trajs[n]
-        if isinstance(traj, str):
-            traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
-            traj.update()
+        trajs = [self.get_traj(x) for x in n]
 
-        optsuite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self.interp_degree,
+        optsuite = sample_tools.Suite.from_trajectory(trajs, system, self._bfc, interp_degree=self.interp_degree,
                                                       tol=tol, alpha=alpha, l1_ratio=l1_ratio,
                                                       init_xi=np.zeros_like(self.desired_rates))
         estimator = optsuite.get_estimator(verbose=True, interp_degree=self.interp_degree, constrained=constrained)
@@ -743,6 +740,43 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
             else:
                 xs[l1_ratio] = [r['alpha']]
                 ys[l1_ratio] = [r['scores'][mainscore]]
+                allys[l1_ratio] = [r['scores']]
+    for l1_ratio in xs.keys():
+        l1xs = np.array(xs[l1_ratio])
+        l1ys = np.array(ys[l1_ratio])
+        l1allys = np.array([np.array(arr) for arr in allys[l1_ratio]]).T
+        sorts = np.argsort(l1xs)
+        l1xs = l1xs[sorts]
+        l1ys = l1ys[sorts]
+
+        l1allys = [arr[sorts] for arr in l1allys]
+        if l1_ratio == best_params_ix_l1 or best_params_ix_l1 is None:
+            plt.plot(l1xs, -l1ys, label='score l1={}'.format(l1_ratio))
+
+            for ix, _ys in enumerate(l1allys):
+                if np.argmin(-_ys) != 0:
+                    # print("found one: {} with argmin {}".format(ix, np.argmin(_ys)))
+                    pass
+                # ax.plot(l1xs, -_ys, label='test set {}'.format(ix))
+                pass
+    plt.ylabel('score')
+    plt.xlabel('$\\alpha$')
+    plt.legend()
+
+def plot_cv_results2(cv):
+    xs = {}
+    ys = {}
+    allys = {}
+    for r in cv.result:
+        l1_ratio = r['l1_ratio']
+        if len(r['scores']) > 0:
+            if l1_ratio in xs.keys():
+                xs[l1_ratio].append(r['alpha'])
+                ys[l1_ratio].append(r['scores'])
+                allys[l1_ratio].append(r['scores'])
+            else:
+                xs[l1_ratio] = [r['alpha']]
+                ys[l1_ratio] = [r['scores']]
                 allys[l1_ratio] = [r['scores']]
     for l1_ratio in xs.keys():
         l1xs = np.array(xs[l1_ratio])

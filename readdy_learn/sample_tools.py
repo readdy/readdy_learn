@@ -40,7 +40,11 @@ class Suite(object):
     def get_estimator(self, timestep=-1, interp_degree=10, verbose=False, constrained=True):
 
         if self._trajectory is not None:
-            self._trajectory.update()
+            if isinstance(self._trajectory, (list, tuple)):
+                for traj in self._trajectory:
+                    traj.update()
+            else:
+                self._trajectory.update()
             est = ReaDDyElasticNetEstimator(self._trajectory, self._bfc, alpha=self._alpha, l1_ratio=self._l1_ratio,
                                             maxiter=self._maxiter, method='SLSQP', verbose=verbose, approx_jac=False,
                                             options={'ftol': self._tol}, rescale=False, init_xi=self._init_xi,
