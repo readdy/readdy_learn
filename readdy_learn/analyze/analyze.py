@@ -687,7 +687,6 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
                 xs[l1_ratio] = [r['alpha']]
                 ys[l1_ratio] = [r['scores'][mainscore]]
                 allys[l1_ratio] = [r['scores']]
-    f, ax = plt.subplots()#figsize=(20, 20))
     for l1_ratio in xs.keys():
         l1xs = np.array(xs[l1_ratio])
         l1ys = np.array(ys[l1_ratio])
@@ -698,7 +697,7 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
 
         l1allys = [arr[sorts] for arr in l1allys]
         if l1_ratio == best_params_ix_l1 or best_params_ix_l1 is None:
-            ax.plot(l1xs, -l1ys, label='score l1={}'.format(l1_ratio))
+            plt.plot(l1xs, -l1ys, label='score l1={}'.format(l1_ratio))
 
             for ix, _ys in enumerate(l1allys):
                 if np.argmin(-_ys) != 0:
@@ -706,11 +705,9 @@ def plot_cv_results(cv, mainscore=0, best_params_ix_l1=1.):
                     pass
                 # ax.plot(l1xs, -_ys, label='test set {}'.format(ix))
                 pass
-    f.suptitle('Cross-validation scores')
-    ax.set_ylabel('score')
-    ax.set_xlabel('$\\alpha$')
+    plt.ylabel('score')
+    plt.xlabel('$\\alpha$')
     plt.legend()
-    plt.show()
 
 
 def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green', figsize=(10,5)):
