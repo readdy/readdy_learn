@@ -591,7 +591,7 @@ class ReactionAnalysis(object):
 
     def get_lsq_fname(self, n):
         nstr = "_".join(str(ns) for ns in n)
-        return self._fname_prefix + "_lsq_{}_".format(nstr) + self._fname_postfix + ".npz"
+        return self._fname_prefix + "_lsq_{}_".format(nstr) + self._fname_postfix + ".npy"
 
     def least_squares(self, n, tol=1e-12, recompute=True):
         if not isinstance(n, (list, tuple)):
