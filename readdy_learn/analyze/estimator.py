@@ -99,7 +99,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         return self.fit_trajs(X)
 
     def get_theta(self, data):
-        if isinstance(data, list):
+        if not isinstance(data, np.ndarray):
             thetas = []
             for d in data:
                 large_theta = np.array([f(d) for f in self.basis_function_configuration.functions])
