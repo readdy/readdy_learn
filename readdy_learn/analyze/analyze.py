@@ -714,7 +714,7 @@ class ReactionAnalysis(object):
             stride = max(len(traj.times) // n_points, 1)
         estimator = suite.get_estimator(verbose=True, interp_degree=self._interp_degree)
         data, expected = estimator._get_slice(None)
-        theta = estimator.get_theta(data)
+        theta = estimator.get_theta(data[0])
         theta = np.transpose(theta, axes=(0, 2, 1))
         dx = theta.dot(self._desired_rates)
 
