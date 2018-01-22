@@ -590,30 +590,31 @@ class ReactionAnalysis(object):
             plt.savefig(fname)
 
     def get_lsq_fname(self, n):
-        return self._fname_prefix + "_lsq_{}_".format(n) + self._fname_postfix + ".npz"
+        nstr = "_".join(str(ns) for ns in n)
+        return self._fname_prefix + "_lsq_{}_".format(nstr) + self._fname_postfix + ".npz"
 
-    def least_squares(self, n, tol=1e-12, initial_guess=None):
-        fname = self.get_lsq_fname(n)
-        if self._recompute or not os.path.exists(fname):
-            system = self._set_up_system(self._initial_states[n])
-            traj = self._trajs[n]
-            if isinstance(traj, str):
-                traj = tools.Trajectory(traj, self.timestep, interpolation_degree=self.interp_degree, verbose=False)
-            if initial_guess is None:
-                initial_guess = np.zeros_like(self._desired_rates)
-            suite = sample_tools.Suite.from_trajectory(traj, system, self._bfc, interp_degree=self._interp_degree,
-                                                       tol=tol,
-                                                       init_xi=initial_guess)
-            estimator = suite.get_estimator(verbose=True, interp_degree=self._interp_degree)
-            estimator.fit(None)
-            if estimator.success_:
-                rates = estimator.coefficients_
-                np.save(fname, rates)
-            else:
-                raise ValueError("Didn't converge :-/")
+    def least_squares(self, n, tol=1e-12, initial_guess=None, recompute=True):
+        if not isinstance(n, (list, tuple)):
+            n = [n]
+
+        if not recompute:
+            if not self.recompute and os.path.exists(self.get_lsq_fname(n)):
+                return np.load(self.get_lsq_fname(n))
+
+        trajs = [self.get_traj(x) for x in n]
+
+        estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=0., l1_ratio=1.,
+                                                   maxiter=30000, method='SLSQP', verbose=True, approx_jac=False,
+                                                   options={'ftol': tol}, rescale=False, init_xi=np.zeros_like(self.desired_rates),
+                                                   constrained=True)
+
+        estimator.fit(None)
+        if estimator.success_:
+            rates = estimator.coefficients_
+            np.save(self.get_lsq_fname(n), rates)
+            return rates
         else:
-            rates = np.load(fname)
-        return rates
+            raise ValueError('*_*')
 
     def get_cv_fname(self, n_train):
         return self._fname_prefix + "_cv_train_{}_".format(n_train) + self._fname_postfix + ".npy"
