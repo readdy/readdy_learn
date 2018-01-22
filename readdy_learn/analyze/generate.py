@@ -28,7 +28,7 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
         def generate_wrapper(args):
             ys = _np.array(_odeint(fun_reference, initial_condition, xs)).squeeze()
             if noise_variance > 0.:
-                _np.random.seed()
+                _np.random.seed(*args)
                 ys += _np.random.normal(0.0, _np.sqrt(noise_variance), size=ys.shape)
             return ys
 
@@ -36,7 +36,7 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
         progress = _pr.Progress(n=n_realizations, label="generate averaged lma counts with additive noise")
         N = 0.
 
-        params = [() for _ in range(n_realizations)]
+        params = [(i,) for i in range(n_realizations)]
         with _Pool(processes=njobs) as p:
             for counts in p.imap(generate_wrapper, params, 1):
                 progress.increase(1)
