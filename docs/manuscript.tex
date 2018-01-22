@@ -53,26 +53,30 @@
 		\textbf{y}_r(\textbf{X}_1)^T \\ \vdots \\ \textbf{y}_r(\textbf{X}_T)^T
 		\end{pmatrix}\in \mathbb{R}^{T\times S},\quad r=1,\ldots,R,
 	\label{method:the-reactions}\end{align}
-	where $\textbf{X}_i$ denotes the $i$-th row in $X$. Applying the concentration trajectory to the library yields $\Theta(\textbf{X})\in\mathbb{R}^{T\times S\times R}$. Following the approach of SINDy, the goal is now to find coefficients $\Xi = \begin{pmatrix} \xi_1 & \xi_2 & \cdots & \xi_R
+	where $\textbf{X}_i$ denotes the $i$-th row in $X$. Applying the concentration trajectory to the library yields $\Theta(\textbf{X})\in\mathbb{R}^{T\times S\times R}$. Following the approach of SINDy, the goal is to find coefficients $\Xi = \begin{pmatrix} \xi_1 & \xi_2 & \cdots & \xi_R
 	\end{pmatrix}^T$, so that
 	\begin{align}
 	\dot{\textbf{X}} = \Theta(\textbf{X})\Xi = \sum_{r=1}^{R}\theta_r(\textbf{X})\xi_r.
 	\end{align}
-	In particular, the system is linear in the coefficients $\Xi$, which makes sparse regression tools such as LASSO \cite{Tibshirani1996, Hastie2009} applicable. To this end, one can consider the minimization problem to find $\hat{\Xi}$ such that
+	In particular, the system is linear in the coefficients $\Xi$, which makes potentially sparse regression tools such as elastic net regularization \cite{Zou2005} applicable. To this end, one can consider the minimization problem to find $\hat{\Xi}$ such that
 	\begin{align}
-		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \frac{1}{2T}\left\| \dot{\textbf{X}} - \Theta(\textbf{X})\Xi \right\|_F^2 + \alpha\|\Xi\|_1 \right) \quad \text{subject to }\Xi \geq 0,
+		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \frac{1}{2T}\left\| \dot{\textbf{X}} - \Theta(\textbf{X})\Xi \right\|_F^2 + \alpha\lambda\|\Xi\|_1 + \alpha(1-\lambda)\|\Xi\|_2^2 \right) \quad \text{subject to }\Xi \geq 0,
 	\label{method:minimizationproblem}\end{align}
-	where $\|\cdot\|_F$ denotes the Frobenius norm and $\alpha\geq 0$ is a sparsity inducing hyperparameter. For $\alpha=0$ the minimization problem reduces to constrained least-squares. In order to solve (\ref{method:minimizationproblem}) we apply the sequential least-squares minimizer SLSQP, originally described in \cite{Kraft1988}, by the software package SciPy \cite{SciPy}. As initial guess for the regularized problem we use the solution of (\ref{method:minimizationproblem}) with $\alpha=0$.
+	where $\|\cdot\|_F$ denotes the Frobenius norm, $\lambda\in[0,1]$ a hyperparameter that interpolates linearly between LASSO \cite{Tibshirani1996, Hastie2009} and Ridge \cite{Hoerl1} methods, and $\alpha\geq 0$ is a hyperparameter that, depending on $\lambda$, can induce sparsity and give preference to smaller solutions in the $L_1$ or $L_2$ sense. 
+	
+	For $\alpha=0$ the minimization problem reduces to constrained least-squares. In order to solve (\ref{method:minimizationproblem}) we apply the sequential least-squares minimizer SLSQP, originally described in \cite{Kraft1988}, by the software package SciPy \cite{SciPy}. As initial guess for the regularized problem we use the solution of (\ref{method:minimizationproblem}) with $\alpha=0$.
 	
 	\section{Examples}
 	
-	\begin{figure}
-		\begin{center}
-			\includegraphics[width=.5\textwidth]{./figures_tex/aux_linear_approximation.eps}
-		\end{center}
-		\caption{This figure depicts a possible output yielded by an application of the Gillespie method and the performed piecewise linear approximation in order to obtain a better behaving derivative.}
-		\label{examples:linear-approximation}
-	\end{figure}
+	%\begin{figure}
+	%	\begin{center}
+	%		\includegraphics[width=.5\textwidth]{./figures_tex/aux_linear_approximation.eps}
+	%	\end{center}
+	%	\caption{This figure depicts a possible output yielded by an application of the Gillespie method and the performed piecewise linear approximation in order to obtain a better behaving derivative.}
+	%	\label{examples:linear-approximation}
+	%\end{figure}
+	
+	(\textcolor{red}{this has changed, rewrite!})
 	
 	For generating time series data of concentrations we use the Gillespie method \cite{Gillespie1976}. For given initial conditions, we produce several realizations which then are converted to a trajectory with fixed time step and averaged. Since these trajectories are piecewise constant, one has to take special care when approximating the data's temporal derivative that is needed in (\ref{method:minimizationproblem}). Applying finite differences has the effect that, with decreasing time step, the derivative mostly constant zero and approaches infinity at the jump discontinuities. To counter this effect, we beforehand perform a linear approximation between each two adjacent discontinuities, as depicted in Figure \ref{examples:linear-approximation} and thus obtain a piecewise constant derivative. (\textcolor{red}{Use regularized derivative?})
 	
