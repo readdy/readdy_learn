@@ -1,5 +1,8 @@
 #include "lasso_minimizer_objective_fun.h"
 
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
+
 #include <iostream>
 #include <vector>
 

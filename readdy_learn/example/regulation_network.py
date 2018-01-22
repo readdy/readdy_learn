@@ -2,6 +2,9 @@
 import numpy as _np
 import pynumtools.kmc as kmc
 import readdy_learn.analyze.basis as basis
+import matplotlib as mpl
+#mpl.rcParams['figure.figsize'] = (13, 13)
+import matplotlib.pyplot as plt
 
 class RegulationNetwork(object):
 
@@ -69,12 +72,12 @@ class RegulationNetwork(object):
                 'ld_derivative_use_preconditioner': False
             }
 
-        self.noise_variance = 0.001
+        self.noise_variance = 0.0001
         self.target_time = 3.
         self.train_n = 1
         self.test_n = 2
         self.traj_n_s = [self.train_n, self.test_n]
-        self.realisations = 1000
+        self.realisations = 60
         self.timestep = 1e-3
 
     def set_up_system(self, init_state):
@@ -206,10 +209,45 @@ class RegulationNetwork(object):
             "got {} basis functions but only {} desired rates".format(bfc.n_basis_functions, len(self.desired_rates))
         return bfc
 
+    def plot_concentrations(self, analysis, traj_n):
+        traj_number = traj_n
+        pfs = [
+            lambda t=traj_number: analysis.plot_derivatives(t, species=[0]),
+            lambda t=traj_number: analysis.plot_concentration_curves(t, species=[0]),
+            lambda t=traj_number: analysis.plot_derivatives(t, species=[3]),
+            lambda t=traj_number: analysis.plot_concentration_curves(t, species=[3]),
+            lambda t=traj_number: analysis.plot_derivatives(t, species=[6]),
+            lambda t=traj_number: analysis.plot_concentration_curves(t, species=[6]),
+            lambda t=traj_number: analysis.plot_derivatives(t, species=[1, 2]),
+            lambda t=traj_number: analysis.plot_concentration_curves(t, species=[1, 2]),
+            lambda t=traj_number: analysis.plot_derivatives(t, species=[4, 5]),
+            lambda t=traj_number: analysis.plot_concentration_curves(t, species=[4, 5]),
+            lambda t=traj_number: analysis.plot_derivatives(t, species=[7, 8]),
+            lambda t=traj_number: analysis.plot_concentration_curves(t, species=[7, 8])
+        ]
+        analysis.plot_overview(pfs, n_cols=2, n_rows=6, size_factor=1.3)
+        plt.show()
+
     def generate_analysis_object(self, fname_prefix="regulation_network", fname_postfix=""):
         import readdy_learn.analyze.analyze as ana
         analysis = ana.ReactionAnalysis(self.get_bfc(), self.desired_rates, self.initial_states, self.set_up_system,
                                         fname_prefix=fname_prefix, fname_postfix=fname_postfix,
                                         n_species=self.n_species, timestep=self.timestep,
-                                        ld_derivative_config=self.ld_derivative_config, recompute_traj=False)
+                                        ld_derivative_config=self.ld_derivative_config, recompute_traj=False,
+                                        species_names=self.species_names)
         return analysis
+
+    def compute_gradient_derivatives(self, analysis):
+        for t in range(len(self.initial_states)):
+            traj = analysis.get_traj(t)
+            for sp in [0, 3, 6]:
+                dx = _np.zeros_like(traj.counts[:, sp])
+                print("species {} dx.shape {}".format(sp, dx.shape))
+                traj.separate_derivs[sp] = dx
+            for sp in [1, 2, 4, 5, 7, 8]:
+                x = traj.counts[:, sp]
+                dx = _np.zeros_like(x)
+                dt = traj.time_step
+                dx = _np.gradient(x) / dt
+                traj.separate_derivs[sp] = dx
+            traj.persist()

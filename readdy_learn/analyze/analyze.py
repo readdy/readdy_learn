@@ -127,7 +127,7 @@ def obtain_derivative(traj, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha
 class ReactionAnalysis(object):
     def __init__(self, bfc, desired_rates, initial_states, set_up_system, recompute=False, recompute_traj=False,
                  fname_prefix="", fname_postfix="", n_species=4, timestep=5e-4,
-                 interp_degree='regularized_derivative', ld_derivative_config=None):
+                 interp_degree='regularized_derivative', ld_derivative_config=None, species_names=None):
         if initial_states is None or len(initial_states) <= 1:
             raise ValueError("needs at least two initial states!")
         if ld_derivative_config is None:
@@ -157,6 +157,11 @@ class ReactionAnalysis(object):
         self._trajs = []
         self._initial_states = initial_states
         self._best_alphas = {}
+        self._species_names = species_names
+
+    @property
+    def species_names(self):
+        return self._species_names
 
     @property
     def ld_derivative_config(self):
@@ -276,7 +281,7 @@ class ReactionAnalysis(object):
             self._trajs.append(None)
         self._trajs[n] = traj
 
-    def plot_cv_results(cv, mainscore=0):
+    def plot_cv_results(self, cv, mainscore=0):
         xs = {}
         ys = {}
         allys = {}
@@ -329,6 +334,35 @@ class ReactionAnalysis(object):
         ax.set_xticklabels(["{}".format(i) for i in ind])
         plt.show()
 
+    def plot_overview(self, plot_functions, n_rows=2, n_cols=2, size_factor=1.):
+        plt.figure(1, figsize=(5 * n_cols * size_factor, 3.5 * n_rows * size_factor))
+        n_plots = n_rows * n_cols
+        idx = 1
+        for pf in plot_functions:
+            if idx > n_plots:
+                break
+            plt.subplot(n_rows, n_cols, idx)
+            pf()
+            plt.legend(loc="best")
+            idx += 1
+
+        # plt.subplots_adjust(top=0.88, bottom=0.08, left=0.10, right=0.95, hspace=0.4, wspace=0.35)
+        plt.tight_layout(pad=0.6, w_pad=2.0, h_pad=2.0)
+
+    def plot_and_persist_lma_traj(self, t):
+        plt.plot(t.counts[:, 0], label=self.species_names[0])
+        plt.plot(t.counts[:, 1], label=self.species_names[1])
+        plt.plot(t.counts[:, 2], label=self.species_names[2])
+        plt.plot(t.counts[:, 3], label=self.species_names[3])
+        plt.plot(t.counts[:, 4], label=self.species_names[4])
+        plt.plot(t.counts[:, 5], label=self.species_names[5])
+        plt.plot(t.counts[:, 6], label=self.species_names[6])
+        plt.plot(t.counts[:, 7], label=self.species_names[7])
+        plt.plot(t.counts[:, 8], label=self.species_names[8])
+        plt.legend(loc="best")
+        plt.show()
+        t.persist()
+
     def best_params(self, cv, scoreidx=None):
         current_best_score = -1
         alpha = -1
@@ -362,7 +396,7 @@ class ReactionAnalysis(object):
         rates[np.where(rates <= cutoff)] = 0
         return rates
 
-    def obtain_serialized_gillespie_trajectories(self, desired_n_counts=6000, alphas=None, n_steps=250,
+    def obtain_serialized_gillespie_trajectories(self, alphas=None, n_steps=250,
                                                  n_realizations=160, update_and_persist=False, njobs=8, atol=1e-9,
                                                  alpha_search_depth=5):
         self._trajs = []
@@ -370,7 +404,7 @@ class ReactionAnalysis(object):
         for n in range(len(self.initial_states)):
             traj = self.generate_or_load_traj_gillespie(n, n_steps=n_steps, n_realizations=n_realizations,
                                                         update_and_persist=update_and_persist, njobs=njobs)
-            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, atol=atol,
+            a, _ = obtain_derivative(traj, alpha=alphas, atol=atol,
                                      alpha_search_depth=alpha_search_depth, interp_degree=self.interp_degree)
             if a is None or len(a) == 0:
                 if os.path.exists(self.get_traj_fname(n)):
@@ -411,9 +445,9 @@ class ReactionAnalysis(object):
         other_traj._separate_derivs = traj.separate_derivs
         other_traj.persist()
 
-    def calculate_ld_derivatives(self, desired_n_counts=6000, alphas=None, maxit=10):
+    def calculate_ld_derivatives(self, alphas=None, maxit=10):
         for ix, traj in enumerate(self._trajs):
-            a, _ = obtain_derivative(traj, desired_n_counts=desired_n_counts, alpha=alphas, maxit=maxit)
+            a, _ = obtain_derivative(traj, alpha=alphas, maxit=maxit)
             self._best_alphas[ix] = a
 
     def generate_or_load_traj_gillespie(self, n, n_steps=250, n_realizations=160,
@@ -466,6 +500,10 @@ class ReactionAnalysis(object):
         if update_and_persist:
             traj.update()
             traj.persist()
+
+        while len(self.trajs) < n+1:
+            self.trajs.append(None)
+        self.trajs[n] = traj
         return traj
 
     def _flatten(self, container):
@@ -593,6 +631,26 @@ class ReactionAnalysis(object):
             self._trajs[n] = traj
         return traj
 
+    def get_elastic_net_cv_fname(self, n_train):
+        n_train_str = "_".join(str(nn) for nn in n_train)
+        return self._fname_prefix + "_cv_train_{}_".format(n_train_str) + self._fname_postfix + ".npy"
+
+    def elastic_net_cv(self, traj_ns, alphas, l1_ratios, initial_guess=None, tol=1e-13, njobs=8, recompute=False):
+        persist_fname = self.get_elastic_net_cv_fname(traj_ns)
+        if initial_guess is None:
+            initial_guess = np.zeros_like(self._desired_rates)
+        trajs = [self.get_traj(n) for n in traj_ns]
+        cv = rlas.CV(trajs, self._bfc, alphas, l1_ratios, 5, initial_guess,
+                     maxiter=300000, rescale=False, tol=tol, n_jobs=njobs)
+        if self._recompute or recompute or not os.path.exists(persist_fname):
+            cv.fit_cross_trajs()
+            np.save(persist_fname, cv.result)
+        else:
+            cv.result = np.load(persist_fname)
+        return cv
+
+
+
     def elastic_net(self, train_n, alphas, l1_ratios, test_n=None, initial_guess=None, tol=1e-16, njobs=8):
         if test_n is None:
             test_n = [self._trajs[i] for i in range(len(self._trajs)) if i != train_n]
@@ -608,7 +666,7 @@ class ReactionAnalysis(object):
                                          verbose=False)
             traintraj.update()
         cv = rlas.CV(traintraj, self._bfc, alphas, l1_ratios, 5, initial_guess,
-                     test_traj=test_n, maxiter=300000, rescale=False, tol=tol, n_jobs=njobs)
+                     maxiter=300000, rescale=False, tol=tol, n_jobs=njobs)
         if self._recompute or not os.path.exists(fname):
             cv.fit_cross_trajs()
             np.save(fname, cv.result)

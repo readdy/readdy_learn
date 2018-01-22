@@ -14,36 +14,6 @@ from readdy_learn.example.regulation_network import RegulationNetwork
 
 regulation_network = RegulationNetwork()
 
-def plot_overview(plot_functions, n_rows=2, n_cols=2, size_factor=1.):
-    plt.figure(1, figsize=(5*n_cols*size_factor,3.5*n_rows*size_factor))
-    n_plots = n_rows * n_cols
-    idx = 1
-    for pf in plot_functions:
-        if idx > n_plots:
-            break
-        plt.subplot(n_rows, n_cols, idx)
-        pf()
-        plt.legend(loc="best")
-        idx += 1
-
-    #plt.subplots_adjust(top=0.88, bottom=0.08, left=0.10, right=0.95, hspace=0.4, wspace=0.35)
-    plt.tight_layout(pad=0.6, w_pad=2.0, h_pad=2.0)
-
-def plot_and_persist_lma_traj(t):
-    plt.plot(t.counts[:, 0], label=regulation_network.species_names[0])
-    plt.plot(t.counts[:, 1], label=regulation_network.species_names[1])
-    plt.plot(t.counts[:, 2], label=regulation_network.species_names[2])
-    plt.plot(t.counts[:, 3], label=regulation_network.species_names[3])
-    plt.plot(t.counts[:, 4], label=regulation_network.species_names[4])
-    plt.plot(t.counts[:, 5], label=regulation_network.species_names[5])
-    plt.plot(t.counts[:, 6], label=regulation_network.species_names[6])
-    plt.plot(t.counts[:, 7], label=regulation_network.species_names[7])
-    plt.plot(t.counts[:, 8], label=regulation_network.species_names[8])
-    plt.legend(loc="best")
-    plt.show()
-    t.persist()
-
-
 if __name__ == '__main__':
     analysis = regulation_network.generate_analysis_object()
     for i in range(4):
@@ -51,4 +21,11 @@ if __name__ == '__main__':
         t = analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
                                                noise_variance=regulation_network.noise_variance,
                                                realizations=regulation_network.realisations)
-        plot_and_persist_lma_traj(t)
+        t.persist()
+        # analysis.plot_and_persist_lma_traj(t)
+        regulation_network.compute_gradient_derivatives(analysis)
+        # regulation_network.plot_concentrations(analysis, i)
+    cv_res = analysis.elastic_net_cv([i for i in range(4)], alphas=np.concatenate((
+        np.linspace(0.000001,0.0001,num=16),
+        np.linspace(0.0002,0.012,num=16),
+        np.linspace(0.012,0.1,num=8))), l1_ratios=np.linspace(0., 1., num=3))
