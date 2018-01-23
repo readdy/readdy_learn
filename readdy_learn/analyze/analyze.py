@@ -532,10 +532,13 @@ class ReactionAnalysis(object):
 
         traj = self.get_traj(n)
         xs = traj.times
-        num_solution = np.array(odeint(fun, self.initial_states[n].squeeze(), xs))
-        reference_soln = np.array(odeint(fun_reference, self.initial_states[n].squeeze(), xs))
+        num_solution = np.array(odeint(fun, self.initial_states[n].squeeze(), xs)).squeeze()
+        reference_soln = np.array(odeint(fun_reference, self.initial_states[n].squeeze(), xs)).squeeze()
 
-        return trapz(np.abs(num_solution - reference_soln), x=xs)
+        err = 0.
+        for i in range(traj.n_species):
+            err += trapz(np.abs(num_solution[:, i] - reference_soln[:, i]), x=xs)
+        return err
 
 
     def plot_results(self, n, rates, title=None, outfile=None):
