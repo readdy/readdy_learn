@@ -518,6 +518,26 @@ class ReactionAnalysis(object):
 
         return result
 
+    def compute_L2_error(self, n, rates):
+        from scipy.integrate import odeint, trapz
+        bfc = self._bfc
+
+        def fun(data, _):
+            theta = np.array([f(data) for f in bfc.functions])
+            return np.matmul(rates, theta)
+
+        def fun_reference(data, _):
+            theta = np.array([f(data) for f in bfc.functions])
+            return np.matmul(self._desired_rates, theta)
+
+        traj = self.get_traj(n)
+        xs = traj.times
+        num_solution = np.array(odeint(fun, self.initial_states[n].squeeze(), xs))
+        reference_soln = np.array(odeint(fun_reference, self.initial_states[n].squeeze(), xs))
+
+        return trapz(np.abs(num_solution - reference_soln), x=xs)
+
+
     def plot_results(self, n, rates, title=None, outfile=None):
         from scipy.integrate import odeint
         bfc = self._bfc
