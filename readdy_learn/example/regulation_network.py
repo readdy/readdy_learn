@@ -75,8 +75,6 @@ class RegulationNetwork(object):
         self.noise_variance = 0.0001
         self.target_time = 3.
         self.train_n = 1
-        self.test_n = 2
-        self.traj_n_s = [self.train_n, self.test_n]
         self.realisations = 60
         self.timestep = 1e-3
 
