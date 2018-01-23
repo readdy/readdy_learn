@@ -1,10 +1,8 @@
-
 import numpy as _np
 import pynumtools.kmc as kmc
 import readdy_learn.analyze.basis as basis
-import matplotlib as mpl
-#mpl.rcParams['figure.figsize'] = (13, 13)
 import matplotlib.pyplot as plt
+
 
 class RegulationNetwork(object):
 
@@ -63,18 +61,17 @@ class RegulationNetwork(object):
         self.initial_states = [_np.array([arr]) for arr in initial_states]
 
         self.ld_derivative_config = {
-                'ld_derivative_atol': 1e-4,
-                'ld_derivative_rtol': None,
-                'ld_derivative_linalg_solver_maxit': 100000,
-                'ld_derivative_alpha': 1e-1,
-                'ld_derivative_solver': 'spsolve',
-                'ld_derivative_linalg_solver_tol': 1e-10,
-                'ld_derivative_use_preconditioner': False
-            }
+            'ld_derivative_atol': 1e-4,
+            'ld_derivative_rtol': None,
+            'ld_derivative_linalg_solver_maxit': 100000,
+            'ld_derivative_alpha': 1e-1,
+            'ld_derivative_solver': 'spsolve',
+            'ld_derivative_linalg_solver_tol': 1e-10,
+            'ld_derivative_use_preconditioner': False
+        }
 
         self.noise_variance = 0.0001
         self.target_time = 3.
-        self.train_n = 1
         self.realisations = 60
         self.timestep = 1e-3
 
@@ -238,7 +235,7 @@ class RegulationNetwork(object):
     def compute_gradient_derivatives(self, analysis):
         for t in range(len(self.initial_states)):
             traj = analysis.get_traj(t)
-            #for sp in [0, 3, 6]:
+            # for sp in [0, 3, 6]:
             #    dx = _np.zeros_like(traj.counts[:, sp])
             #    print("species {} dx.shape {}".format(sp, dx.shape))
             #    traj.separate_derivs[sp] = dx
