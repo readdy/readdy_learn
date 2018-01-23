@@ -857,7 +857,6 @@ def best_params(cv):
                 scores.append(d['scores'][0])
             scores = np.array(scores)
             meanscore = np.mean(scores)
-            print(meanscore)
             if current_best_score == -1 or meanscore > current_best_score:
                 best_alpha = alpha
                 best_l1_ratio = l1_ratio
