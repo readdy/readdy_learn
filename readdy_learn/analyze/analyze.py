@@ -128,8 +128,8 @@ class ReactionAnalysis(object):
     def __init__(self, bfc, desired_rates, initial_states, set_up_system, recompute=False, recompute_traj=False,
                  fname_prefix="", fname_postfix="", n_species=4, timestep=5e-4,
                  interp_degree='regularized_derivative', ld_derivative_config=None, species_names=None):
-        if initial_states is None or len(initial_states) <= 1:
-            raise ValueError("needs at least two initial states!")
+        #if initial_states is None or len(initial_states) <= 1:
+        #    raise ValueError("needs at least two initial states!")
         if ld_derivative_config is None:
             ld_derivative_config = {
                 'ld_derivative_atol': 1e-8,
