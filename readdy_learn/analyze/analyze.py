@@ -617,7 +617,7 @@ class ReactionAnalysis(object):
         nstr = "_".join(str(ns) for ns in n)
         return self._fname_prefix + "_lsq_{}_".format(nstr) + self._fname_postfix + ".npy"
 
-    def least_squares(self, n, tol=1e-12, recompute=True, persist=True):
+    def least_squares(self, n, tol=1e-12, recompute=True, persist=True, verbose=True):
         if not isinstance(n, (list, tuple)):
             n = [n]
 
@@ -628,7 +628,7 @@ class ReactionAnalysis(object):
         trajs = [self.get_traj(x) for x in n]
 
         estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=0., l1_ratio=1.,
-                                                   maxiter=30000, method='SLSQP', verbose=True, approx_jac=False,
+                                                   maxiter=30000, method='SLSQP', verbose=verbose, approx_jac=False,
                                                    options={'ftol': tol}, rescale=False,
                                                    init_xi=np.zeros_like(self.desired_rates),
                                                    constrained=True)
