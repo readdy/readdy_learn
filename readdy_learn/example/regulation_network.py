@@ -2,6 +2,8 @@ import numpy as _np
 import pynumtools.kmc as kmc
 import readdy_learn.analyze.basis as basis
 import matplotlib.pyplot as plt
+from pathos.multiprocessing import Pool as _Pool
+import readdy_learn.analyze.progress as _pr
 
 
 class RegulationNetwork(object):
@@ -246,3 +248,73 @@ class RegulationNetwork(object):
                 traj.separate_derivs[sp] = dx
             if persist:
                 traj.persist()
+
+
+def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njobs=8):
+    if not isinstance(realizations, (list, tuple, _np.ndarray)):
+        realizations = [realizations]
+
+    def get_regulation_network(n):
+        regulation_network = RegulationNetwork()
+        regulation_network.timestep = 6e-3
+        regulation_network.realisations = 1.
+        regulation_network.noise_variance = base_variance / n
+        regulation_network.initial_states = [regulation_network.initial_states[1]]
+        return regulation_network
+
+    def get_analysis_object(regulation_network, prefix='point_1', postfix='n_{}'):
+        return regulation_network.generate_analysis_object(
+            fname_prefix=prefix, fname_postfix=postfix.format(regulation_network.realisations))
+
+    def do_for_n_realizations(n, prefix='point_1', postfix='n_{}', verbose=False):
+        separator = "-" * 15
+        if verbose:
+            print("{} n={} {}".format(separator, n, separator))
+        regulation_network = get_regulation_network(n)
+        analysis = get_analysis_object(regulation_network, prefix, postfix)
+
+        for i in range(len(regulation_network.initial_states)):
+            analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
+                                               noise_variance=regulation_network.noise_variance,
+                                               realizations=regulation_network.realisations)
+        regulation_network.compute_gradient_derivatives(analysis, persist=False)
+        if verbose:
+            print("noise variance: {}".format(regulation_network.noise_variance))
+            print("target time: {}".format(regulation_network.target_time))
+            print("lma realizations: {}".format(regulation_network.realisations))
+            print("timestep: {}".format(regulation_network.timestep))
+            print("initial states:")
+            for init in regulation_network.initial_states:
+                print("\t{}".format(init))
+        lsq_rates = analysis.least_squares([0], tol=1e-14, recompute=True, persist=False)
+        l2_err = analysis.compute_L2_error(0, lsq_rates)
+        if verbose:
+            print("|LMA-LMA_est|_2 = {}".format(l2_err))
+        return {
+            'lsq_rates': lsq_rates,
+            'l2_err': l2_err,
+            'prefix': prefix,
+            'postfix': postfix.format(n),
+            'n': n
+        }
+
+    def worker(args):
+        return do_for_n_realizations(*args)
+
+    from collections import defaultdict
+    progress = _pr.Progress(n=len(realizations) * samples_per_variance, label="sample L2 error for variances")
+    result = {}
+    with _Pool(processes=njobs) as p:
+        for n in realizations:
+            params = [(n,) for _ in range(samples_per_variance)]
+            res = defaultdict(list)
+            for r in p.imap(worker, params, 1):
+                res['lsq_rates'].append(r['lsq_rates'])
+                res['l2_err'].append(r['l2_err'])
+                res['prefix'] = r['prefix']
+                res['postfix'] = r['postfix']
+                res['n'] = n
+                progress.increase()
+            result[n] = res
+    progress.finish()
+    return result
