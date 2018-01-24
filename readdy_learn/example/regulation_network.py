@@ -299,6 +299,7 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
         }
 
     def worker(args):
+        _np.random.seed(0)
         return do_for_n_realizations(*args)
 
     from collections import defaultdict
