@@ -617,7 +617,7 @@ class ReactionAnalysis(object):
         nstr = "_".join(str(ns) for ns in n)
         return self._fname_prefix + "_lsq_{}_".format(nstr) + self._fname_postfix + ".npy"
 
-    def least_squares(self, n, tol=1e-12, recompute=True):
+    def least_squares(self, n, tol=1e-12, recompute=True, persist=True):
         if not isinstance(n, (list, tuple)):
             n = [n]
 
@@ -636,7 +636,8 @@ class ReactionAnalysis(object):
         estimator.fit(None)
         if estimator.success_:
             rates = estimator.coefficients_
-            np.save(self.get_lsq_fname(n), rates)
+            if persist:
+                np.save(self.get_lsq_fname(n), rates)
             return rates
         else:
             raise ValueError('*_*')

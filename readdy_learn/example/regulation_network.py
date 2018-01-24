@@ -232,7 +232,7 @@ class RegulationNetwork(object):
                                         species_names=self.species_names)
         return analysis
 
-    def compute_gradient_derivatives(self, analysis):
+    def compute_gradient_derivatives(self, analysis, persist=True):
         for t in range(len(self.initial_states)):
             traj = analysis.get_traj(t)
             # for sp in [0, 3, 6]:
@@ -241,8 +241,8 @@ class RegulationNetwork(object):
             #    traj.separate_derivs[sp] = dx
             for sp in [1, 2, 4, 5, 7, 8, 0, 3, 6]:
                 x = traj.counts[:, sp]
-                dx = _np.zeros_like(x)
                 dt = traj.time_step
                 dx = _np.gradient(x) / dt
                 traj.separate_derivs[sp] = dx
-            traj.persist()
+            if persist:
+                traj.persist()
