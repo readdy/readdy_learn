@@ -5,24 +5,24 @@ import readdy_learn.analyze.progress as _pr
 
 
 def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps, noise_variance=0., n_realizations=1,
-                               njobs=8):
+                               njobs=8, supersample=1000):
     if n_realizations == 1 or noise_variance == 0.:
         def fun_reference(data, _):
             theta = _np.array([f(data) for f in bfc.functions])
             return _np.matmul(rates, theta)
 
-        xs = _np.linspace(0, n_steps * timestep, num=n_steps, endpoint=False)
+        xs = _np.linspace(0, n_steps * timestep, num=n_steps*supersample, endpoint=False)
         initial_condition = _np.array(initial_condition).squeeze()
         ys = _np.array(_odeint(fun_reference, initial_condition, xs)).squeeze()
         if noise_variance > 0.:
             ys += _np.random.normal(0.0, _np.sqrt(noise_variance), size=ys.shape)
-        return xs, ys
+        return xs[::supersample], ys[::supersample]
     else:
         def fun_reference(data, _):
             theta = _np.array([f(data) for f in bfc.functions])
             return _np.matmul(rates, theta)
 
-        xs = _np.linspace(0, n_steps * timestep, num=n_steps, endpoint=False)
+        xs = _np.linspace(0, n_steps * timestep, num=n_steps*supersample, endpoint=False)
         initial_condition = _np.array(initial_condition).squeeze()
 
         def generate_wrapper(args):
@@ -46,7 +46,7 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
                 else:
                     avgcounts += counts
             avgcounts /= N
-        return xs, avgcounts
+        return xs[::supersample], avgcounts[::supersample]
 
 
 def generate_kmc_counts(set_up_system, n_kmc_steps, timestep):
