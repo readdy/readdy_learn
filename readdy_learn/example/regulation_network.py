@@ -298,16 +298,19 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
             'n': n
         }
 
+    import time
+
     def worker(args):
-        _np.random.seed(0)
-        return do_for_n_realizations(*args)
+        n, r = args
+        _np.random.seed(int(time.time()) + n*samples_per_variance + r)
+        return do_for_n_realizations(n)
 
     from collections import defaultdict
     progress = _pr.Progress(n=len(realizations) * samples_per_variance, label="sample L2 error for variances")
     result = {}
     with _Pool(processes=njobs) as p:
         for n in realizations:
-            params = [(n,) for _ in range(samples_per_variance)]
+            params = [(n,r) for r in range(samples_per_variance)]
             res = defaultdict(list)
             for r in p.imap(worker, params, 1):
                 res['lsq_rates'].append(r['lsq_rates'])
