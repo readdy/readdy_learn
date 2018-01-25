@@ -98,6 +98,17 @@
         \label{fig:network}
     \end{figure}
 
+
+    \section{Scenarios of measurement}
+
+    The estimation method we propose shall be fit to find reaction networks and rates from experimental data. Therefore we define the following measurement scenarios, that differentiate how many timeseries are available and how much noise is contained in the data:
+    \begin{enumerate}
+        \item The initial state of the measurement apparatus can be reproduced exactly. There is only one set of generating reaction rates. Hence we can observe the same process $N$ times. Each observation has a certain level of noise in each datapoint. One can average the $N$ observations. Thus the outcome of this scenarios is one time-series of concentrations with a noise-level, that decreases with $N$.
+        \item The initial state of the measurement apparatus differs in each observation. The outcome of this scenario is $N$ time-series each with a given noise level and different initial states.
+        \item The initial state of the measurement apparatus differs in each observation. Additionally the generating reaction rates slightly differ in each observation. The outcome of this scenario is $N$ time-series each with a given noise level, different initial states and a slighty different underlying process.
+    \end{enumerate}
+
+
 	\section{Examples}
 
 	For generating time series data of concentrations we integrate the law of mass action equations and add Gaussian noise. In that manner we produce several realizations for a couple of initial conditions. The derivatives are evaluated by finite differences of first order.
