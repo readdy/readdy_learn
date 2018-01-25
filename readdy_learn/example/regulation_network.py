@@ -286,7 +286,19 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
             print("initial states:")
             for init in regulation_network.initial_states:
                 print("\t{}".format(init))
-        lsq_rates = analysis.least_squares([0], tol=1e-16, recompute=True, persist=False, verbose=False)
+        try:
+            lsq_rates = analysis.least_squares([0], tol=1e-16, recompute=True, persist=False, verbose=False)
+        except ValueError:
+            try:
+                lsq_rates = analysis.least_squares([0], tol=1e-15, recompute=True, persist=False, verbose=False)
+            except ValueError:
+                try:
+                    lsq_rates = analysis.least_squares([0], tol=1e-14, recompute=True, persist=False, verbose=False)
+                except ValueError:
+                    try:
+                        lsq_rates = analysis.least_squares([0], tol=1e-13, recompute=True, persist=False, verbose=False)
+                    except ValueError:
+                        raise ValueError("This takes the cake")
         l2_err = analysis.compute_L2_error(0, lsq_rates)
         if verbose:
             print("|LMA-LMA_est|_2 = {}".format(l2_err))
