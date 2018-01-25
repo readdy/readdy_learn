@@ -250,13 +250,13 @@ class RegulationNetwork(object):
                 traj.persist()
 
 
-def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njobs=8):
+def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njobs=8, timestep=6e-3):
     if not isinstance(realizations, (list, tuple, _np.ndarray)):
         realizations = [realizations]
 
     def get_regulation_network(n):
         regulation_network = RegulationNetwork()
-        regulation_network.timestep = 6e-3
+        regulation_network.timestep = timestep
         regulation_network.realisations = 1.
         regulation_network.noise_variance = base_variance / n
         regulation_network.initial_states = [regulation_network.initial_states[1]]
