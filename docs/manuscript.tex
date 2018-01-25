@@ -67,10 +67,9 @@
 
 	When presented with multiple trajectories one can extend the objective function by a sum over these and obtain a more general minimization problem that reads: Find $\hat{\Xi}$ such that
 	\begin{align}
-		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \sum_{\text{traj}}\frac{1}{2T_{\text{traj}}}\left\| \dot{\textbf{X}_\text{traj}} - \Theta(\textbf{X}_\text{traj})\Xi \right\|_F^2 + \alpha\lambda\|\Xi\|_1 + \alpha(1-\lambda)\|\Xi\|_2^2 \right)
+		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \sum_{\text{traj}}\frac{1}{2T_{\text{traj}}}\left\| \dot{\textbf{X}}_\text{traj} - \Theta(\textbf{X}_\text{traj})\Xi \right\|_F^2 + \alpha\lambda\|\Xi\|_1 + \alpha(1-\lambda)\|\Xi\|_2^2 \right)
 	\end{align}
-	subject to $\Xi\geq 0$. (\textcolor{red}{this probably should be motivated better})
-
+	subject to $\Xi\geq 0$.
 	For $\alpha=0$ the minimization problem reduces to constrained least-squares. In order to solve (\ref{method:minimizationproblem}) we apply the sequential least-squares minimizer SLSQP, originally described in \cite{Kraft1988}, by the software package SciPy \cite{SciPy}. As initial guess for the regularized problem we use the solution of (\ref{method:minimizationproblem}) with $\alpha=0$.
 
     \section{Example system: Regulation of gene expression}\label{sec:generegulation}
