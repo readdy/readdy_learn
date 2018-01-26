@@ -95,6 +95,10 @@ class BasisFunctionConfiguration(object):
     def functions(self):
         return self._basis_functions
 
+    @functions.setter
+    def functions(self, value):
+        self._basis_functions = value
+
     @property
     def n_basis_functions(self):
         return len(self._basis_functions)

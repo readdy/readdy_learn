@@ -7,6 +7,7 @@ import readdy_learn.analyze.derivative as deriv
 import readdy_learn.analyze.estimator as rlas
 import readdy_learn.analyze.generate as generate
 import readdy_learn.analyze.tools as tools
+import readdy_learn.analyze.basis as basis
 import readdy_learn.sample_tools as sample_tools
 
 
@@ -128,7 +129,7 @@ class ReactionAnalysis(object):
     def __init__(self, bfc, desired_rates, initial_states, set_up_system, recompute=False, recompute_traj=False,
                  fname_prefix="", fname_postfix="", n_species=4, timestep=5e-4,
                  interp_degree='regularized_derivative', ld_derivative_config=None, species_names=None):
-        #if initial_states is None or len(initial_states) <= 1:
+        # if initial_states is None or len(initial_states) <= 1:
         #    raise ValueError("needs at least two initial states!")
         if ld_derivative_config is None:
             ld_derivative_config = {
@@ -540,7 +541,6 @@ class ReactionAnalysis(object):
             err += trapz(np.abs(num_solution[:, i] - reference_soln[:, i]), x=xs)
         return err
 
-
     def plot_results(self, n, rates, title=None, outfile=None):
         from scipy.integrate import odeint
         bfc = self._bfc
@@ -617,7 +617,33 @@ class ReactionAnalysis(object):
         nstr = "_".join(str(ns) for ns in n)
         return self._fname_prefix + "_lsq_{}_".format(nstr) + self._fname_postfix + ".npy"
 
-    def least_squares(self, n, tol=1e-12, recompute=True, persist=True, verbose=True):
+    def least_squares_iter(self, n, cutoff, tol=1e-12, verbose=True):
+        N = np.arange(self.bfc.n_basis_functions, dtype=int)
+        bfcs = basis.BasisFunctionConfiguration(self.n_species)
+        bfcs.functions = self.bfc.functions
+        myrates = np.zeros((len(N),), dtype=np.float64)
+        while True:
+            rates = self.least_squares(n, tol=tol, recompute=True, persist=False, verbose=verbose, bfc=bfcs)
+
+            indices = np.argwhere(rates >= cutoff)
+            not_indices = np.argwhere(rates < cutoff)
+            newbfcs = basis.BasisFunctionConfiguration(self.n_species)
+            newbfcs.functions = [f for idx, f in enumerate(bfcs.functions) if idx in indices]
+            bfcs = newbfcs
+            if verbose:
+                print("discarding reactions {}".format(N[not_indices].squeeze()))
+            N = N[indices]
+
+            if len(rates) == len(bfcs.functions):
+                break
+        myrates[N] = rates
+        return myrates
+
+    def least_squares(self, n, tol=1e-12, recompute=True, persist=True, verbose=True, bfc=None):
+
+        if bfc is None:
+            bfc = self.bfc
+
         if not isinstance(n, (list, tuple)):
             n = [n]
 
@@ -627,10 +653,10 @@ class ReactionAnalysis(object):
 
         trajs = [self.get_traj(x) for x in n]
 
-        estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=0., l1_ratio=1.,
+        estimator = rlas.ReaDDyElasticNetEstimator(trajs, bfc, alpha=0., l1_ratio=1.,
                                                    maxiter=30000, method='SLSQP', verbose=verbose, approx_jac=False,
                                                    options={'ftol': tol}, rescale=False,
-                                                   init_xi=np.zeros_like(self.desired_rates),
+                                                   init_xi=np.zeros((bfc.n_basis_functions,), dtype=np.float64),
                                                    constrained=True)
 
         estimator.fit(None)
