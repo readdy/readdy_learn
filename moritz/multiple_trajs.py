@@ -20,6 +20,16 @@ if __name__ == '__main__':
     for train, test in loo.split([1,2,3,4]):
         print("train: {}, test: {}".format(train, test))
 
+    regulation_network.noise_variance /= regulation_network.realisations
+    regulation_network.realisations = 1
+    analysis = regulation_network.generate_analysis_object()
+    for i in range(len(regulation_network.initial_states)):
+        analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
+                                           noise_variance=regulation_network.noise_variance,
+                                           realizations=regulation_network.realisations)
+    regulation_network.compute_gradient_derivatives(analysis, persist=False)
+    analysis.least_squares_iter(1, cutoff=1e-10, tol=1e-13, verbose=True)
+
     if False:
         analysis = regulation_network.generate_analysis_object()
         for i in range(4):
@@ -31,6 +41,7 @@ if __name__ == '__main__':
             # analysis.plot_and_persist_lma_traj(t)
             regulation_network.compute_gradient_derivatives(analysis)
             # regulation_network.plot_concentrations(analysis, i)
+
         cv_res = analysis.elastic_net_cv([i for i in range(4)],
                                          alphas=np.concatenate(
                                              (np.linspace(0.000001, 0.0001, num=16),
