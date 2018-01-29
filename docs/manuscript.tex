@@ -128,16 +128,14 @@
     \end{enumerate}
 
 
-	\section{Examples}
+	\section{Examples}\label{sec:examples}
 
 	In the following two examples are presented. The first example considers data according to the first scenario of measurement as presented in Section \ref{sec:scenarios-of-measurement}.
 	The minimization problem (\ref{method:minimizationproblem}) with $\alpha=0$ is solved for different magnitudes of noise variance.
 	
 	The second example deals with the second scenario of measurement and solves the minimization problem (\ref{method:minimizationproblem}) with regularization parameters being determined by cross validation.
 	
-	\begin{colbox}{F8E0E0}
-		introduce ansatz functions
-	\end{colbox}
+	In each of the considered examples the library $\Theta$ includes, among others, the reactions of the example system described in Section \ref{sec:generegulation}. The full set of reactions can be found in the Appendix, Table \ref{tab:reaction-library}.
 
 	\subsection{Regression without regularization}
 	\label{sec:ex1}
@@ -245,5 +243,59 @@
 % 	\bibliographystyle{alpha}
 	\bibliographystyle{abbrv}
 	\bibliography{bibliography.bib}
-
+	
+	\section{Appendix}
+	\begin{table}
+		\centering
+		\begin{tabular}{rclcc}
+			\multicolumn{3}{c}{Reaction} & rate & description \\ \hline\noalign{\vskip .1cm}
+			$\ce{DNA_A}$ &$\ce{->}$& $\ce{DNA_A + mRNA_A }$ & $k_1 = 1.8$ & transcription of $\ce{mRNA_A}$\\
+			$\ce{mRNA_A}$ &$\ce{->}$& $\ce{mRNA_A + A}$ & $k_2 = 2.1$ & translation of $\ce{A}$ proteins\\
+			$\ce{mRNA_A}$ &$\ce{->}$& $\ce{\emptyset}$ & $k_3 = 1.3$ & $\ce{mRNA_A}$ decay\\
+			$\ce{A}$ &$\ce{->}$& $\ce{\emptyset }$ & $k_4 = 1.5$ & decay of $\ce{A}$ proteins\\
+			$\ce{DNA_B}$ &$\ce{->}$& $\ce{DNA_B + mRNA_B }$ & $k_5 = 2.2$ & transcription of $\ce{mRNA_B}$\\
+			$\ce{mRNA_B}$ &$\ce{->}$& $\ce{mRNA_B + B}$ & $k_6 = 2.0$ & translation of $\ce{B}$ proteins\\
+			$\ce{mRNA_B}$ &$\ce{->}$& $\ce{\emptyset }$ & $k_7 = 2.0$ & $\ce{mRNA_B}$ decay\\
+			$\ce{B}$ &$\ce{->}$& $\ce{\emptyset }$ & $k_8 = 2.5$ & decay of $\ce{B}$ proteins\\
+			$\ce{DNA_C}$ &$\ce{->}$& $\ce{DNA_C + mRNA_C }$ & $k_9 = 3.2$ & transcription of $\ce{mRNA_C}$\\
+			$\ce{mRNA_C}$ &$\ce{->}$& $\ce{mRNA_C + C}$ & $k_{10} = 3.0$ & translation of $\ce{C}$ proteins\\
+			$\ce{mRNA_C}$ &$\ce{->}$& $\ce{\emptyset }$ & $k_{11} = 2.3$ & $\ce{mRNA_C}$ decay\\
+			$\ce{C}$ &$\ce{->}$& $\ce{\emptyset }$ & $k_{12} = 2.5$ & decay of $\ce{C}$ proteins\\
+			$\ce{mRNA_A + A}$ &$\ce{->}$& $A$ & $k_{13} = 0$ & self regulation of $\ce{A}$ proteins\\
+			$\ce{mRNA_B + B}$ &$\ce{->}$& $B$ & $k_{14} = 0$ & self regulation of $\ce{B}$ proteins\\
+			$\ce{mRNA_C + C}$ &$\ce{->}$& $C$ & $k_{15} = 0$ & self regulation of $\ce{C}$ proteins\\
+			$\ce{mRNA_B + A}$ &$\ce{->}$& $A$ & $k_{16} = 0$ & cyclic regulation of $\ce{A}$ proteins\\
+			$\ce{mRNA_C + B}$ &$\ce{->}$& $B$ & $k_{17} = 0$ & cyclic regulation of $\ce{B}$ proteins\\
+			$\ce{mRNA_A + C}$ &$\ce{->}$& $C$ & $k_{18} = 0$ & cyclic regulation of $\ce{C}$ proteins\\
+			$\ce{mRNA_C + A}$ &$\ce{->}$& $A$ & $k_{16} = 6.0$ & cyclic regulation of $\ce{A}$ proteins\\
+			$\ce{mRNA_B + C}$ &$\ce{->}$& $C$ & $k_{17} = 4.0$ & cyclic regulation of $\ce{C}$ proteins\\
+			$\ce{mRNA_A + B}$ &$\ce{->}$& $B$ & $k_{18} = 3.0$ & cyclic regulation of $\ce{B}$ proteins\\
+			$\ce{mRNA_A + A}$ &$\ce{->}$& $\ce{mRNA_A}$ & $k_{19} = 0$ & artificial fusion\\
+			$\ce{mRNA_B + B}$ &$\ce{->}$& $\ce{mRNA_B}$ & $k_{20} = 0$ & artificial fusion\\
+			$\ce{mRNA_C + C}$ &$\ce{->}$& $\ce{mRNA_C}$ & $k_{21} = 0$ & artificial fusion\\
+			$\ce{mRNA_A + B}$ &$\ce{->}$& $\ce{mRNA_A}$ & $k_{22} = 0$ & artificial fusion\\
+			$\ce{mRNA_B + C}$ &$\ce{->}$& $\ce{mRNA_B}$ & $k_{23} = 0$ & artificial fusion\\
+			$\ce{mRNA_C + A}$ &$\ce{->}$& $\ce{mRNA_C}$ & $k_{24} = 0$ & artificial fusion\\
+			$\ce{mRNA_A + C}$ &$\ce{->}$& $\ce{mRNA_A}$ & $k_{25} = 0$ & artificial fusion\\
+			$\ce{mRNA_B + A}$ &$\ce{->}$& $\ce{mRNA_B}$ & $k_{26} = 0$ & artificial fusion\\
+			$\ce{mRNA_C + B}$ &$\ce{->}$& $\ce{mRNA_C}$ & $k_{27} = 0$ & artificial fusion\\
+			$\ce{A + A}$ &$\ce{->}$& $\ce{A}$ & $k_{28} = 0$ & $\ce{A}$ regulates $\ce{A}$\\
+			$\ce{B + B}$ &$\ce{->}$& $\ce{B}$ & $k_{29} = 0$ & $\ce{B}$ regulates $\ce{B}$\\
+			$\ce{C + C}$ &$\ce{->}$& $\ce{C}$ & $k_{30} = 0$ & $\ce{C}$ regulates $\ce{C}$\\
+			$\ce{B + A}$ &$\ce{->}$& $\ce{A}$ & $k_{31} = 0$ & artificial fusion between proteins\\
+			$\ce{C + B}$ &$\ce{->}$& $\ce{B}$ & $k_{32} = 0$ & artificial fusion between proteins\\
+			$\ce{A + C}$ &$\ce{->}$& $\ce{C}$ & $k_{33} = 0$ & artificial fusion between proteins\\
+			$\ce{C + A}$ &$\ce{->}$& $\ce{A}$ & $k_{34} = 0$ & artificial fusion between proteins\\
+			$\ce{B + C}$ &$\ce{->}$& $\ce{C}$ & $k_{35} = 0$ & artificial fusion between proteins\\
+			$\ce{A + B}$ &$\ce{->}$& $\ce{B}$ & $k_{36} = 0$ & artificial fusion between proteins\\
+			$\ce{A}$ &$\ce{->}$& $\ce{B}$ & $k_{37} = 0$ & artificial conversion between proteins\\
+			$\ce{B}$ &$\ce{->}$& $\ce{C}$ & $k_{38} = 0$ & artificial conversion between proteins\\
+			$\ce{C}$ &$\ce{->}$& $\ce{A}$ & $k_{39} = 0$ & artificial conversion between proteins\\
+			$\ce{A}$ &$\ce{->}$& $\ce{C}$ & $k_{40} = 0$ & artificial conversion between proteins\\
+			$\ce{C}$ &$\ce{->}$& $\ce{B}$ & $k_{41} = 0$ & artificial conversion between proteins\\
+			$\ce{B}$ &$\ce{->}$& $\ce{A}$ & $k_{42} = 0$ & artificial conversion between proteins
+		\end{tabular}
+		\caption{Full set of ansatz reactions $\Theta$ used in Section \ref{sec:examples}.}
+		\label{tab:reaction-library}
+	\end{table}
 \end{document}
