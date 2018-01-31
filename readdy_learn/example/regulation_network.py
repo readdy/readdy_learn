@@ -337,7 +337,7 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8)
         for alpha in alphas:
             for _ in range(samples_per_alpha):
                 p.apply_async(worker, (alpha,), callback=callback)
-
+    p.join()
     progress.finish()
 
     return result
