@@ -64,12 +64,6 @@ double score(const input_array &propensities, const input_array &theta, const in
     for (auto&& dxm : dXMean) {
         v += dxm*dxm;
     }
-
-    // std::cout << "curr result: " << result << ", n_timesteps= " << n_timesteps << std::endl;
-    // result *= (1. / (n_timesteps));
-    // return std::sqrt(result);
-
-    // return 1. - result / v;
     result /= 2. * n_timesteps;
     return result;
 }
@@ -126,21 +120,23 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
     shape.push_back(static_cast<std::size_t>(n_reactions));
     result.resize(shape);
 
-    input_array update;
-    update.resize(shape);
+    {
+        auto ptr = result.mutable_data();
+        std::fill(ptr, ptr + n_reactions, 0.);
+    }
 
     auto itThetas = thetas.begin();
     auto itDXs = dXs.begin();
+    std::size_t nTimestepsTotal {0};
     for(; itThetas != thetas.end(); ++itThetas, ++itDXs) {
         const auto &theta = *itThetas;
         const auto &dX = *itDXs;
         // for each element in the 1xr jacobi matrix...
-        for(std::size_t i = 0; i < n_reactions; ++i) {
+        const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
+        nTimestepsTotal += n_timesteps;
 
-            // first set it to 0
-            update.mutable_at(i) = 0;
+        for(std::size_t i = 0; i < n_reactions; ++i) {
             // then calculate the frobenius part
-            const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
             for (std::size_t t = 0; t < n_timesteps; ++t) {
                 for (std::size_t s = 0; s < n_species; ++s) {
                     auto x = dX.at(t, s);
@@ -148,16 +144,17 @@ input_array elastic_net_objective_function_jac(const input_array &propensities,
                     for(std::size_t r = 0; r < n_reactions; ++r) {
                         x -= propensities.at(r) * theta.at(t, r, s);
                     }
-                    update.mutable_at(i) += theta_t_i_s * x;
+                    result.mutable_at(i) += theta_t_i_s * x;
                 }
             }
-            update.mutable_at(i) *= -1. / (n_timesteps);
         }
 
-        // result += update
+        // result /= nTimestepsTotal
         {
             auto data = result.mutable_data();
-            std::transform(data, data+n_reactions, update.data(), data, std::plus<double>());
+            std::transform(data, data+n_reactions, data, [nTimestepsTotal](auto val) {
+                return  val * -1. / (static_cast<double>(nTimestepsTotal));
+            });
         }
     }
 
@@ -189,6 +186,7 @@ double elastic_net_objective_function(const input_array &propensities, const dou
 
     auto itThetas = thetas.begin();
     auto itDXs = dXs.begin();
+    std::size_t nTimestepsTotal {0};
     for(; itThetas != thetas.end(); ++itThetas, ++itDXs) {
         const auto &theta = *itThetas;
         const auto &dX = *itDXs;
@@ -201,7 +199,6 @@ double elastic_net_objective_function(const input_array &propensities, const dou
         if(static_cast<std::size_t>(theta.shape()[2]) != n_species) {
             throw std::invalid_argument("the number of species should match");
         }
-        double update = 0;
         const auto n_timesteps = static_cast<std::size_t>(theta.shape()[0]);
         for (std::size_t t = 0; t < n_timesteps; ++t) {
             for (std::size_t s = 0; s < n_species; ++s) {
@@ -209,12 +206,12 @@ double elastic_net_objective_function(const input_array &propensities, const dou
                 for (std::size_t r = 0; r < n_reactions; ++r) {
                     x -= propensities.at(r) * theta.at(t, r, s);
                 }
-                update += x * x;
+                result += x * x;
             }
         }
-        update *= 1. / (2. * n_timesteps);
-        result += update;
+        nTimestepsTotal += n_timesteps;
     }
+    result *= 1. / (2. * nTimestepsTotal);
     double regulator = 0;
     {
         double regulator_l1 = 0;
