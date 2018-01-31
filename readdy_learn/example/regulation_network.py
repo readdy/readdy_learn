@@ -333,10 +333,14 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8)
             result[alpha] = [rates]
         progress.increase()
 
+    futures = []
     with _Pool(processes=njobs) as p:
         for alpha in alphas:
             for _ in range(samples_per_alpha):
-                p.apply_async(worker, (alpha,), callback=callback)
+                f = p.apply_async(worker, (alpha,), callback=callback)
+                futures.append(f)
+        for f in futures:
+            f.wait()
     p.join()
     progress.finish()
 
