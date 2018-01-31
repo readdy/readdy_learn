@@ -306,7 +306,7 @@ def smooth(x, window_len=11, window='hanning'):
     y = _np.convolve(w / w.sum(), s, mode='valid')
     return y
 
-def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8):
+def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8, tol=1e-16, verbose=False):
 
     if not isinstance(alphas, (list, tuple, _np.ndarray)):
         alphas = [alphas]
@@ -323,7 +323,7 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8)
                                                noise_variance=regulation_network.noise_variance,
                                                realizations=regulation_network.realisations)
         regulation_network.compute_gradient_derivatives(analysis, persist=False)
-        reg_rates = analysis.solve(0, alpha=1e-6, l1_ratio=1., tol=1e-16, recompute=True, verbose=True, persist=False)
+        reg_rates = analysis.solve(0, alpha=alpha, l1_ratio=1., tol=tol, recompute=True, verbose=verbose, persist=False)
         return alpha, reg_rates
 
     args = [(alpha, ) for _ in range(samples_per_alpha) for alpha in alphas]
