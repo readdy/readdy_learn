@@ -3,6 +3,7 @@ import pynumtools.kmc as kmc
 import readdy_learn.analyze.basis as basis
 import matplotlib.pyplot as plt
 from pathos.multiprocessing import Pool as _Pool
+from threading import Semaphore as _Semaphore
 import readdy_learn.analyze.progress as _pr
 
 
@@ -325,23 +326,15 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8)
         reg_rates = analysis.solve(0, alpha=1e-6, l1_ratio=1., tol=1e-16, recompute=True, verbose=True, persist=False)
         return alpha, reg_rates
 
-    def callback(x):
-        alpha, rates = x
-        if alpha in result.keys():
-            result[alpha].append(rates)
-        else:
-            result[alpha] = [rates]
-        progress.increase()
-
-    futures = []
+    args = [(alpha, ) for _ in range(samples_per_alpha) for alpha in alphas]
     with _Pool(processes=njobs) as p:
-        for alpha in alphas:
-            for _ in range(samples_per_alpha):
-                f = p.apply_async(worker, (alpha,), callback=callback)
-                futures.append(f)
-        for f in futures:
-            f.wait()
-    p.join()
+        for x in p.imap_unordered(worker, args):
+            alpha, rates = x
+            if alpha in result.keys():
+                result[alpha].append(rates)
+            else:
+                result[alpha] = [rates]
+            progress.increase()
     progress.finish()
 
     return result
