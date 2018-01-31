@@ -306,8 +306,8 @@ def smooth(x, window_len=11, window='hanning'):
     y = _np.convolve(w / w.sum(), s, mode='valid')
     return y
 
-def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8, tol=1e-16, verbose=False):
 
+def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8, tol=1e-16, verbose=False):
     if not isinstance(alphas, (list, tuple, _np.ndarray)):
         alphas = [alphas]
 
@@ -326,7 +326,7 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8,
         reg_rates = analysis.solve(0, alpha=alpha, l1_ratio=1., tol=tol, recompute=True, verbose=verbose, persist=False)
         return alpha, reg_rates
 
-    args = [(alpha, ) for _ in range(samples_per_alpha) for alpha in alphas]
+    args = [(alpha,) for _ in range(samples_per_alpha) for alpha in alphas]
     with _Pool(processes=njobs) as p:
         for x in p.imap_unordered(worker, args):
             alpha, rates = x
@@ -338,6 +338,7 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8,
     progress.finish()
 
     return result
+
 
 def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njobs=8, timestep=6e-3):
     if not isinstance(realizations, (list, tuple, _np.ndarray)):
@@ -403,8 +404,8 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
 
     def worker(args):
         n, r = args
-        seed = int(time.time()) + n*samples_per_variance + r
-        seed = seed % (2**32 - 1)
+        seed = int(time.time()) + n * samples_per_variance + r
+        seed = seed % (2 ** 32 - 1)
         _np.random.seed(seed)
         return do_for_n_realizations(n)
 
@@ -413,7 +414,7 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
     result = {}
     with _Pool(processes=njobs) as p:
         for n in realizations:
-            params = [(n,r) for r in range(samples_per_variance)]
+            params = [(n, r) for r in range(samples_per_variance)]
             res = defaultdict(list)
             for r in p.imap(worker, params, 1):
                 res['lsq_rates'].append(r['lsq_rates'])

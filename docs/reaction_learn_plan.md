@@ -1,7 +1,10 @@
 ### Case 1
 - [ ] LSQ fits well but doesnt necessarily recover the rates (varying $\alpha$)
-- [ ] In the limit of low noise (and same initial conditions), the least squares solution (almost) recovers almost the right reactions (sparsity pattern). Vary hyperparameters (alpha, ~~lambda~~)
-- [ ] use more basis functions
+  - [ ] LSQ fits well
+  - [x] LSQ doesnt necessarily recover the rates
+  - [x] LSQ + L1 can (almost) recover the rates
+- [ ] use more basis functions (perhaps not needed)
+- See Notebook `the_cases/case_1_no_noise_vary_alpha.ipynb`
 
 ### Case 2
 - [ ] Same initial conditions, multiple measurements, noise is a variable.  -> in the limit of small noise you get a good fit, 
@@ -13,7 +16,7 @@
 - [ ] also compute failure rate
 
 ### General
-- [ ] Minimization function: use normal Frobenius norm, stack all samples of $X$ and $\dot{X}$
+- [x] Minimization function: use normal Frobenius norm, stack all samples of $X$ and $\dot{X}$
 - [ ] Try representation of reactions as a matrix with dots:
   - matrix of species and pairs -> ring for estimated -> dot for reference
   - look at matrices in [1]
