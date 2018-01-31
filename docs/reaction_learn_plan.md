@@ -6,6 +6,7 @@
 ### Case 2
 - [ ] Same initial conditions, multiple measurements, noise is a variable.  -> in the limit of small noise you get a good fit, 
 - [ ] obtain cutoff in noise free case (or case 1) -> compute failure rate, i.e., false positives and negatives
+- [ ] $\| \Xi - \Xi_\mathrm{est} \|_1$ with cutoff and include $0$ noise as case in the plot
 
 ### Case 3
 - [ ] Extend to multiple initial conditions. (this probably works better)    
@@ -18,7 +19,6 @@
   - look at matrices in [1]
 - [ ] Consider rescaling of rates to a unitless or normalized quantity (Mohsen’s idea):
   - rescale rates w.r.t. equilibrium concentration [can do that] $\dot{a} = bc \xi\quad\rightarrow\quad\dot{a}/\tilde{a} = bc\xi/\tilde{a}$
-- [ ] $\| \Xi - \Xi_\mathrm{est} \|_1$ with cutoff and include $0$ noise as case in the plot
 - [ ] explain why minimizing instead of closed form $A^{-1}$ (dimensions blow up, need to use sparse solvers etc) -> we just use the objective function
 - [ ] ~~cross~~ validation: use different noise instances for validation, this suffices as our samples are i.i.d.
 

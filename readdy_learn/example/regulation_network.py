@@ -305,6 +305,42 @@ def smooth(x, window_len=11, window='hanning'):
     y = _np.convolve(w / w.sum(), s, mode='valid')
     return y
 
+def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8):
+
+    if not isinstance(alphas, (list, tuple, _np.ndarray)):
+        alphas = [alphas]
+
+    result = {}
+
+    progress = _pr.Progress(n=samples_per_alpha * len(alphas), label="sample for alphas")
+
+    def worker(args):
+        alpha = args[0]
+        analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
+        for i in range(len(regulation_network.initial_states)):
+            analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
+                                               noise_variance=regulation_network.noise_variance,
+                                               realizations=regulation_network.realisations)
+        regulation_network.compute_gradient_derivatives(analysis, persist=False)
+        reg_rates = analysis.solve(0, alpha=1e-6, l1_ratio=1., tol=1e-16, recompute=True, verbose=True, persist=False)
+        return alpha, reg_rates
+
+    def callback(x):
+        alpha, rates = x
+        if alpha in result.keys():
+            result[alpha].append(rates)
+        else:
+            result[alpha] = [rates]
+        progress.increase()
+
+    with _Pool(processes=njobs) as p:
+        for alpha in alphas:
+            for _ in range(samples_per_alpha):
+                p.apply_async(worker, (alpha,), callback=callback)
+
+    progress.finish()
+
+    return result
 
 def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njobs=8, timestep=6e-3):
     if not isinstance(realizations, (list, tuple, _np.ndarray)):

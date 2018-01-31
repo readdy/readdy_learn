@@ -729,7 +729,7 @@ class ReactionAnalysis(object):
         nstr = "_".join(str(ns) for ns in n)
         return self.fname_prefix + "_solution_{}_".format(nstr) + self.fname_postfix + ".npy"
 
-    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True):
+    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True, persist=True):
         if not isinstance(n, (list, tuple)):
             n = [n]
 
@@ -748,7 +748,8 @@ class ReactionAnalysis(object):
         estimator.fit(None)
         if estimator.success_:
             rates = estimator.coefficients_
-            np.save(self.get_solve_fname(n), rates)
+            if persist:
+                np.save(self.get_solve_fname(n), rates)
             return rates
         else:
             raise ValueError('*_*')
