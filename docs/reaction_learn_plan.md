@@ -1,8 +1,9 @@
 ### Case 1
 - [ ] LSQ fits well but doesnt necessarily recover the rates (varying $\alpha$)
-  - [ ] LSQ fits well
+  - [x] LSQ fits well (qualitatively, see notebook)
   - [x] LSQ doesnt necessarily recover the rates
   - [x] LSQ + L1 can (almost) recover the rates
+  - [ ] describe this in manuscript
 - [ ] use more basis functions (perhaps not needed)
 - See Notebook `the_cases/case_1_no_noise_vary_alpha.ipynb`
 
@@ -17,7 +18,7 @@
 
 ### General
 - [x] Minimization function: use normal Frobenius norm, stack all samples of $X$ and $\dot{X}$
-- [ ] Try representation of reactions as a matrix with dots:
+- [x] Try representation of reactions as a matrix with dots:
   - matrix of species and pairs -> ring for estimated -> dot for reference
   - look at matrices in [1]
 - [ ] Consider rescaling of rates to a unitless or normalized quantity (Mohsen’s idea):
