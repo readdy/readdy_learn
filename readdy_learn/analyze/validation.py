@@ -56,7 +56,7 @@ class Validation(object):
               .format(len(alphas), len(lambdas), len(cutoffs), realizations))
 
         params = _itertools.product(alphas, lambdas, cutoffs)
-        params = [(p[0], p[1], p[2], j + i*realizations) for i, p in enumerate(params)
+        params = [(p[0], p[1], p[2], j + i * realizations) for i, p in enumerate(params)
                   for j, _ in enumerate(range(realizations))]
 
         result = []
@@ -101,3 +101,46 @@ class Validation(object):
     @njobs.setter
     def njobs(self, value: int):
         self._njobs = value
+
+
+def get_n_realizations(result):
+    some_alpha = result[0]['alpha']
+    some_l1_ratio = result[0]['l1_ratio']
+    some_cutoff = result[0]['cutoff']
+    count = 0
+    for r in result:
+        if r['alpha'] == some_alpha and r['l1_ratio'] == some_l1_ratio and r['cutoff'] == some_cutoff:
+            count += 1
+    return count
+
+
+def get_distinct_l1_ratios(result):
+    s = set()
+    for r in result:
+        s.add(r['l1_ratio'])
+    return sorted(list(s))
+
+
+def get_distinct_alphas(result):
+    s = set()
+    for r in result:
+        s.add(r['alpha'])
+    return sorted(list(s))
+
+
+def get_scores(result, alpha, l1_ratio):
+    return [r['score'] for r in result if r['alpha'] == alpha and r['l1_ratio'] == l1_ratio]
+
+
+def plot_validation_result(result):
+    import matplotlib.pyplot as plt
+    l1_ratios = get_distinct_l1_ratios(result)
+    alphas = get_distinct_alphas(result)
+    for l1_ratio in l1_ratios:
+        xs = _np.array(alphas)
+        ys = _np.empty_like(xs)
+        yerr = _np.empty_like(xs)
+        for ix, alpha in enumerate(alphas):
+            ys[ix] = _np.mean(get_scores(result, alpha, l1_ratio))
+            yerr[ix] = _np.std(get_scores(result, alpha, l1_ratio))
+        plt.errorbar(xs, ys, yerr=yerr)
