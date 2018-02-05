@@ -1,3 +1,5 @@
+import time as _time
+
 import numpy as _np
 import itertools as _itertools
 
@@ -17,7 +19,8 @@ class Validation(object):
         self.result_ = None
 
     def _validate(self, args):
-        alpha, l1_ratio, cutoff = args
+        alpha, l1_ratio, cutoff, i = args
+        _np.random.seed(i + int(_time.time()))
         regulation_network = self.regulation_network
         analysis_train = self.regulation_network.generate_analysis_object(None, None)
         for i in range(len(regulation_network.initial_states)):
@@ -49,24 +52,25 @@ class Validation(object):
         assert _np.alltrue(lambdas <= 1), "some lambdas were greater than 1"
         assert _np.alltrue(lambdas >= 0), "some lambdas were smaller than 0"
 
-        print("validating across grid with {} alphas, {} lambdas, {} cutoffs"
-              .format(len(alphas), len(lambdas), len(cutoffs)))
+        print("validating across grid with {} alphas, {} lambdas, {} cutoffs with {} realizations"
+              .format(len(alphas), len(lambdas), len(cutoffs), realizations))
 
         params = _itertools.product(alphas, lambdas, cutoffs)
+        params = [(p[0], p[1], p[2], j + i*realizations) for i, p in enumerate(params)
+                  for j, _ in enumerate(range(realizations))]
 
         result = []
 
         progress = None
         if self.show_progress:
-            progress = _progress.Progress(len(alphas) * len(lambdas) * len(cutoffs) * realizations - 1,
-                                          label="validation")
+            progress = _progress.Progress(len(params),
+                                          label="validation", nstages=1)
 
         with _multiprocessing.Pool(processes=self.njobs) as p:
-            for r in range(realizations):
-                for idx, res in enumerate(p.imap_unordered(self._validate, params, 1)):
-                    result.append(res)
-                    if self.show_progress:
-                        progress.increase()
+            for idx, res in enumerate(p.imap_unordered(self._validate, params, 1)):
+                result.append(res)
+                if self.show_progress:
+                    progress.increase()
 
         if self.show_progress:
             progress.finish()
