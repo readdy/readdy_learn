@@ -315,7 +315,8 @@ class CV(object):
                 result.append(res)
                 if self.show_progress:
                     f.value = idx
-        f.close()
+        if self.show_progress:
+            f.close()
         self.result = result
 
 

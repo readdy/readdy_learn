@@ -729,6 +729,16 @@ class ReactionAnalysis(object):
         nstr = "_".join(str(ns) for ns in n)
         return self.fname_prefix + "_solution_{}_".format(nstr) + self.fname_postfix + ".npy"
 
+    def score(self, test_traj_n, rates):
+        trajs = [self.get_traj(test_traj_n)]
+        estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=0, l1_ratio=0,
+                                                   maxiter=30000, method='SLSQP', verbose=False, approx_jac=False,
+                                                   options={'ftol': 1e-12}, rescale=False,
+                                                   init_xi=np.zeros_like(self.desired_rates),
+                                                   constrained=True)
+        estimator.coefficients_ = rates
+        return estimator.score(range(0, trajs[0].n_time_steps), trajs[0].dcounts_dt)
+
     def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True, persist=True):
         if not isinstance(n, (list, tuple)):
             n = [n]

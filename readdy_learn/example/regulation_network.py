@@ -4,12 +4,42 @@ import readdy_learn.analyze.basis as basis
 import matplotlib.pyplot as plt
 from pathos.multiprocessing import Pool as _Pool
 import readdy_learn.analyze.progress as _pr
+import readdy_learn.analyze.interface as interface
+import readdy_learn.analyze.analyze as _ana
 
 
-class RegulationNetwork(object):
+class RegulationNetwork(interface.AnalysisObjectGenerator):
 
-    @staticmethod
-    def get_desired_rates():
+    def __init__(self):
+        # species DA  MA  A  DB  MB  B  DC  MC  C
+        # ids     0   1   2  3   4   5  6   7   8
+        self.n_species = 9
+        self.species_names = ["DA", "MA", "A", "DB", "MB", "B", "DC", "MC", "C"]
+        self._desired_rates = self.get_desired_rates()
+
+        initial_states = [
+            [1, 0, 0, 1, 0, 0, 1, 0, 0], [1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1, 2, 1, 0, 2.5, 1, 0, 2],
+            [1, 1, 2, 1, 0, 0, 1, 3, 0],
+            [1, 2, 0, 1, 0, 3, 1, 0, 1], [1, 0, 2, 1, 0, 2.5, 1, 0.5, 0]
+        ]
+        self._initial_states = [_np.array([arr]) for arr in initial_states]
+
+        self.ld_derivative_config = {
+            'ld_derivative_atol': 1e-4,
+            'ld_derivative_rtol': None,
+            'ld_derivative_linalg_solver_maxit': 100000,
+            'ld_derivative_alpha': 1e-1,
+            'ld_derivative_solver': 'spsolve',
+            'ld_derivative_linalg_solver_tol': 1e-10,
+            'ld_derivative_use_preconditioner': False
+        }
+
+        self._noise_variance = 1e-2
+        self._target_time = 3.
+        self.realisations = 60
+        self.timestep = 1e-3
+
+    def get_desired_rates(self):
         return _np.array([
             1.8,  # DA -> DA + MA, transcription A
             2.1,  # MA -> MA + A, translation A
@@ -52,35 +82,6 @@ class RegulationNetwork(object):
             # nonsense reactions, protein becomes protein cyclic backward
             0., 0., 0.,
         ])
-
-    def __init__(self):
-        # species DA  MA  A  DB  MB  B  DC  MC  C
-        # ids     0   1   2  3   4   5  6   7   8
-        self.n_species = 9
-        self.species_names = ["DA", "MA", "A", "DB", "MB", "B", "DC", "MC", "C"]
-        self.desired_rates = RegulationNetwork.get_desired_rates()
-
-        initial_states = [
-            [1, 0, 0, 1, 0, 0, 1, 0, 0], [1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1, 2, 1, 0, 2.5, 1, 0, 2],
-            [1, 1, 2, 1, 0, 0, 1, 3, 0],
-            [1, 2, 0, 1, 0, 3, 1, 0, 1], [1, 0, 2, 1, 0, 2.5, 1, 0.5, 0]
-        ]
-        self.initial_states = [_np.array([arr]) for arr in initial_states]
-
-        self.ld_derivative_config = {
-            'ld_derivative_atol': 1e-4,
-            'ld_derivative_rtol': None,
-            'ld_derivative_linalg_solver_maxit': 100000,
-            'ld_derivative_alpha': 1e-1,
-            'ld_derivative_solver': 'spsolve',
-            'ld_derivative_linalg_solver_tol': 1e-10,
-            'ld_derivative_use_preconditioner': False
-        }
-
-        self.noise_variance = 1e-2
-        self.target_time = 3.
-        self.realisations = 60
-        self.timestep = 1e-3
 
     def set_up_system(self, init_state):
         sys = kmc.ReactionDiffusionSystem(diffusivity=self.n_species * [[[0.]]], n_species=self.n_species, n_boxes=1,
@@ -230,16 +231,20 @@ class RegulationNetwork(object):
         analysis.plot_overview(pfs, n_cols=2, n_rows=6, size_factor=1.3)
         plt.show()
 
-    def generate_analysis_object(self, fname_prefix="regulation_network", fname_postfix=""):
-        import readdy_learn.analyze.analyze as ana
-        analysis = ana.ReactionAnalysis(self.get_bfc(), self.desired_rates, self.initial_states, self.set_up_system,
+    def generate_analysis_object(self, fname_prefix=None, fname_postfix=None) -> _ana.ReactionAnalysis:
+        if fname_prefix is None:
+            fname_prefix = "regulation_network"
+        if fname_postfix is None:
+            fname_postfix = ""
+
+        analysis = _ana.ReactionAnalysis(self.get_bfc(), self.desired_rates, self.initial_states, self.set_up_system,
                                         fname_prefix=fname_prefix, fname_postfix=fname_postfix,
                                         n_species=self.n_species, timestep=self.timestep,
                                         ld_derivative_config=self.ld_derivative_config, recompute_traj=False,
                                         species_names=self.species_names)
         return analysis
 
-    def compute_gradient_derivatives(self, analysis, persist=True):
+    def compute_gradient_derivatives(self, analysis: _ana.ReactionAnalysis, persist: bool=True):
         for t in range(len(self.initial_states)):
             traj = analysis.get_traj(t)
             # for sp in [0, 3, 6]:
@@ -253,6 +258,38 @@ class RegulationNetwork(object):
                 traj.separate_derivs[sp] = dx
             if persist:
                 traj.persist()
+
+    @property
+    def desired_rates(self):
+        return self._desired_rates
+
+    @desired_rates.setter
+    def desired_rates(self, value):
+        self._desired_rates = value
+
+    @property
+    def initial_states(self):
+        return self._initial_states
+
+    @initial_states.setter
+    def initial_states(self, value):
+        self._initial_states = value
+
+    @property
+    def target_time(self):
+        return self._target_time
+
+    @target_time.setter
+    def target_time(self, value):
+        self._target_time = value
+
+    @property
+    def noise_variance(self):
+        return self._noise_variance
+
+    @noise_variance.setter
+    def noise_variance(self, value):
+        self._noise_variance = value
 
 
 def smooth(x, window_len=11, window='hanning'):
