@@ -571,9 +571,9 @@ class ReactionAnalysis(object):
         if title is not None:
             f.suptitle(title)
         for i in range(traj.n_species):
-            axes[i].plot(xs, traj.counts[:, i], label='gillespie realization')
+            axes[i].plot(xs, traj.counts[:, i], label='data')
             axes[i].plot(xs, num_solution[:, i], label='estimated rates')
-            axes[i].plot(xs, reference_soln[:, i], 'k--', label='original rates')
+            axes[i].plot(xs, reference_soln[:, i], 'k--', label='reference model')
             axes[i].set_title("Concentration of %s particles over time" % labels[i])
             axes[i].legend()
 
@@ -858,13 +858,13 @@ def plot_cv_results2(cv):
     plt.legend()
 
 
-def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green', figsize=(10, 5)):
+def plot_rates_bar(desired_rates, estimated_rates, color1='blue', color2='green', figsize=(10, 5), label1=None):
     assert len(desired_rates) == len(estimated_rates)
     N = len(desired_rates)
     ind = np.arange(N)
     width = .35
     fig, ax = plt.subplots(figsize=figsize)
-    bar1 = ax.bar(ind, desired_rates, width, color=color1)
+    bar1 = ax.bar(ind, desired_rates, width, color=color1, label=label1)
     bar2 = ax.bar(ind + width, estimated_rates, width, color=color2)
     ax.set_xticks(ind + width / 2)
     ax.legend((bar1[0], bar2[0]), ('Desired', 'Estimated'))
