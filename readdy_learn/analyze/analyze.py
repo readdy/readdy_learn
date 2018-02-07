@@ -762,7 +762,7 @@ class ReactionAnalysis(object):
                 np.save(self.get_solve_fname(n), rates)
             return rates
         else:
-            raise ValueError('*_*')
+            raise ValueError('*_*: {}, {}'.format(estimator.result_.status, estimator.result_.message))
 
     def plot_derivatives(self, traj_n, n_points=None, species=None):
         if species is None:

@@ -36,7 +36,7 @@ class Validation(object):
                                                     realizations=1)
         regulation_network.compute_gradient_derivatives(analysis_test, persist=False)
 
-        tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12]
+        tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
 
         rates = None
         for tol in tolerances_to_try:
