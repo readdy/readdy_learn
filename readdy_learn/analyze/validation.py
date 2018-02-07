@@ -41,7 +41,7 @@ class Validation(object):
         rates = None
         for tol in tolerances_to_try:
             try:
-                rates = analysis_train.solve(0, alpha, l1_ratio, tol=1e-16, constrained=True,
+                rates = analysis_train.solve(0, alpha, l1_ratio, tol=tol, constrained=True,
                                              recompute=True, verbose=False, persist=False)
                 break
             except ValueError:
