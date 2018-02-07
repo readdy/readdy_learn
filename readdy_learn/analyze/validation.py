@@ -45,7 +45,7 @@ class Validation(object):
                                              recompute=True, verbose=False, persist=False)
                 break
             except ValueError:
-                if tol == 1e-12:
+                if tol == tolerances_to_try[len(tolerances_to_try)-1]:
                     raise
         score = analysis_test.score(0, rates)
         return {'alpha': alpha, 'l1_ratio': l1_ratio, 'cutoff': cutoff, 'score': score}
