@@ -36,8 +36,17 @@ class Validation(object):
                                                     realizations=1)
         regulation_network.compute_gradient_derivatives(analysis_test, persist=False)
 
-        rates = analysis_train.solve(0, alpha, l1_ratio, tol=1e-15, constrained=True,
-                                     recompute=True, verbose=False, persist=False)
+        tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12]
+
+        rates = None
+        for tol in tolerances_to_try:
+            try:
+                rates = analysis_train.solve(0, alpha, l1_ratio, tol=1e-16, constrained=True,
+                                             recompute=True, verbose=False, persist=False)
+                break
+            except ValueError:
+                if tol == 1e-12:
+                    raise
         score = analysis_test.score(0, rates)
         return {'alpha': alpha, 'l1_ratio': l1_ratio, 'cutoff': cutoff, 'score': score}
 
