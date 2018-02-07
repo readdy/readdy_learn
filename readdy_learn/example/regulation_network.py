@@ -7,40 +7,7 @@ import readdy_learn.analyze.progress as _pr
 import readdy_learn.analyze.interface as interface
 import readdy_learn.analyze.analyze as _ana
 
-
-class RegulationNetwork(interface.AnalysisObjectGenerator):
-
-    def __init__(self):
-        # species DA  MA  A  DB  MB  B  DC  MC  C
-        # ids     0   1   2  3   4   5  6   7   8
-        self.n_species = 9
-        self.species_names = ["DA", "MA", "A", "DB", "MB", "B", "DC", "MC", "C"]
-        self._desired_rates = self.get_desired_rates()
-
-        initial_states = [
-            [1, 0, 0, 1, 0, 0, 1, 0, 0], [1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1, 2, 1, 0, 2.5, 1, 0, 2],
-            [1, 1, 2, 1, 0, 0, 1, 3, 0],
-            [1, 2, 0, 1, 0, 3, 1, 0, 1], [1, 0, 2, 1, 0, 2.5, 1, 0.5, 0]
-        ]
-        self._initial_states = [_np.array([arr]) for arr in initial_states]
-
-        self.ld_derivative_config = {
-            'ld_derivative_atol': 1e-4,
-            'ld_derivative_rtol': None,
-            'ld_derivative_linalg_solver_maxit': 100000,
-            'ld_derivative_alpha': 1e-1,
-            'ld_derivative_solver': 'spsolve',
-            'ld_derivative_linalg_solver_tol': 1e-10,
-            'ld_derivative_use_preconditioner': False
-        }
-
-        self._noise_variance = 1e-2
-        self._target_time = 3.
-        self.realisations = 60
-        self.timestep = 1e-3
-
-    def get_desired_rates(self):
-        return _np.array([
+DEFAULT_DESIRED_RATES = _np.array([
             1.8,  # DA -> DA + MA, transcription A
             2.1,  # MA -> MA + A, translation A
             1.3,  # MA -> 0, decay
@@ -82,6 +49,40 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
             # nonsense reactions, protein becomes protein cyclic backward
             0., 0., 0.,
         ])
+
+class RegulationNetwork(interface.AnalysisObjectGenerator):
+
+    def __init__(self):
+        # species DA  MA  A  DB  MB  B  DC  MC  C
+        # ids     0   1   2  3   4   5  6   7   8
+        self.n_species = 9
+        self.species_names = ["DA", "MA", "A", "DB", "MB", "B", "DC", "MC", "C"]
+        self._desired_rates = self.get_desired_rates()
+
+        initial_states = [
+            [1, 0, 0, 1, 0, 0, 1, 0, 0], [1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1, 2, 1, 0, 2.5, 1, 0, 2],
+            [1, 1, 2, 1, 0, 0, 1, 3, 0],
+            [1, 2, 0, 1, 0, 3, 1, 0, 1], [1, 0, 2, 1, 0, 2.5, 1, 0.5, 0]
+        ]
+        self._initial_states = [_np.array([arr]) for arr in initial_states]
+
+        self.ld_derivative_config = {
+            'ld_derivative_atol': 1e-4,
+            'ld_derivative_rtol': None,
+            'ld_derivative_linalg_solver_maxit': 100000,
+            'ld_derivative_alpha': 1e-1,
+            'ld_derivative_solver': 'spsolve',
+            'ld_derivative_linalg_solver_tol': 1e-10,
+            'ld_derivative_use_preconditioner': False
+        }
+
+        self._noise_variance = 1e-2
+        self._target_time = 3.
+        self.realisations = 60
+        self.timestep = 1e-3
+
+    def get_desired_rates(self):
+        return DEFAULT_DESIRED_RATES
 
     def set_up_system(self, init_state):
         sys = kmc.ReactionDiffusionSystem(diffusivity=self.n_species * [[[0.]]], n_species=self.n_species, n_boxes=1,
