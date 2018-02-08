@@ -141,7 +141,7 @@ def get_scores(result, alpha, l1_ratio):
     return [r['score'] for r in result if r['alpha'] == alpha and r['l1_ratio'] == l1_ratio]
 
 
-def plot_validation_result(result):
+def plot_validation_result(result, ax=None):
     import matplotlib.pyplot as plt
     l1_ratios = get_distinct_l1_ratios(result)
     alphas = get_distinct_alphas(result)
@@ -152,4 +152,7 @@ def plot_validation_result(result):
         for ix, alpha in enumerate(alphas):
             ys[ix] = _np.mean(get_scores(result, alpha, l1_ratio))
             yerr[ix] = _np.std(get_scores(result, alpha, l1_ratio))
-        plt.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
+        if ax is None:
+            plt.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
+        else:
+            ax.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
