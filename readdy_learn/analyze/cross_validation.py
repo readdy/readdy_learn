@@ -10,7 +10,7 @@ import readdy_learn.analyze.estimator as _estimator
 
 import pathos.multiprocessing as _multiprocessing
 
-from sklearn.model_selection import KFold as _KFold
+from sklearn.model_selection import ShuffleSplit as _ShuffleSplit
 
 _TrajList = _typing.Union[_typing.List[_interface.ReactionLearnDataContainer], _interface.ReactionLearnDataContainer]
 
@@ -81,7 +81,7 @@ class CrossValidation(object):
 
         n_steps_total = self._counts.shape[0]
 
-        splitter = _KFold(n_splits=self.n_splits)
+        splitter = _ShuffleSplit(n_splits=self.n_splits)
         scores = []
         for train, test in splitter.split(_np.arange(n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
