@@ -118,7 +118,7 @@
 	
 	The proposed estimation method is designed to find reaction networks and rates from experimental data. In the following the method is applied to data generated from the example described in Section \ref{sec:generegulation}.
 
-	First it is assumed that the concentration data can be obtained without noise and it is shown that while the minimization problem (\ref{method:minimizationproblem}) without regularization, i.e., $\alpha=0$, yields rates that fit well to the input data, the original rates cannot be recovered while adding $L_1$ regularization improves the situation and the original model \textcolor{red}{almost} can be recovered.
+	First it is assumed that the concentration data can be obtained without noise and it is shown that while the minimization problem (\ref{method:minimizationproblem}) without regularization, i.e., $\alpha=0$, yields rates that fit well to the input data, the original rates cannot be recovered while adding $L_1$ regularization and a certain cutoff improves the situation and the original model can be recovered.
 	
 	In Section \ref{sec:case-2} the example data contains additive Gaussian noise. It is assumed that the initial state can be reproduced exactly and one has several measurements. It is shown that in the limit of small noise one can obtain a good fit and regularization helps in the reliability of the estimated reaction rates.
 	
@@ -137,16 +137,29 @@
 	
 	\begin{figure}
 		\centering
-		\includegraphics[width=.7\textwidth]{./figures_tex/bubbles}
-		\caption{Generating and estimated reaction rates in the situation of Section \ref{sec:case-1}. The y and x axes contain reaction educts and products, respectively. The black squares denote the reactions with which the system was generated and their size indicates the respective reaction rate. The blue circles are least squares estimated reaction rates and the red rings depict rates which were obtained by some $\alpha>0$ in the minimization problem (\ref{method:minimizationproblem}).}
+		\includegraphics[width=.9\textwidth]{./figures_tex/bubbles}
+		\caption{Generating and estimated reaction rates in the situation of Section \ref{sec:case-1}. The y and x axes contain reaction educts and products, respectively. The black outlines denote the reactions with which the system was generated and the area of the circles scales linearly with the reaction rate. The blue circles are least squares estimated reaction rates and the orange circles depict rates which were obtained by some $\alpha>0$ in the minimization problem (\ref{method:minimizationproblem}). If a certain rate was estimated in both cases, two wedges instead of once circle as displayed.}
 		\label{fig:case-1-sparsity-pattern}
 	\end{figure}
 
-	When applying no regularization, one can observe in Figure \ref{fig:case-1-sparsity-pattern} that the sparsity pattern does not match the generating reaction network and the reaction responsible for the decay of $\mathrm{A}$ particles is completely ignored. For a suitable choice of the hyperparameter $\alpha > 0$ one can obtain a sparser solution and also recover the decay reaction as indicated by the red rings in the figure.
+	When applying no regularization, one can observe in Figure \ref{fig:case-1-sparsity-pattern} that the sparsity pattern does not match the generating reaction network and the reaction responsible for the decay of $\mathrm{A}$ particles is completely ignored. For a suitable choice of the hyperparameter $\alpha > 0$ and a cutoff one can obtain a sparser solution and also recover the decay reaction as indicated by the red rings in the figure.
 	
 	\subsection{Multiple measurements at the same noise level}\label{sec:case-2}
+	
+	\begin{itemize}
+		\item Same setup as in Section \ref{sec:case-1}
+		\item Cross validation with a shuffle split and 3 folds
+		\item comparison to LSQ: LSQ unreliable
+		\item in the limit of small noise one gets a good fit
+		\item obtain cutoff in noise free case, compute failure rate (number of false positives and negatives)
+	\end{itemize}
 
 	\subsection{Multiple initial conditions}\label{sec:case-3}
+	
+	\begin{itemize}
+		\item extend situation of Section \ref{sec:case-3} to multiple initial conditions
+		\item compute failure rate
+	\end{itemize}
     
 	\section{Conclusion}
 	\begin{colbox}{F8E0E0}
@@ -164,6 +177,9 @@
 	\bibliography{bibliography.bib}
 	\newpage	
 	\section{Appendix}\label{sec:appendix}
+	\begin{colbox}{F8E0E0}
+		the reaction table needs an update
+	\end{colbox}
 	\begin{table}[h]
 		\centering
 		\scalebox{0.7}{
