@@ -82,7 +82,7 @@ class CrossValidation(object):
 
         n_steps_total = self._counts.shape[0]
 
-        splitter = _ShuffleSplit(n_splits=self.n_splits)
+        splitter = _ShuffleSplit(n_splits=self.n_splits, test_size=.3)
         scores = []
         for train, test in splitter.split(_np.arange(n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
