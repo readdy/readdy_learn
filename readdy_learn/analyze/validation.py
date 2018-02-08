@@ -152,7 +152,10 @@ def plot_validation_result(result, ax=None):
         for ix, alpha in enumerate(alphas):
             ys[ix] = _np.mean(get_scores(result, alpha, l1_ratio))
             yerr[ix] = _np.std(get_scores(result, alpha, l1_ratio))
+        ymin_ix = _np.argmin(ys)
         if ax is None:
             plt.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
+            plt.plot(xs[ymin_ix], ys[ymin_ix], 'o')
         else:
             ax.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
+            ax.plot(xs[ymin_ix], ys[ymin_ix], 'o')
