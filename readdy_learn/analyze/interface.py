@@ -97,6 +97,9 @@ class ReactionAnalysisObject(object):
     def score(self, test_traj_n, rates):
         raise NotImplementedError("please implement me")
 
+    def get_traj(self, n:int):
+        raise NotImplementedError("please implement me")
+
 
 class ReactionLearnDataContainer(object):
 
@@ -178,4 +181,7 @@ class AnalysisObjectGenerator(object):
 
     @desired_rates.setter
     def desired_rates(self, value):
+        raise NotImplementedError("desired rates please")
+
+    def get_bfc(self):
         raise NotImplementedError("desired rates please")

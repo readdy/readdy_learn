@@ -15,6 +15,17 @@ from sklearn.model_selection import KFold as _KFold
 _TrajList = _typing.Union[_typing.List[_interface.ReactionLearnDataContainer], _interface.ReactionLearnDataContainer]
 
 
+def get_cross_validation_object(regulation_network: _interface.AnalysisObjectGenerator):
+    analysis = regulation_network.generate_analysis_object(None, None)
+    for i in range(len(regulation_network.initial_states)):
+        analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
+                                           noise_variance=regulation_network.noise_variance,
+                                           realizations=1)
+    regulation_network.compute_gradient_derivatives(analysis, persist=False)
+    traj = analysis.get_traj(0)
+    cv = CrossValidation([traj], regulation_network.get_bfc())
+    return cv
+
 class CrossValidation(object):
 
     def __init__(self, trajs: _TrajList, bfc, _n_splits: int = 10, show_progress: bool = True, njobs: int = 8):
@@ -75,6 +86,10 @@ class CrossValidation(object):
         for train, test in splitter.split(_np.arange(n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
             test_traj = self._obtain_trajs_subset(test)
+            assert train_traj.n_time_steps == len(train)
+            assert test_traj.n_time_steps == len(test)
+            assert train_traj.dcounts_dt.shape[0] == len(train)
+            assert test_traj.dcounts_dt.shape[0] == len(test)
             tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
 
             rates = None
