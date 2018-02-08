@@ -26,6 +26,7 @@ def get_cross_validation_object(regulation_network: _interface.AnalysisObjectGen
     cv = CrossValidation([traj], regulation_network.get_bfc())
     return cv
 
+
 class CrossValidation(object):
 
     def __init__(self, trajs: _TrajList, bfc, _n_splits: int = 10, show_progress: bool = True, njobs: int = 8):
@@ -76,8 +77,8 @@ class CrossValidation(object):
     def _cross_validate(self, args):
         alpha, l1_ratio, cutoff, i = args
 
-        hash = (i + int(_time.time())) % (2 ** 32 - 1)
-        _np.random.seed(hash)
+        seed = (i + int(_time.time())) % (2 ** 32 - 1)
+        _np.random.seed(seed)
 
         n_steps_total = self._counts.shape[0]
 
