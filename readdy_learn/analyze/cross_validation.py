@@ -12,12 +12,14 @@ import pathos.multiprocessing as _multiprocessing
 
 from sklearn.model_selection import KFold as _KFold
 
-_TrajList = _typing.List[_interface.ReactionLearnDataContainer]
+_TrajList = _typing.Union[_typing.List[_interface.ReactionLearnDataContainer], _interface.ReactionLearnDataContainer]
 
 
 class CrossValidation(object):
 
     def __init__(self, trajs: _TrajList, bfc, _n_splits: int = 10, show_progress: bool = True, njobs: int = 8):
+        if not isinstance(trajs, (list, tuple)):
+            trajs = [trajs]
         self._show_progress = show_progress
         self._njobs = njobs
         self.result_ = None
@@ -71,7 +73,7 @@ class CrossValidation(object):
 
         splitter = _KFold(n_splits=self.n_splits)
         scores = []
-        for train, test in splitter.split(indices[:, _np.newaxis]):
+        for train, test in splitter.split(range(0, n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
             test_traj = self._obtain_trajs_subset(test)
             tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
