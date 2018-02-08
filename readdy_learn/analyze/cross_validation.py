@@ -73,7 +73,7 @@ class CrossValidation(object):
 
         splitter = _KFold(n_splits=self.n_splits)
         scores = []
-        for train, test in splitter.split(range(0, n_steps_total)):
+        for train, test in splitter.split(indices):
             train_traj = self._obtain_trajs_subset(train)
             test_traj = self._obtain_trajs_subset(test)
             tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
