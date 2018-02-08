@@ -37,6 +37,7 @@ from pathos.multiprocessing import Pool
 
 import readdy_learn.analyze.derivative as deriv
 from readdy_learn import analyze_tools as opt
+import readdy_learn.analyze.interface as _interface
 
 def get_count_trajectory(fname, cache_fname=None):
     if cache_fname and os.path.exists(cache_fname):
@@ -83,16 +84,25 @@ class TrajectoryConfig(object):
         self.reactions = ioutils.get_reactions(file_path)
 
 
-class Trajectory(object):
-    def __init__(self, counts, time_step, interpolation_degree=10, verbose=True,
-                 ld_derivative_atol=1e-7, ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3,
-                 ld_derivative_solver='lgmres', ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100,
-                 ld_derivative_linalg_solver_tol=1e-4, ld_derivative_use_preconditioner=True,
-                 fname=None):
+class Trajectory(_interface.ReactionLearnDataContainer):
+    def __init__(self, counts, time_step, interpolation_degree=10, verbose=True, ld_derivative_atol=1e-7,
+                 ld_derivative_rtol=1e-10, ld_derivative_alpha=3e-3, ld_derivative_solver='lgmres',
+                 ld_derivative_maxit=10000, ld_derivative_linalg_solver_maxit=100, ld_derivative_linalg_solver_tol=1e-4,
+                 ld_derivative_use_preconditioner=True, fname=None):
         if isinstance(counts, str):
             fname = counts
             counts = None
-        self._counts = counts
+        if fname is not None and os.path.exists(fname):
+            archive = np.load(fname)
+            counts = archive['counts']
+            super().__init__(counts)
+            for s in range(self.n_species):
+                if 'dcounts_dt_{}'.format(s) in archive.keys():
+                    self._separate_derivs[s] = archive['dcounts_dt_{}'.format(s)]
+            if 'dt' in archive.keys():
+                self._time_step = archive['dt']
+        else:
+            super().__init__(counts)
         self._box_size = [15., 15., 15.]
         self._time_step = time_step
         self._thetas = []
@@ -110,14 +120,7 @@ class Trajectory(object):
                                      'alpha': ld_derivative_alpha, 'solver': ld_derivative_solver,
                                      'maxit': ld_derivative_maxit, 'linalg_solver_maxit': ld_derivative_linalg_solver_maxit,
                                      'tol': ld_derivative_linalg_solver_tol, 'precondition': ld_derivative_use_preconditioner}
-        if fname is not None and os.path.exists(fname):
-            archive = np.load(fname)
-            self._counts = archive['counts']
-            for s in range(self.n_species):
-                if 'dcounts_dt_{}'.format(s) in archive.keys():
-                    self._separate_derivs[s] = archive['dcounts_dt_{}'.format(s)]
-            if 'dt' in archive.keys():
-                self._time_step = archive['dt']
+
 
     @classmethod
     def from_file_name(cls, fname, time_step, interp_degree=10, verbose=True):
@@ -149,10 +152,6 @@ class Trajectory(object):
             print("lasso fitted rate (per volume): {}".format(rate_per_volume))
 
         return rate_chapman, xi, rate_per_volume
-
-    @property
-    def separate_derivs(self):
-        return self._separate_derivs
 
     def persist(self, **kw):
         if self._fname is not None:
@@ -332,21 +331,6 @@ class Trajectory(object):
         self._dirty = True
 
     @property
-    def dcounts_dt(self):
-        if len(self.separate_derivs.keys()) != self.n_species:
-            print("Dont have derivative (got {} but need {})".format(len(self.separate_derivs.keys()), self.n_species))
-            return None
-        deriv = np.empty_like(self.counts)
-        for s in range(self.n_species):
-            deriv[:, s] = self.separate_derivs[s]
-        return deriv
-
-    @dcounts_dt.setter
-    def dcounts_dt(self, value):
-        for s in range(self.n_species):
-            self.separate_derivs[s] = value[:, s]
-
-    @property
     def theta(self):
         return self._large_theta
 
@@ -362,10 +346,6 @@ class Trajectory(object):
     def counts(self, value):
         self._counts = value
         self._dirty = True
-
-    @property
-    def thetas(self):
-        return self._thetas
 
     @property
     def time_step(self):
@@ -421,10 +401,6 @@ class Trajectory(object):
 
         self._thetas.append(fission)
         self._dirty = True
-
-    @property
-    def n_species(self):
-        return self.counts.shape[1]
 
 
 class CVResult(object):

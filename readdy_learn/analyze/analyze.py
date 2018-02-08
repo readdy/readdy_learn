@@ -9,6 +9,7 @@ import readdy_learn.analyze.generate as generate
 import readdy_learn.analyze.tools as tools
 import readdy_learn.analyze.basis as basis
 import readdy_learn.sample_tools as sample_tools
+import readdy_learn.analyze.interface as _interface
 
 
 def estimate_noise_variance(xs, ys):
@@ -125,7 +126,7 @@ def obtain_derivative(traj, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha
         return [], traj
 
 
-class ReactionAnalysis(object):
+class ReactionAnalysis(_interface.ReactionAnalysisObject):
     def __init__(self, bfc, desired_rates, initial_states, set_up_system, recompute=False, recompute_traj=False,
                  fname_prefix="", fname_postfix="", n_species=4, timestep=5e-4,
                  interp_degree='regularized_derivative', ld_derivative_config=None, species_names=None):
