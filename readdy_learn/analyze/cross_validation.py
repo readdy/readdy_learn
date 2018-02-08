@@ -69,7 +69,7 @@ class CrossValidation(object):
         _np.random.seed(hash)
 
         n_steps_total = self._counts.shape[0]
-        print("n_steps_total = {}".format(n_steps_total))
+        print("n_steps_total = {}, counts shape: {}".format(n_steps_total, self._counts.shape))
 
         splitter = _KFold(n_splits=self.n_splits)
         scores = []
