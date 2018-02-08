@@ -24,8 +24,8 @@ class CrossValidation(object):
         self._njobs = njobs
         self.result_ = None
 
-        self._counts = _np.stack([t.counts for t in trajs], axis=0)
-        self._dcounts_dt = _np.stack([t.dcounts_dt for t in trajs], axis=0)
+        self._counts = _np.stack([t.counts for t in trajs], axis=0).squeeze()
+        self._dcounts_dt = _np.stack([t.dcounts_dt for t in trajs], axis=0).squeeze()
         self._n_splits = _n_splits
         self._bfc = bfc
 
@@ -69,7 +69,6 @@ class CrossValidation(object):
         _np.random.seed(hash)
 
         n_steps_total = self._counts.shape[0]
-        print("n_steps_total = {}, counts shape: {}".format(n_steps_total, self._counts.shape))
 
         splitter = _KFold(n_splits=self.n_splits)
         scores = []
