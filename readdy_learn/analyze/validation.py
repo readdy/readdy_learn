@@ -155,7 +155,7 @@ def plot_validation_result(result, ax=None):
         ymin_ix = _np.argmin(ys)
         if ax is None:
             plt.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
-            plt.plot(xs[ymin_ix], ys[ymin_ix], 'o')
+            plt.plot(xs[ymin_ix], ys[ymin_ix], 'o', color='k')
         else:
             ax.errorbar(xs, ys, yerr=yerr, label=r'$\lambda={:.3f}$'.format(l1_ratio))
-            ax.plot(xs[ymin_ix], ys[ymin_ix], 'o')
+            ax.plot(xs[ymin_ix], ys[ymin_ix], 'o', color='k')

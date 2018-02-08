@@ -31,10 +31,11 @@ import numpy as np
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 from readdy_learn.analyze_tools import opt
-import readdy_learn.analyze.derivative as deriv
 from sklearn.linear_model.base import BaseEstimator
-from sklearn.model_selection import KFold, LeaveOneOut
+from sklearn.model_selection import KFold
 from sklearn.model_selection import TimeSeriesSplit
+
+import readdy_learn.analyze.derivative as deriv
 
 _epsilon = np.sqrt(np.finfo(float).eps)
 

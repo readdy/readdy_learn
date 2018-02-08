@@ -338,10 +338,6 @@ class Trajectory(_interface.ReactionLearnDataContainer):
     def counts(self):
         return self._counts
 
-    @property
-    def n_time_steps(self):
-        return self.counts.shape[0]
-
     @counts.setter
     def counts(self, value):
         self._counts = value

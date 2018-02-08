@@ -135,6 +135,10 @@ class ReactionLearnDataContainer(object):
     def n_species(self) -> int:
         return self.counts.shape[1]
 
+    @property
+    def n_time_steps(self):
+        return self.counts.shape[0]
+
 
 class AnalysisObjectGenerator(object):
 
