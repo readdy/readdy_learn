@@ -40,7 +40,6 @@ class CrossValidation(object):
         self._dcounts_dt = _np.stack([t.dcounts_dt for t in trajs], axis=0).squeeze()
         self._n_splits = _n_splits
         self._bfc = bfc
-        self._progress = None
 
     def _obtain_trajs_subset(self, indices: _np.ndarray):
         counts = self._counts[indices]
@@ -105,8 +104,6 @@ class CrossValidation(object):
 
             score = self._score(test_traj, rates)
             scores.append(score)
-            if self._progress is not None:
-                self._progress.increase()
         return {'alpha': alpha, 'l1_ratio': l1_ratio, 'cutoff': cutoff, 'score': scores}
 
     def cross_validate(self, alphas, lambdas, cutoffs=None, realizations: int = 10):
@@ -127,9 +124,9 @@ class CrossValidation(object):
         params = [(p[0], p[1], p[2], j + i * realizations) for i, p in enumerate(params)
                   for j, _ in enumerate(range(realizations))]
 
-        self._progress = None
+        progress = None
         if self.show_progress:
-            self._progress = _progress.Progress(len(params) * self.n_splits,
+            progress = _progress.Progress(len(params) * self.n_splits,
                                                 label="validation", nstages=1)
 
         result = []
@@ -138,11 +135,10 @@ class CrossValidation(object):
             for idx, res in enumerate(p.imap_unordered(self._cross_validate, params, 1)):
                 result.append(res)
                 if self.show_progress:
-                    self._progress.increase()
+                    progress.increase()
 
         if self.show_progress:
-            self._progress.finish()
-            self._progress = None
+            progress.finish()
 
         self.result_ = result
         return result
