@@ -120,7 +120,7 @@ class CrossValidation(object):
         assert _np.alltrue(lambdas >= 0), "some lambdas were smaller than 0"
 
         print("validating across grid with {} alphas, {} lambdas, {} cutoffs with {} realizations"
-              .format(len(alphas), len(lambdas), len(cutoffs), realizations))
+              .format(len(alphas), lambdas.size, len(cutoffs), realizations))
 
         params = _itertools.product(alphas, lambdas, cutoffs)
         params = [(p[0], p[1], p[2], j + i * realizations) for i, p in enumerate(params)
