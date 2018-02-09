@@ -126,7 +126,7 @@ class CrossValidation(object):
 
         progress = None
         if self.show_progress:
-            progress = _progress.Progress(len(params) * self.n_splits,
+            progress = _progress.Progress(len(list(params)) * self.n_splits,
                                           label="validation", nstages=1)
 
         params = [(p[0], p[1], p[2], j + i * realizations, progress) for i, p in enumerate(params)
