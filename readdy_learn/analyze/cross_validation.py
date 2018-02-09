@@ -74,8 +74,8 @@ class CrossValidation(object):
         estimator.coefficients_ = rates
         return estimator.score(range(0, traj.n_time_steps), traj.dcounts_dt)
 
-    def _cross_validate(self, progress, args):
-        alpha, l1_ratio, cutoff, i = args
+    def _cross_validate(self, args):
+        alpha, l1_ratio, cutoff, i, progress = args
 
         seed = (i + int(_time.time())) % (2 ** 32 - 1)
         _np.random.seed(seed)
@@ -123,20 +123,19 @@ class CrossValidation(object):
               .format(len(alphas), lambdas.size, len(cutoffs), realizations))
 
         params = _itertools.product(alphas, lambdas, cutoffs)
-        params = [(p[0], p[1], p[2], j + i * realizations) for i, p in enumerate(params)
-                  for j, _ in enumerate(range(realizations))]
-
-        result = []
 
         progress = None
         if self.show_progress:
             progress = _progress.Progress(len(params) * self.n_splits,
                                           label="validation", nstages=1)
 
-        worker = lambda args: self._cross_validate(progress, args)
+        params = [(p[0], p[1], p[2], j + i * realizations, progress) for i, p in enumerate(params)
+                  for j, _ in enumerate(range(realizations))]
+
+        result = []
 
         with _multiprocessing.Pool(processes=self.njobs) as p:
-            for idx, res in enumerate(p.imap_unordered(worker, params, 1)):
+            for idx, res in enumerate(p.imap_unordered(self._cross_validate, params, 1)):
                 result.append(res)
                 if self.show_progress:
                     progress.increase()
