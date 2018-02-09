@@ -115,6 +115,8 @@ class CrossValidation(object):
             cutoffs = _np.array(cutoffs).squeeze()
         alphas = _np.array(alphas).squeeze()
         lambdas = _np.array(lambdas).squeeze()
+        if lambdas.ndim == 0:
+            lambdas = _np.array(lambdas)
 
         assert _np.alltrue(lambdas <= 1), "some lambdas were greater than 1"
         assert _np.alltrue(lambdas >= 0), "some lambdas were smaller than 0"
