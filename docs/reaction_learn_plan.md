@@ -4,7 +4,7 @@
   - [x] LSQ doesnt necessarily recover the rates
   - [x] LSQ + L1 can (almost) recover the rates
   - [ ] describe this in manuscript
-- [ ] use more basis functions (perhaps not needed)
+- [x] use more basis functions (perhaps not needed)
 - See Notebook `the_cases/case_1_no_noise_vary_alpha.ipynb`
 
 ### Case 2
