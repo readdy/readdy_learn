@@ -22,8 +22,9 @@ def get_cross_validation_object(regulation_network: _interface.AnalysisObjectGen
                                            noise_variance=regulation_network.noise_variance,
                                            realizations=1)
     regulation_network.compute_gradient_derivatives(analysis, persist=False)
-    traj = analysis.get_traj(0)
-    cv = CrossValidation([traj], regulation_network.get_bfc())
+    trajs = [ analysis.get_traj(i) for i in range(len(regulation_network.initial_states)) ]
+    cv = CrossValidation(trajs, regulation_network.get_bfc())
+    #cv = CrossValidation([analysis.get_traj(0)], regulation_network.get_bfc())
     return cv
 
 
@@ -36,8 +37,8 @@ class CrossValidation(object):
         self._njobs = njobs
         self.result_ = None
 
-        self._counts = _np.stack([t.counts for t in trajs], axis=0).squeeze()
-        self._dcounts_dt = _np.stack([t.dcounts_dt for t in trajs], axis=0).squeeze()
+        self._counts = _np.concatenate([t.counts for t in trajs], axis=0).squeeze()
+        self._dcounts_dt = _np.concatenate([t.dcounts_dt for t in trajs], axis=0).squeeze()
         self._n_splits = _n_splits
         self._bfc = bfc
 
@@ -87,6 +88,7 @@ class CrossValidation(object):
         for train, test in splitter.split(_np.arange(n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
             test_traj = self._obtain_trajs_subset(test)
+            print("train_traj.counts.shape {}".format(train_traj.counts.shape))
             assert train_traj.n_time_steps == len(train)
             assert test_traj.n_time_steps == len(test)
             assert train_traj.dcounts_dt.shape[0] == len(train)
