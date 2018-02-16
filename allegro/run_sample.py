@@ -87,25 +87,26 @@ def get_bfc_custom():
     bfc.add_fusion(5, 5, 5)  # 31 B + B -> B
     bfc.add_fusion(8, 8, 8)  # 32 C + C -> C
 
+    # remove the following 12 due to suspicion of numerical issues
     # nonsense reactions, protein eats protein cyclic forward
-    bfc.add_fusion(5, 2, 2)  # 30 B + A -> A
-    bfc.add_fusion(8, 5, 5)  # 31 C + B -> B
-    bfc.add_fusion(2, 8, 8)  # 32 A + C -> C
+    #bfc.add_fusion(5, 2, 2)  # 30 B + A -> A
+    #bfc.add_fusion(8, 5, 5)  # 31 C + B -> B
+    #bfc.add_fusion(2, 8, 8)  # 32 A + C -> C
 
     # nonsense reactions, protein eats protein cyclic backward
-    bfc.add_fusion(8, 2, 2)  # 33 C + A -> A
-    bfc.add_fusion(5, 8, 8)  # 34 B + C -> C
-    bfc.add_fusion(2, 5, 5)  # 35 A + B -> B
+    #bfc.add_fusion(8, 2, 2)  # 33 C + A -> A
+    #bfc.add_fusion(5, 8, 8)  # 34 B + C -> C
+    #bfc.add_fusion(2, 5, 5)  # 35 A + B -> B
 
     # nonsense reactions, protein becomes protein cyclic forward
-    bfc.add_conversion(2, 5)  # 36 A -> B
-    bfc.add_conversion(5, 8)  # 37 B -> C
-    bfc.add_conversion(8, 2)  # 38 C -> A
+    #bfc.add_conversion(2, 5)  # 36 A -> B
+    #bfc.add_conversion(5, 8)  # 37 B -> C
+    #bfc.add_conversion(8, 2)  # 38 C -> A
 
     # nonsense reactions, protein becomes protein cyclic backward
-    bfc.add_conversion(2, 8)  # 39 A -> C
-    bfc.add_conversion(8, 5)  # 40 C -> B
-    bfc.add_conversion(5, 2)  # 41 B -> A
+    #bfc.add_conversion(2, 8)  # 39 A -> C
+    #bfc.add_conversion(8, 5)  # 40 C -> B
+    #bfc.add_conversion(5, 2)  # 41 B -> A
 
     # random reactions
     get_additional_funs(bfc)
