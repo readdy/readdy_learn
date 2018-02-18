@@ -9,7 +9,6 @@ import readdy_learn.analyze.cross_validation as cross_validation
 from readdy_learn.example.regulation_network import RegulationNetwork
 from readdy_learn.example.regulation_network import DEFAULT_DESIRED_RATES
 
-
 """Usage: `python run_sample.py prefix name`"""
 
 parser = argparse.ArgumentParser(description='Run simulation and output data to the given workspace prefix.')
@@ -89,24 +88,24 @@ def get_bfc_custom():
 
     # remove the following 12 due to suspicion of numerical issues
     # nonsense reactions, protein eats protein cyclic forward
-    #bfc.add_fusion(5, 2, 2)  # 30 B + A -> A
-    #bfc.add_fusion(8, 5, 5)  # 31 C + B -> B
-    #bfc.add_fusion(2, 8, 8)  # 32 A + C -> C
+    # bfc.add_fusion(5, 2, 2)  # 30 B + A -> A
+    # bfc.add_fusion(8, 5, 5)  # 31 C + B -> B
+    # bfc.add_fusion(2, 8, 8)  # 32 A + C -> C
 
     # nonsense reactions, protein eats protein cyclic backward
-    #bfc.add_fusion(8, 2, 2)  # 33 C + A -> A
-    #bfc.add_fusion(5, 8, 8)  # 34 B + C -> C
-    #bfc.add_fusion(2, 5, 5)  # 35 A + B -> B
+    # bfc.add_fusion(8, 2, 2)  # 33 C + A -> A
+    # bfc.add_fusion(5, 8, 8)  # 34 B + C -> C
+    # bfc.add_fusion(2, 5, 5)  # 35 A + B -> B
 
     # nonsense reactions, protein becomes protein cyclic forward
-    #bfc.add_conversion(2, 5)  # 36 A -> B
-    #bfc.add_conversion(5, 8)  # 37 B -> C
-    #bfc.add_conversion(8, 2)  # 38 C -> A
+    # bfc.add_conversion(2, 5)  # 36 A -> B
+    # bfc.add_conversion(5, 8)  # 37 B -> C
+    # bfc.add_conversion(8, 2)  # 38 C -> A
 
     # nonsense reactions, protein becomes protein cyclic backward
-    #bfc.add_conversion(2, 8)  # 39 A -> C
-    #bfc.add_conversion(8, 5)  # 40 C -> B
-    #bfc.add_conversion(5, 2)  # 41 B -> A
+    # bfc.add_conversion(2, 8)  # 39 A -> C
+    # bfc.add_conversion(8, 5)  # 40 C -> B
+    # bfc.add_conversion(5, 2)  # 41 B -> A
 
     # random reactions
     get_additional_funs(bfc)
@@ -124,7 +123,50 @@ def get_n_additional_funs():
     return 2
 
 
-desired_rates = np.append(DEFAULT_DESIRED_RATES, np.zeros((get_n_additional_funs(),)))
+DESIRED_RATES = np.array([
+    1.8,  # DA -> DA + MA, transcription A
+    2.1,  # MA -> MA + A, translation A
+    1.3,  # MA -> 0, decay
+    1.5,  # A -> 0, decay
+    2.2,  # DB -> DB + MB, transcription B
+    2.0,  # MB -> MB + B, translation B
+    2.0,  # MB -> 0, decay
+    2.5,  # B -> 0, decay
+    3.2,  # DC -> DC + MC, transcription C
+    3.0,  # MC -> MC + C, translation C
+    2.3,  # MC -> 0, decay
+    2.5,  # C -> 0, decay
+    # self regulation
+    0.,  # MA + A -> A, A regulates A
+    0.,  # MB + B -> B, B regulates B
+    0.,  # MC + C -> C, C regulates C
+    # cyclic forward
+    0.,  # MB + A -> A, A regulates B
+    0.,  # MC + B -> B, B regulates C
+    0.,  # MA + C -> C, C regulates A
+    # cyclic backward
+    6.,  # MC + A -> A, A regulates C
+    4.,  # MB + C -> C, C regulates B
+    3.,  # MA + B -> B, B regulates A
+    # nonsense reactions, mRNA eats protein self
+    0., 0., 0.,
+    # nonsense reactions, mRNA eats protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, mRNA eats protein  cyclic backward
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein self
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein cyclic forward
+    # 0., 0., 0.,
+    # nonsense reactions, protein eats protein cyclic backward
+    # 0., 0., 0.,
+    # nonsense reactions, protein becomes protein cyclic forward
+    # 0., 0., 0.,
+    # nonsense reactions, protein becomes protein cyclic backward
+    # 0., 0., 0.,
+])
+
+desired_rates = np.append(DESIRED_RATES, np.zeros((get_n_additional_funs(),)))
 
 
 def get_regulation_network(timestep, noise=0.):
@@ -136,7 +178,7 @@ def get_regulation_network(timestep, noise=0.):
     regulation_network.get_bfc = get_bfc_custom
     regulation_network.desired_rates = desired_rates
     regulation_network.initial_states = [regulation_network.initial_states[1], regulation_network.initial_states[2]]
-    #regulation_network.initial_states = [regulation_network.initial_states[1]]
+    # regulation_network.initial_states = [regulation_network.initial_states[1]]
     analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
     for i in range(len(regulation_network.initial_states)):
         analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
