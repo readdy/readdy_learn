@@ -740,7 +740,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         estimator.coefficients_ = rates
         return estimator.score(range(0, trajs[0].n_time_steps), trajs[0].dcounts_dt)
 
-    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True, persist=True):
+    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True, persist=True, concatenated=True):
         if not isinstance(n, (list, tuple)):
             n = [n]
 
@@ -748,7 +748,13 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
             if not self.recompute and os.path.exists(self.get_solve_fname(n)):
                 return np.load(self.get_solve_fname(n))
 
-        trajs = [self.get_traj(x) for x in n]
+        if concatenated:
+            counts = np.concatenate([self.get_traj(x).counts for x in n], axis=0).squeeze()
+            dcounts_dt = np.concatenate([self.get_traj(x).dcounts_dt for x in n], axis=0).squeeze()
+            trajs = _interface.ReactionLearnDataContainer(counts)
+            trajs.dcounts_dt = dcounts_dt
+        else:
+            trajs = [self.get_traj(x) for x in n]
 
         estimator = rlas.ReaDDyElasticNetEstimator(trajs, self._bfc, alpha=alpha, l1_ratio=l1_ratio,
                                                    maxiter=30000, method='SLSQP', verbose=verbose, approx_jac=False,
