@@ -11,6 +11,7 @@ import readdy_learn.analyze.estimator as _estimator
 import pathos.multiprocessing as _multiprocessing
 
 from sklearn.model_selection import ShuffleSplit as _ShuffleSplit
+from sklearn.model_selection import KFold as _KFold
 
 _TrajList = _typing.Union[_typing.List[_interface.ReactionLearnDataContainer], _interface.ReactionLearnDataContainer]
 
@@ -30,7 +31,8 @@ def get_cross_validation_object(regulation_network: _interface.AnalysisObjectGen
 
 class CrossValidation(object):
 
-    def __init__(self, trajs: _TrajList, bfc, _n_splits: int = 10, show_progress: bool = True, njobs: int = 8):
+    def __init__(self, trajs: _TrajList, bfc, _n_splits: int = 10, show_progress: bool = True, njobs: int = 8,
+                 splitter: str="shuffle"):
         if not isinstance(trajs, (list, tuple)):
             trajs = [trajs]
         self._show_progress = show_progress
@@ -41,6 +43,7 @@ class CrossValidation(object):
         self._dcounts_dt = _np.concatenate([t.dcounts_dt for t in trajs], axis=0).squeeze()
         self._n_splits = _n_splits
         self._bfc = bfc
+        self._splitter = splitter
 
     def _obtain_trajs_subset(self, indices: _np.ndarray):
         counts = self._counts[indices]
@@ -83,7 +86,10 @@ class CrossValidation(object):
 
         n_steps_total = self._counts.shape[0]
 
-        splitter = _ShuffleSplit(n_splits=self.n_splits, test_size=.5)
+        if self._splitter == 'shuffle':
+            splitter = _ShuffleSplit(n_splits=self.n_splits, test_size=.5)
+        else:
+            splitter = _KFold(n_splits=self.n_splits)
         scores = []
         for train, test in splitter.split(_np.arange(n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
