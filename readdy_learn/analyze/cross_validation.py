@@ -94,7 +94,6 @@ class CrossValidation(object):
         for train, test in splitter.split(_np.arange(n_steps_total)):
             train_traj = self._obtain_trajs_subset(train)
             test_traj = self._obtain_trajs_subset(test)
-            print("train_traj.counts.shape {}".format(train_traj.counts.shape))
             assert train_traj.n_time_steps == len(train)
             assert test_traj.n_time_steps == len(test)
             assert train_traj.dcounts_dt.shape[0] == len(train)
@@ -173,3 +172,11 @@ class CrossValidation(object):
     @n_splits.setter
     def n_splits(self, value: int):
         self._n_splits = value
+
+    @property
+    def splitter(self):
+        return self._splitter
+
+    @splitter.setter
+    def splitter(self, value):
+        self._splitter = value
