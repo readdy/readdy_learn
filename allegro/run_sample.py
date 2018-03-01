@@ -86,26 +86,25 @@ def get_bfc_custom():
     bfc.add_fusion(5, 5, 5)  # 31 B + B -> B
     bfc.add_fusion(8, 8, 8)  # 32 C + C -> C
 
-    # remove the following 12 due to suspicion of numerical issues
     # nonsense reactions, protein eats protein cyclic forward
-    # bfc.add_fusion(5, 2, 2)  # 30 B + A -> A
-    # bfc.add_fusion(8, 5, 5)  # 31 C + B -> B
-    # bfc.add_fusion(2, 8, 8)  # 32 A + C -> C
+    bfc.add_fusion(5, 2, 2)  # 30 B + A -> A
+    bfc.add_fusion(8, 5, 5)  # 31 C + B -> B
+    bfc.add_fusion(2, 8, 8)  # 32 A + C -> C
 
     # nonsense reactions, protein eats protein cyclic backward
-    # bfc.add_fusion(8, 2, 2)  # 33 C + A -> A
-    # bfc.add_fusion(5, 8, 8)  # 34 B + C -> C
-    # bfc.add_fusion(2, 5, 5)  # 35 A + B -> B
+    bfc.add_fusion(8, 2, 2)  # 33 C + A -> A
+    bfc.add_fusion(5, 8, 8)  # 34 B + C -> C
+    bfc.add_fusion(2, 5, 5)  # 35 A + B -> B
 
     # nonsense reactions, protein becomes protein cyclic forward
-    # bfc.add_conversion(2, 5)  # 36 A -> B
-    # bfc.add_conversion(5, 8)  # 37 B -> C
-    # bfc.add_conversion(8, 2)  # 38 C -> A
+    bfc.add_conversion(2, 5)  # 36 A -> B
+    bfc.add_conversion(5, 8)  # 37 B -> C
+    bfc.add_conversion(8, 2)  # 38 C -> A
 
     # nonsense reactions, protein becomes protein cyclic backward
-    # bfc.add_conversion(2, 8)  # 39 A -> C
-    # bfc.add_conversion(8, 5)  # 40 C -> B
-    # bfc.add_conversion(5, 2)  # 41 B -> A
+    bfc.add_conversion(2, 8)  # 39 A -> C
+    bfc.add_conversion(8, 5)  # 40 C -> B
+    bfc.add_conversion(5, 2)  # 41 B -> A
 
     # random reactions
     get_additional_funs(bfc)
@@ -157,19 +156,19 @@ DESIRED_RATES = np.array([
     # nonsense reactions, protein eats protein self
     0., 0., 0.,
     # nonsense reactions, protein eats protein cyclic forward
-    # 0., 0., 0.,
+    0., 0., 0.,
     # nonsense reactions, protein eats protein cyclic backward
-    # 0., 0., 0.,
+    0., 0., 0.,
     # nonsense reactions, protein becomes protein cyclic forward
-    # 0., 0., 0.,
+    0., 0., 0.,
     # nonsense reactions, protein becomes protein cyclic backward
-    # 0., 0., 0.,
+    0., 0., 0.,
 ])
 
 desired_rates = np.append(DESIRED_RATES, np.zeros((get_n_additional_funs(),)))
 
 
-def get_regulation_network(timestep, noise=0.):
+def get_regulation_network(timestep, noise=0., target_time=3.):
     print("obtaining regulation network with dt = {} and noise variance {}".format(timestep, noise))
     regulation_network = RegulationNetwork()
     regulation_network.timestep = timestep
@@ -177,8 +176,8 @@ def get_regulation_network(timestep, noise=0.):
     regulation_network.noise_variance = noise
     regulation_network.get_bfc = get_bfc_custom
     regulation_network.desired_rates = desired_rates
-    regulation_network.initial_states = [regulation_network.initial_states[1], regulation_network.initial_states[2]]
-    # regulation_network.initial_states = [regulation_network.initial_states[1]]
+    regulation_network.target_time = target_time
+    regulation_network.initial_states = [regulation_network.initial_states[1]]
     analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
     for i in range(len(regulation_network.initial_states)):
         analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
@@ -189,10 +188,11 @@ def get_regulation_network(timestep, noise=0.):
     return regulation_network, analysis
 
 
-def fun(alpha=1., dt=1., noise=1., n_splits=15):
-    print("run fun with alpha={}, dt={}, noise={}, n_splits={}".format(alpha, dt, noise, n_splits))
-    regulation_network = get_regulation_network(dt, noise)[0]
+def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3.):
+    print("run fun with splitter='kfold', alpha={}, dt={}, noise={}, n_splits={}".format(alpha, dt, noise, n_splits))
+    regulation_network = get_regulation_network(dt, noise=noise, target_time=target_time)[0]
     cv = cross_validation.get_cross_validation_object(regulation_network)
+    cv.splitter = 'kfold'
     cv.n_splits = n_splits
     cv.njobs = 1
     cv.show_progress = True
