@@ -168,16 +168,20 @@ DESIRED_RATES = np.array([
 desired_rates = np.append(DESIRED_RATES, np.zeros((get_n_additional_funs(),)))
 
 
-def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisations=None):
+def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisations=None, scale=1.):
+    assert np.floor(scale) == scale
     print("obtaining regulation network with dt = {} and noise variance {}".format(timestep, noise))
+    timestep /= scale
+    #target_time /= scale
     regulation_network = RegulationNetwork()
     regulation_network.timestep = timestep
     regulation_network.realisations = 1.
     regulation_network.noise_variance = noise
     regulation_network.get_bfc = get_bfc_custom
     regulation_network.desired_rates = desired_rates
+    regulation_network.desired_rates[18:21] /= scale
     regulation_network.target_time = target_time
-    regulation_network.initial_states = [regulation_network.initial_states[1]]
+    regulation_network.initial_states = [[regulation_network.initial_states[1][i]*scale for i in range(len(regulation_network.initial_states[0]))]]
     analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
     if gillespie_realisations is not None:
         for i in range(len(regulation_network.initial_states)):
@@ -187,25 +191,54 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
             analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
                                                noise_variance=regulation_network.noise_variance,
                                                realizations=regulation_network.realisations)
+
+    for traj in analysis.trajs:
+        traj.counts = traj.counts[::int(scale)]/scale
+        traj.time_step = timestep * scale
+    regulation_network.desired_rates[18:21] *= scale
+    regulation_network.timestep *= scale
+    regulation_network.initial_states = [
+        [regulation_network.initial_states[0][i] / scale for i in range(len(regulation_network.initial_states[0]))]]
     regulation_network.compute_gradient_derivatives(analysis, persist=False)
     return regulation_network, analysis
 
 
 def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3., gillespie_realisations=None):
     print("run fun with splitter='kfold', alpha={}, dt={}, noise={}, n_splits={}, target_time={}, gillespie_realisations={}".format(alpha, dt, noise, n_splits, target_time, gillespie_realisations))
-    regulation_network, analysis = get_regulation_network(dt, noise=noise, target_time=target_time, gillespie_realisations=gillespie_realisations)
+    regulation_network, analysis = get_regulation_network(dt, noise=noise, target_time=target_time, gillespie_realisations=None)
     cv = cross_validation.get_cross_validation_object(regulation_network)
     cv.splitter = 'kfold'
     cv.n_splits = n_splits
     cv.njobs = 1
     cv.show_progress = True
     l1_ratios = np.array([1.])  # np.linspace(0, 1, num=5)
-    result = cv.cross_validate(alpha, l1_ratios, realizations=1)
+    #result = cv.cross_validate(alpha, l1_ratios, realizations=1)
     import matplotlib.pyplot as plt
-    # analysis.plot_derivatives(0)
     plt.plot(analysis.get_traj(0).counts)
     plt.show()
-    return result
+    analysis.plot_derivatives(0)
+    plt.show()
+    # @todo cleanup
+    plt.gca().set_color_cycle(None)
+    regulation_network, analysis = get_regulation_network(dt, noise=noise, target_time=target_time,
+                                                          gillespie_realisations=100, scale=100)
+    cv = cross_validation.get_cross_validation_object(regulation_network)
+    cv.splitter = 'kfold'
+    cv.n_splits = n_splits
+    cv.njobs = 1
+    cv.show_progress = True
+    l1_ratios = np.array([1.])  # np.linspace(0, 1, num=5)
+    # result = cv.cross_validate(alpha, l1_ratios, realizations=1)
+    import matplotlib.pyplot as plt
+
+    plt.plot(analysis.get_traj(0).counts)
+
+    #return result
+    plt.show()
+
+    analysis.plot_derivatives(0)
+    plt.show()
+    return None
 
 
 if __name__ == '__main__':
