@@ -49,15 +49,20 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
         return xs[::supersample], avgcounts[::supersample]
 
 
-def generate_kmc_counts(set_up_system, n_kmc_steps, timestep):
+def generate_kmc_counts(set_up_system, target_time, timestep):
     sys = set_up_system()
-    sys.simulate(n_kmc_steps)
+    sys.simulate(target_time=target_time)
     counts, times, _ = sys.get_counts_config(timestep=timestep)
     return times, counts
 
 
-def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realizations, njobs=8):
-    params = [(set_up_system, n_kmc_steps, timestep) for _ in range(n_realizations)]
+def generate_averaged_kmc_counts(set_up_system, target_time, timestep, n_realizations, njobs=8):
+    import logging
+    import pynumtools.kmc as kmc
+
+    prevlevel = kmc.log.getEffectiveLevel()
+    kmc.log.setLevel(logging.WARNING)
+    params = [(set_up_system, target_time, timestep) for _ in range(n_realizations)]
     progress = _pr.Progress(n=n_realizations, label="generate averaged kmc")
     try:
         def generate_wrapper(args):
@@ -103,6 +108,7 @@ def generate_averaged_kmc_counts(set_up_system, n_kmc_steps, timestep, n_realiza
         return times, avgcounts
     finally:
         progress.finish()
+        kmc.log.setLevel(prevlevel)
 
 
 def generate_kmc_events(set_up_system, n_kmc_steps):

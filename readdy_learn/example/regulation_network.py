@@ -252,11 +252,19 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
             #    dx = _np.zeros_like(traj.counts[:, sp])
             #    print("species {} dx.shape {}".format(sp, dx.shape))
             #    traj.separate_derivs[sp] = dx
+            times = traj.times
             for sp in [1, 2, 4, 5, 7, 8, 0, 3, 6]:
                 x = traj.counts[:, sp]
                 dt = traj.time_step
-                dx = _np.gradient(x) / dt
-                traj.separate_derivs[sp] = dx
+
+                indices = 1 + _np.where(x[:-1] != x[1:])[0]
+                indices = _np.insert(indices, 0, 0)
+
+                interpolated = _np.interp(times, times[indices], x[indices])
+                interpolated = _np.gradient(interpolated) / dt
+
+                # dx = _np.gradient(x) / dt
+                traj.separate_derivs[sp] = interpolated
             if persist:
                 traj.persist()
 

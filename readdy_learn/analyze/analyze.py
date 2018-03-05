@@ -452,7 +452,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
             a, _ = obtain_derivative(traj, alpha=alphas, maxit=maxit)
             self._best_alphas[ix] = a
 
-    def generate_or_load_traj_gillespie(self, n, n_steps=250, n_realizations=160,
+    def generate_or_load_traj_gillespie(self, n, target_time=3., n_realizations=160,
                                         update_and_persist=False, njobs=8):
         assert n < len(self._initial_states)
         init = self._initial_states[n]
@@ -460,7 +460,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         if self._recompute_traj or not os.path.exists(fname):
             if os.path.exists(fname):
                 os.remove(fname)
-            _, counts = generate.generate_averaged_kmc_counts(lambda: self._set_up_system(init), n_steps,
+            _, counts = generate.generate_averaged_kmc_counts(lambda: self._set_up_system(init), target_time,
                                                               self._timestep,
                                                               n_realizations=n_realizations, njobs=njobs)
         else:
@@ -470,6 +470,10 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         if update_and_persist:
             traj.update()
             traj.persist()
+
+        while len(self.trajs) < n + 1:
+            self.trajs.append(None)
+        self.trajs[n] = traj
         return traj
 
     def generate_or_load_traj_lma(self, n, target_time, update_and_persist=False, noise_variance=0, realizations=1):
