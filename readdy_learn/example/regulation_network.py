@@ -6,6 +6,8 @@ from pathos.multiprocessing import Pool as _Pool
 import readdy_learn.analyze.progress as _pr
 import readdy_learn.analyze.interface as interface
 import readdy_learn.analyze.analyze as _ana
+from pynumtools.finite_differences import fd_coefficients as _fd_coeffs
+from pynumtools.util import sliding_window as _sliding_window
 
 DEFAULT_DESIRED_RATES = _np.array([
             1.8,  # DA -> DA + MA, transcription A
@@ -253,6 +255,8 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
             #    print("species {} dx.shape {}".format(sp, dx.shape))
             #    traj.separate_derivs[sp] = dx
             times = traj.times
+
+            wwidth = 4
             for sp in [1, 2, 4, 5, 7, 8, 0, 3, 6]:
                 x = traj.counts[:, sp]
                 dt = traj.time_step
@@ -260,11 +264,25 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
                 indices = 1 + _np.where(x[:-1] != x[1:])[0]
                 indices = _np.insert(indices, 0, 0)
 
-                interpolated = _np.interp(times, times[indices], x[indices])
-                interpolated = _np.gradient(interpolated) / dt
+                if len(_np.atleast_1d(indices.squeeze())) == 1:
+                    indices = _np.arange(2*wwidth+1, dtype=int)
+
+                unique_times, unique_counts = times[indices].squeeze(), x[indices].squeeze()
+                unique_deriv = _np.empty_like(unique_counts)
+
+                for ix, (wx, wy) in enumerate(zip(_sliding_window(_np.atleast_1d(unique_times), width=wwidth, fixed_width=False),
+                                                  _sliding_window(_np.atleast_1d(unique_counts), width=wwidth, fixed_width=False))):
+                    x = unique_times[ix]
+                    coeff = _fd_coeffs(x, wx, k=1)
+                    unique_deriv[ix] = coeff.dot(wy)
+
+                interpolated = _np.interp(times, unique_times, unique_deriv)
+                # interpolated = _np.gradient(interpolated) / dt
 
                 # dx = _np.gradient(x) / dt
-                traj.separate_derivs[sp] = interpolated
+                traj.separate_derivs[sp] = interpolated #interpolated
+
+
             if persist:
                 traj.persist()
 
