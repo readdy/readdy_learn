@@ -1,58 +1,59 @@
 import numpy as _np
-import pynumtools.kmc as kmc
-import readdy_learn.analyze.basis as basis
+import pynumtools.kmc as _kmc
+import readdy_learn.analyze.basis as _basis
 import matplotlib.pyplot as plt
 from pathos.multiprocessing import Pool as _Pool
 import readdy_learn.analyze.progress as _pr
-import readdy_learn.analyze.interface as interface
+import readdy_learn.analyze.interface as _interface
 import readdy_learn.analyze.analyze as _ana
 from pynumtools.finite_differences import fd_coefficients as _fd_coeffs
 from pynumtools.util import sliding_window as _sliding_window
 
 DEFAULT_DESIRED_RATES = _np.array([
-            1.8,  # DA -> DA + MA, transcription A
-            2.1,  # MA -> MA + A, translation A
-            1.3,  # MA -> 0, decay
-            1.5,  # A -> 0, decay
-            2.2,  # DB -> DB + MB, transcription B
-            2.0,  # MB -> MB + B, translation B
-            2.0,  # MB -> 0, decay
-            2.5,  # B -> 0, decay
-            3.2,  # DC -> DC + MC, transcription C
-            3.0,  # MC -> MC + C, translation C
-            2.3,  # MC -> 0, decay
-            2.5,  # C -> 0, decay
-            # self regulation
-            0.,  # MA + A -> A, A regulates A
-            0.,  # MB + B -> B, B regulates B
-            0.,  # MC + C -> C, C regulates C
-            # cyclic forward
-            0.,  # MB + A -> A, A regulates B
-            0.,  # MC + B -> B, B regulates C
-            0.,  # MA + C -> C, C regulates A
-            # cyclic backward
-            6.,  # MC + A -> A, A regulates C
-            4.,  # MB + C -> C, C regulates B
-            3.,  # MA + B -> B, B regulates A
-            # nonsense reactions, mRNA eats protein self
-            0., 0., 0.,
-            # nonsense reactions, mRNA eats protein cyclic forward
-            0., 0., 0.,
-            # nonsense reactions, mRNA eats protein  cyclic backward
-            0., 0., 0.,
-            # nonsense reactions, protein eats protein self
-            0., 0., 0.,
-            # nonsense reactions, protein eats protein cyclic forward
-            0., 0., 0.,
-            # nonsense reactions, protein eats protein cyclic backward
-            0., 0., 0.,
-            # nonsense reactions, protein becomes protein cyclic forward
-            0., 0., 0.,
-            # nonsense reactions, protein becomes protein cyclic backward
-            0., 0., 0.,
-        ])
+    1.8,  # DA -> DA + MA, transcription A
+    2.1,  # MA -> MA + A, translation A
+    1.3,  # MA -> 0, decay
+    1.5,  # A -> 0, decay
+    2.2,  # DB -> DB + MB, transcription B
+    2.0,  # MB -> MB + B, translation B
+    2.0,  # MB -> 0, decay
+    2.5,  # B -> 0, decay
+    3.2,  # DC -> DC + MC, transcription C
+    3.0,  # MC -> MC + C, translation C
+    2.3,  # MC -> 0, decay
+    2.5,  # C -> 0, decay
+    # self regulation
+    0.,  # MA + A -> A, A regulates A
+    0.,  # MB + B -> B, B regulates B
+    0.,  # MC + C -> C, C regulates C
+    # cyclic forward
+    0.,  # MB + A -> A, A regulates B
+    0.,  # MC + B -> B, B regulates C
+    0.,  # MA + C -> C, C regulates A
+    # cyclic backward
+    6.,  # MC + A -> A, A regulates C
+    4.,  # MB + C -> C, C regulates B
+    3.,  # MA + B -> B, B regulates A
+    # nonsense reactions, mRNA eats protein self
+    0., 0., 0.,
+    # nonsense reactions, mRNA eats protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, mRNA eats protein  cyclic backward
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein self
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein cyclic backward
+    0., 0., 0.,
+    # nonsense reactions, protein becomes protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, protein becomes protein cyclic backward
+    0., 0., 0.,
+])
 
-class RegulationNetwork(interface.AnalysisObjectGenerator):
+
+class RegulationNetwork(_interface.AnalysisObjectGenerator):
 
     def __init__(self):
         # species DA  MA  A  DB  MB  B  DC  MC  C
@@ -87,8 +88,8 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
         return DEFAULT_DESIRED_RATES
 
     def set_up_system(self, init_state):
-        sys = kmc.ReactionDiffusionSystem(diffusivity=self.n_species * [[[0.]]], n_species=self.n_species, n_boxes=1,
-                                          init_state=init_state, species_names=self.species_names)
+        sys = _kmc.ReactionDiffusionSystem(diffusivity=self.n_species * [[[0.]]], n_species=self.n_species, n_boxes=1,
+                                           init_state=init_state, species_names=self.species_names)
         # usual stuff A
         sys.add_fission("DA", "DA", "MA", _np.array([self.desired_rates[0]]))  # DA -> DA + MA transcription
         sys.add_fission("MA", "MA", "A", _np.array([self.desired_rates[1]]))  # MA -> MA + A translation
@@ -124,7 +125,7 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
     def get_bfc(self):
         # species DA  MA  A  DB  MB  B  DC  MC  C
         # ids     0   1   2  3   4   5  6   7   8
-        bfc = basis.BasisFunctionConfiguration(self.n_species)
+        bfc = _basis.BasisFunctionConfiguration(self.n_species)
         # usual stuff A
         bfc.add_fission(0, 0, 1)  # 0   DA -> DA + MA, transcription A
         bfc.add_fission(1, 1, 2)  # 1   MA -> MA + A, translation A
@@ -239,15 +240,21 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
             fname_prefix = "regulation_network"
         if fname_postfix is None:
             fname_postfix = ""
-
         analysis = _ana.ReactionAnalysis(self.get_bfc(), self.desired_rates, self.initial_states, self.set_up_system,
-                                        fname_prefix=fname_prefix, fname_postfix=fname_postfix,
-                                        n_species=self.n_species, timestep=self.timestep,
-                                        ld_derivative_config=self.ld_derivative_config, recompute_traj=False,
-                                        species_names=self.species_names)
+                                         fname_prefix=fname_prefix, fname_postfix=fname_postfix,
+                                         n_species=self.n_species, timestep=self.timestep,
+                                         ld_derivative_config=self.ld_derivative_config, recompute_traj=False,
+                                         species_names=self.species_names)
         return analysis
 
-    def compute_gradient_derivatives(self, analysis: _ana.ReactionAnalysis, persist: bool=True):
+    def compute_tv_derivatives(self, analysis: _ana.ReactionAnalysis, alphas: list = _np.linspace(1e-7, 1e-1, num=10),
+                               alpha_search_depth: int = 3, atol: float = 1e-10):
+        for t in range(len(self.initial_states)):
+            traj = analysis.get_traj(t)
+            _ana.obtain_derivative(traj, alpha=alphas, atol=atol, alpha_search_depth=alpha_search_depth, override=True,
+                                   x0=self.initial_states[t])
+
+    def compute_gradient_derivatives(self, analysis: _ana.ReactionAnalysis, persist: bool = True, wwidth=None):
         for t in range(len(self.initial_states)):
             traj = analysis.get_traj(t)
             # for sp in [0, 3, 6]:
@@ -256,7 +263,6 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
             #    traj.separate_derivs[sp] = dx
             times = traj.times
 
-            wwidth = 4
             for sp in [1, 2, 4, 5, 7, 8, 0, 3, 6]:
                 x = traj.counts[:, sp]
                 dt = traj.time_step
@@ -264,24 +270,27 @@ class RegulationNetwork(interface.AnalysisObjectGenerator):
                 indices = 1 + _np.where(x[:-1] != x[1:])[0]
                 indices = _np.insert(indices, 0, 0)
 
-                if len(_np.atleast_1d(indices.squeeze())) == 1:
-                    indices = _np.arange(2*wwidth+1, dtype=int)
+                if wwidth is not None:
+                    if len(_np.atleast_1d(indices.squeeze())) == 1:
+                        indices = _np.arange(2 * wwidth + 1, dtype=int)
 
-                unique_times, unique_counts = times[indices].squeeze(), x[indices].squeeze()
-                unique_deriv = _np.empty_like(unique_counts)
+                    unique_times, unique_counts = times[indices].squeeze(), x[indices].squeeze()
+                    unique_deriv = _np.empty_like(unique_counts)
 
-                for ix, (wx, wy) in enumerate(zip(_sliding_window(_np.atleast_1d(unique_times), width=wwidth, fixed_width=False),
-                                                  _sliding_window(_np.atleast_1d(unique_counts), width=wwidth, fixed_width=False))):
-                    x = unique_times[ix]
-                    coeff = _fd_coeffs(x, wx, k=1)
-                    unique_deriv[ix] = coeff.dot(wy)
+                    for ix, (wx, wy) in enumerate(
+                            zip(_sliding_window(_np.atleast_1d(unique_times), width=wwidth, fixed_width=False),
+                                _sliding_window(_np.atleast_1d(unique_counts), width=wwidth, fixed_width=False))):
+                        x = unique_times[ix]
+                        coeff = _fd_coeffs(x, wx, k=1)
+                        unique_deriv[ix] = coeff.dot(wy)
 
-                interpolated = _np.interp(times, unique_times, unique_deriv)
-                # interpolated = _np.gradient(interpolated) / dt
+                    interpolated = _np.interp(times, unique_times, unique_deriv)
+                    traj.separate_derivs[sp] = interpolated
+                else:
+                    interpolated = _np.interp(times, times[indices], x[indices])
+                    interpolated = _np.gradient(interpolated) / dt
 
-                # dx = _np.gradient(x) / dt
-                traj.separate_derivs[sp] = interpolated #interpolated
-
+                    traj.separate_derivs[sp] = interpolated
 
             if persist:
                 traj.persist()

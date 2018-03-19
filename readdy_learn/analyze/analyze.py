@@ -539,7 +539,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         traj = self.get_traj(n)
         xs = traj.times
         num_solution = np.array(odeint(fun, self.initial_states[n].squeeze(), xs)).squeeze()
-        reference_soln = np.array(odeint(fun_reference, self.initial_states[n].squeeze(), xs)).squeeze()
+        reference_soln = np.array(odeint(fun_reference, np.array(self.initial_states[n]).squeeze(), xs)).squeeze()
 
         err = 0.
         for i in range(traj.n_species):
@@ -569,8 +569,8 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         f, axees = plt.subplots(nrows=5, ncols=2, figsize=(15, 10))
         # f.suptitle("least squares fit for full trajectory (not well-mixed in the last time steps)")
         xs = traj.times
-        num_solution = odeint(fun, self.initial_states[n].squeeze(), xs)
-        reference_soln = odeint(fun_reference, self.initial_states[n].squeeze(), xs)
+        num_solution = odeint(fun, np.array(self.initial_states[n]).squeeze(), xs)
+        reference_soln = odeint(fun_reference, np.array(self.initial_states[n]).squeeze(), xs)
         axes = self._flatten(axees)
         labels = ["{}".format(i) for i in range(traj.n_species)]
         if title is not None:
@@ -596,7 +596,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         system = self._set_up_system(self._initial_states[n])
         config = system.get_trajectory_config()
         estimated = sample_tools.Suite.estimated_behavior(self._desired_rates, self._bfc,
-                                                          self.initial_states[n].squeeze(), traj.times)
+                                                          np.array(self.initial_states[n]).squeeze(), traj.times)
 
         # fig, ax1 = plt.subplots(nrows=1, ncols=1)
 
@@ -612,7 +612,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
                          label=None if type_id != 3 else "law of mass action solution")
                 if plot_estimated:
                     integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
-                                    + self.initial_states[n].squeeze()[type_id]
+                                    + np.array(self.initial_states[n]).squeeze()[type_id]
                     plt.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
         # plt.legend(loc="upper right")
         if fname is not None:
@@ -744,7 +744,8 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
         estimator.coefficients_ = rates
         return estimator.score(range(0, trajs[0].n_time_steps), trajs[0].dcounts_dt)
 
-    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True, persist=True, concatenated=True):
+    def solve(self, n, alpha, l1_ratio, tol=1e-12, constrained=True, recompute=False, verbose=True, persist=True,
+              concatenated=True):
         if not isinstance(n, (list, tuple)):
             n = [n]
 
