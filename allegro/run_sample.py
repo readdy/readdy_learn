@@ -184,15 +184,17 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
         print("scaling population up, timestep down and bimol. rates down by factor {}".format(scale))
         regulation_network.desired_rates[18:21] /= scale
         regulation_network.initial_states = [
-            [regulation_network.initial_states[0][i] * scale for i in range(len(regulation_network.initial_states[0]))]
+            [regulation_network.initial_states[0][i] * scale
+             for i in range(len(regulation_network.initial_states[0]))]
         ]
         regulation_network.timestep /= scale
 
-    analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
+    analysis = regulation_network.generate_analysis_object(fname_prefix='case_2', fname_postfix='0')
     if gillespie_realisations is not None:
         print("generating data using gillespie kmc averaged over {} realisations".format(gillespie_realisations))
         for i in range(len(regulation_network.initial_states)):
-            analysis.generate_or_load_traj_gillespie(i, target_time=target_time, n_realizations=gillespie_realisations,
+            analysis.generate_or_load_traj_gillespie(i, target_time=target_time,
+                                                     n_realizations=gillespie_realisations,
                                                      update_and_persist=False, njobs=8)
     else:
         print("generating data by integrating the law of mass action with additive noise {}".format(
@@ -207,13 +209,20 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
         for traj in analysis.trajs:
             traj.counts = traj.counts[::int(scale)] / scale
             traj.time_step = regulation_network.timestep * scale
+            traj.update()
         regulation_network.desired_rates[18:21] *= scale
         regulation_network.timestep *= scale
-        regulation_network.initial_states = [
-            [regulation_network.initial_states[0][i] / scale for i in range(len(regulation_network.initial_states[0]))]]
-
+        regulation_network.initial_states = [[regulation_network.initial_states[0][i] / scale
+                                              for i in range(len(regulation_network.initial_states[0]))]]
     regulation_network.compute_gradient_derivatives(analysis, persist=False)
-    return regulation_network, analysis
+    print(regulation_network.timestep)
+    analysis2 = regulation_network.generate_analysis_object(fname_prefix='case_2', fname_postfix='0')
+    print(analysis2.timestep)
+    analysis2._trajs = analysis.trajs
+    for i in range(len(regulation_network.initial_states)):
+        traj = analysis.get_traj(i)
+
+    return regulation_network, analysis2
 
 
 def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3., gillespie_realisations=None):
