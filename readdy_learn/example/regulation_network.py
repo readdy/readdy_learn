@@ -295,6 +295,24 @@ class RegulationNetwork(_interface.AnalysisObjectGenerator):
             if persist:
                 traj.persist()
 
+    def interpolate_counts(self, analysis: _ana.ReactionAnalysis, persist: bool = True):
+        for t in range(len(self.initial_states)):
+            traj = analysis.get_traj(t)
+            times = traj.times
+
+            for sp in [1, 2, 4, 5, 7, 8, 0, 3, 6]:
+                x = traj.counts[:, sp]
+
+                indices = 1 + _np.where(x[:-1] != x[1:])[0]
+                indices = _np.insert(indices, 0, 0)
+
+                interpolated = _np.interp(times, times[indices], x[indices])
+
+                traj.counts[:, sp] = interpolated
+
+            if persist:
+                traj.persist()
+
     @property
     def desired_rates(self):
         return self._desired_rates
