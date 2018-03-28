@@ -193,7 +193,7 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
         print("generating data using gillespie kmc averaged over {} realisations".format(gillespie_realisations))
         for i in range(len(regulation_network.initial_states)):
             analysis.generate_or_load_traj_gillespie(i, target_time=target_time, n_realizations=gillespie_realisations,
-                                                     update_and_persist=False, njobs=1)
+                                                     update_and_persist=False, njobs=8)
     else:
         print("generating data by integrating the law of mass action with additive noise {}".format(
             regulation_network.noise_variance))
