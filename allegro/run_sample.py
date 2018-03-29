@@ -214,6 +214,7 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
         regulation_network.timestep *= scale
         regulation_network.initial_states = [[regulation_network.initial_states[0][i] / scale
                                               for i in range(len(regulation_network.initial_states[0]))]]
+    regulation_network.interpolate_counts(analysis, persist=False)
     regulation_network.compute_gradient_derivatives(analysis, persist=False)
     print(regulation_network.timestep)
     analysis2 = regulation_network.generate_analysis_object(fname_prefix='case_2', fname_postfix='0')
@@ -230,7 +231,7 @@ def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3., gillespie_realis
         "run fun with splitter='kfold', alpha={}, dt={}, noise={}, n_splits={}, target_time={}, gillespie_realisations={}".format(
             alpha, dt, noise, n_splits, target_time, gillespie_realisations))
     regulation_network, analysis = get_regulation_network(dt, noise=noise, target_time=target_time,
-                                                          gillespie_realisations=gillespie_realisations, scale=100)
+                                                          gillespie_realisations=gillespie_realisations, scale=500)
     cv = cross_validation.get_cross_validation_object(regulation_network)
     cv.splitter = 'kfold'
     cv.n_splits = n_splits
