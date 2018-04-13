@@ -232,7 +232,8 @@ def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3., gillespie_realis
             alpha, dt, noise, n_splits, target_time, gillespie_realisations))
     regulation_network, analysis = get_regulation_network(dt, noise=noise, target_time=target_time,
                                                           gillespie_realisations=gillespie_realisations, scale=500)
-    cv = cross_validation.get_cross_validation_object(regulation_network)
+    trajs = [analysis.get_traj(i) for i in range(len(regulation_network.initial_states))]
+    cv = cross_validation.CrossValidation(trajs, regulation_network.get_bfc())
     cv.splitter = 'kfold'
     cv.n_splits = n_splits
     cv.njobs = 1
