@@ -239,7 +239,7 @@ def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3., gillespie_realis
     cv.show_progress = True
     l1_ratios = np.array([1.])  # np.linspace(0, 1, num=5)
     cv_result = cv.cross_validate(alpha, l1_ratios, realizations=1)
-    rates = analysis.solve(0, alpha, l1_ratio=1., tol=1e-16)
+    rates = analysis.solve(0, alpha, l1_ratio=1., tol=1e-16, recompute=True, persist=False, concatenated=True)
     result = {"cv_result": cv_result, "counts": analysis.get_traj(0).counts,
               "dcounts_dt": analysis.get_traj(0).dcounts_dt, "estimated_rates": rates}
     return result
