@@ -217,7 +217,7 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
     regulation_network.interpolate_counts(analysis, persist=False)
     regulation_network.compute_gradient_derivatives(analysis, persist=False)
     print(regulation_network.timestep)
-    analysis2 = regulation_network.generate_analysis_object(fname_prefix='case_2', fname_postfix='0')
+    analysis2 = regulation_network.generate_analysis_object(fname_prefix='case_2_', fname_postfix='0')
     print(analysis2.timestep)
     analysis2._trajs = analysis.trajs
     for i in range(len(regulation_network.initial_states)):
