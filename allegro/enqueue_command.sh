@@ -7,7 +7,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=2990M
-#SBATCH --time=24:00:00
+#SBATCH --time=42:00:00
 #SBATCH --mail-type=end
 #SBATCH --mail-user=christoph.froehner@fu-berlin.de
 
