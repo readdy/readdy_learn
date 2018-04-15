@@ -2,14 +2,16 @@
 import argparse
 import numpy as np
 import samplebase as sb
+import h5py as h5
 import time
 
 import readdy_learn.analyze.basis as basis
 import readdy_learn.analyze.cross_validation as cross_validation
+import readdy_learn.analyze.tools as tools
 from readdy_learn.example.regulation_network import RegulationNetwork
 from readdy_learn.example.regulation_network import DEFAULT_DESIRED_RATES
 
-"""Usage: `python run_sample.py prefix name`"""
+"""Usage: `python run_cv.py prefix name`"""
 
 parser = argparse.ArgumentParser(description='Run simulation and output data to the given workspace prefix.')
 parser.add_argument('prefix', type=str, help='prefix of sample, directory that contains the sample directory')
@@ -168,13 +170,13 @@ DESIRED_RATES = np.array([
 desired_rates = np.append(DESIRED_RATES, np.zeros((get_n_additional_funs(),)))
 
 
-def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisations=None, scale=1.):
+def get_regulation_network(timestep, lma_noise=0., target_time=2., gillespie_realisations=1, scale=1.):
     assert np.floor(scale) == scale
     print("obtaining regulation network with dt = {}".format(timestep))
     regulation_network = RegulationNetwork()
     regulation_network.timestep = timestep
     regulation_network.realisations = 1.
-    regulation_network.noise_variance = noise
+    regulation_network.noise_variance = lma_noise
     regulation_network.get_bfc = get_bfc_custom
     regulation_network.desired_rates = desired_rates
     regulation_network.target_time = target_time
@@ -197,7 +199,7 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
                                                      n_realizations=gillespie_realisations,
                                                      update_and_persist=False, njobs=8)
     else:
-        print("generating data by integrating the law of mass action with additive noise {}".format(
+        print("generating data by integrating the law of mass action with additive lma_noise {}".format(
             regulation_network.noise_variance))
         for i in range(len(regulation_network.initial_states)):
             analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
@@ -226,34 +228,60 @@ def get_regulation_network(timestep, noise=0., target_time=3., gillespie_realisa
     return regulation_network, analysis2
 
 
-def fun(alpha=1., dt=1., noise=1., n_splits=15, target_time=3., gillespie_realisations=None):
+def generate_counts(dt=3e-3, lma_noise=0., target_time=2., gillespie_realisations=1):
     print(
-        "run fun with splitter='kfold', alpha={}, dt={}, noise={}, n_splits={}, target_time={}, gillespie_realisations={}".format(
-            alpha, dt, noise, n_splits, target_time, gillespie_realisations))
-    regulation_network, analysis = get_regulation_network(dt, noise=noise, target_time=target_time,
+        "run generate_traj with splitter='kfold', dt={}, lma_noise={}, target_time={}, gillespie_realisations={}".format(
+            dt, lma_noise, target_time, gillespie_realisations))
+    regulation_network, analysis = get_regulation_network(dt, lma_noise=lma_noise, target_time=target_time,
                                                           gillespie_realisations=gillespie_realisations, scale=500)
-    trajs = [analysis.get_traj(i) for i in range(len(regulation_network.initial_states))]
-    cv = cross_validation.CrossValidation(trajs, regulation_network.get_bfc())
+    traj = analysis.get_traj(0)
+    return traj.counts, traj.dcounts_dt, traj.time_step
+
+
+def create_traj_file(traj_file_path="file.h5", dt=3e-3, target_time=2., realisations=[1], number_of_iids=1):
+    with h5.File(traj_file_path, "w") as f:
+        for r in realisations:
+            r_group = f.create_group(str(r))
+            for i in range(number_of_iids):
+                i_group = r_group.create_group(str(i))
+
+                counts, dcounts_dt, timestep = generate_counts(
+                    dt=dt, lma_noise=0., target_time=target_time, gillespie_realisations=r)
+
+                counts_dset = i_group.create_dataset("counts", data=counts)
+                counts_dset.attrs["timestep"] = dt
+                i_group.create_dataset("dcounts_dt", data=dcounts_dt)
+
+
+def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./file.h5"):
+    # @todo test this
+    with h5.File(traj_file_path, "r") as f:
+        counts_dset = f[str(gillespie_realisations)][str(iid_id)]["counts"]
+        counts = counts_dset[:]
+        timestep = counts.attrs["timestep"]
+        dcounts_dt = f[str(gillespie_realisations)][str(iid_id)]["dcounts_dt"][:]
+    traj = tools.Trajectory(counts, time_step=timestep)
+    traj.dcounts_dt = dcounts_dt
+    cv = cross_validation.CrossValidation([traj], get_bfc_custom())
     cv.splitter = 'kfold'
     cv.n_splits = n_splits
     cv.njobs = 1
     cv.show_progress = True
     l1_ratios = np.array([1.])  # np.linspace(0, 1, num=5)
     cv_result = cv.cross_validate(alpha, l1_ratios, realizations=1)
-    rates = analysis.solve(0, alpha, l1_ratio=1., tol=1e-16, recompute=True, persist=False, concatenated=True)
-    result = {"cv_result": cv_result, "counts": analysis.get_traj(0).counts,
-              "dcounts_dt": analysis.get_traj(0).dcounts_dt, "estimated_rates": rates}
+    # rates = analysis.solve(0, alpha, l1_ratio=1., tol=1e-16, recompute=True, persist=False, concatenated=True)
+    result = {"cv_result": cv_result}
     return result
 
 
 if __name__ == '__main__':
-    print("run_sample ..")
+    print("run_cv ..")
     t1 = time.perf_counter()
 
     args = parser.parse_args()
 
     with sb.SampleContextManager(args.prefix, args.name) as sample:
-        sample.result = fun(**sample.args)
+        sample.result = do_cv(**sample.args)
 
     t2 = time.perf_counter()
-    print("done run_sample in {} seconds".format(t2 - t1))
+    print("done run_cv in {} seconds".format(t2 - t1))
