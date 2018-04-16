@@ -254,11 +254,10 @@ def create_traj_file(traj_file_path="file.h5", dt=3e-3, target_time=2., realisat
 
 
 def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./file.h5"):
-    # @todo test this
     with h5.File(traj_file_path, "r") as f:
         counts_dset = f[str(gillespie_realisations)][str(iid_id)]["counts"]
         counts = counts_dset[:]
-        timestep = counts.attrs["timestep"]
+        timestep = counts_dset.attrs["timestep"]
         dcounts_dt = f[str(gillespie_realisations)][str(iid_id)]["dcounts_dt"][:]
     traj = tools.Trajectory(counts, time_step=timestep)
     traj.dcounts_dt = dcounts_dt
