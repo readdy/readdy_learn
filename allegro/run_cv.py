@@ -238,7 +238,7 @@ def generate_counts(dt=3e-3, lma_noise=0., target_time=2., gillespie_realisation
     return traj.counts, traj.dcounts_dt, traj.time_step
 
 
-def create_traj_file(traj_file_path="file.h5", dt=3e-3, target_time=2., realisations=[1], number_of_iids=1):
+def create_traj_file(traj_file_path="./gillespie_trajs.h5", dt=3e-3, target_time=2., realisations=[1], number_of_iids=1):
     with h5.File(traj_file_path, "w") as f:
         for r in realisations:
             r_group = f.create_group(str(r))
@@ -253,7 +253,9 @@ def create_traj_file(traj_file_path="file.h5", dt=3e-3, target_time=2., realisat
                 i_group.create_dataset("dcounts_dt", data=dcounts_dt)
 
 
-def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./file.h5"):
+# gillespie_realisations = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
+# n_iids = 10
+def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./gillespie_trajs.h5"):
     with h5.File(traj_file_path, "r") as f:
         counts_dset = f[str(gillespie_realisations)][str(iid_id)]["counts"]
         counts = counts_dset[:]
