@@ -401,5 +401,4 @@ docs/figures_tex/.DS_Store
 /docs/gene_regulation.pdf
 
 # data
-*.pdf
 *.pickle
