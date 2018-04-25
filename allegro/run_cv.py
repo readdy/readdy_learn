@@ -238,7 +238,8 @@ def generate_counts(dt=3e-3, lma_noise=0., target_time=2., gillespie_realisation
     return traj.counts, traj.dcounts_dt, traj.time_step
 
 
-def create_traj_file(traj_file_path="./gillespie_trajs.h5", dt=3e-3, target_time=2., realisations=[1], number_of_iids=1):
+def create_traj_file(traj_file_path="./gillespie_trajs.h5", dt=3e-3, target_time=2., realisations=[1],
+                     number_of_iids=1):
     with h5.File(traj_file_path, "w") as f:
         for r in realisations:
             r_group = f.create_group(str(r))
@@ -273,6 +274,20 @@ def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_pa
     # rates = analysis.solve(0, alpha, l1_ratio=1., tol=1e-16, recompute=True, persist=False, concatenated=True)
     result = {"cv_result": cv_result}
     return result
+
+
+def estimate(alpha=1., gillespie_realisations=1, iid_id=0, traj_file_path="./gillespie_trajs.h5"):
+    with h5.File(traj_file_path, "r") as f:
+        counts_dset = f[str(gillespie_realisations)][str(iid_id)]["counts"]
+        counts = counts_dset[:]
+        timestep = counts_dset.attrs["timestep"]
+        dcounts_dt = f[str(gillespie_realisations)][str(iid_id)]["dcounts_dt"][:]
+    regulation_network, analysis = get_regulation_network(timestep, 0., 2., gillespie_realisations=1, scale=500.)
+    traj = tools.Trajectory(counts, time_step=timestep)
+    traj.dcounts_dt = dcounts_dt
+    analysis._trajs = [traj]
+    rates = analysis.solve(0, alpha=alpha, l1_ratio=1., tol=1e-16, recompute=True, persist=False, concatenated=True)
+    return rates, analysis
 
 
 if __name__ == '__main__':
