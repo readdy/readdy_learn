@@ -180,7 +180,8 @@ def get_regulation_network(timestep, lma_noise=0., target_time=2., gillespie_rea
     regulation_network.get_bfc = get_bfc_custom
     regulation_network.desired_rates = desired_rates
     regulation_network.target_time = target_time
-    regulation_network.initial_states = [regulation_network.initial_states[1]]
+    # change init state here, case1 -> init1, case2 -> init1, case3 -> init1 and init2
+    regulation_network.initial_states = [regulation_network.initial_states[2]]
 
     if scale > 1.:
         print("scaling population up, timestep down and bimol. rates down by factor {}".format(scale))
@@ -238,8 +239,9 @@ def generate_counts(dt=3e-3, lma_noise=0., target_time=2., gillespie_realisation
     return traj.counts, traj.dcounts_dt, traj.time_step
 
 
-def create_traj_file(traj_file_path="./gillespie_trajs.h5", dt=3e-3, target_time=2., realisations=[1],
-                     number_of_iids=1):
+def create_traj_file(traj_file_path="./gillespie_trajs_otherinit.h5", dt=3e-3, target_time=2.,
+                     realisations=[1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000],
+                     number_of_iids=10):
     with h5.File(traj_file_path, "w") as f:
         for r in realisations:
             r_group = f.create_group(str(r))
@@ -254,9 +256,41 @@ def create_traj_file(traj_file_path="./gillespie_trajs.h5", dt=3e-3, target_time
                 i_group.create_dataset("dcounts_dt", data=dcounts_dt)
 
 
+def concatenate_two_traj_files(traj1="./gillespie_trajs.h5", traj2="./gillespie_trajs_otherinit.h5",
+                               traj_out="./gillespie_two_inits_conced.h5",
+                               realisations=[1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000],
+                               number_of_iids=10):
+    with h5.File(traj_out, "w") as f_out:
+        with h5.File(traj1, "r") as f1:
+            with h5.File(traj2, "r") as f2:
+                for r in realisations:
+                    r_out_group = f_out.create_group(str(r))
+                    for i in range(number_of_iids):
+                        i_out_group = r_out_group.create_group(str(i))
+
+                        c1 = f1[str(r)][str(i)]["counts"][:]
+                        c2 = f2[str(r)][str(i)]["counts"][:]
+
+                        dt1 = f1[str(r)][str(i)]["counts"].attrs["timestep"]
+                        dt2 = f2[str(r)][str(i)]["counts"].attrs["timestep"]
+
+                        assert dt1 == dt2
+
+                        dc_dt1 = f1[str(r)][str(i)]["dcounts_dt"][:]
+                        dc_dt2 = f2[str(r)][str(i)]["dcounts_dt"][:]
+
+                        print("c1.shape", c1.shape)
+
+                        counts = np.concatenate((c1, c2), axis=0)
+                        dcounts_dt = np.concatenate((dc_dt1, dc_dt2), axis=0)
+
+                        counts_dset = i_out_group.create_dataset("counts", data=counts)
+                        counts_dset.attrs["timestep"] = dt1
+                        i_out_group.create_dataset("dcounts_dt", data=dcounts_dt)
+
 # gillespie_realisations = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 # n_iids = 10
-def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./gillespie_trajs.h5"):
+def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./gillespie_two_inits_conced.h5"):
     with h5.File(traj_file_path, "r") as f:
         counts_dset = f[str(gillespie_realisations)][str(iid_id)]["counts"]
         counts = counts_dset[:]
