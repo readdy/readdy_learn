@@ -6,7 +6,7 @@ host = socket.gethostname()
 if host == "chris-desktop":
     data_prefix = "/home/chris/workspace/data/"
 elif host == "seagull":
-    data_prefix = "/srv/public/workspace/data/"
+    data_prefix = "/srv/public/chrisfr/workspace/data/"
 elif host == "allegro":
     data_prefix = "/data/scratch/chrisfr/workspace/data/"
 else:

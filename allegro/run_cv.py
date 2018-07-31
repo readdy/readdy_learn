@@ -330,7 +330,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    print("realization prefix {}".format(args.prefix))
+
     with sb.SampleContextManager(args.prefix, args.name) as sample:
+        print("using traj file {}".format(sample.args["traj_file_path"]))
         sample.result = do_cv(**sample.args)
 
     t2 = time.perf_counter()
