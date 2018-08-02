@@ -288,6 +288,13 @@ def concatenate_two_traj_files(traj1="./gillespie_trajs.h5", traj2="./gillespie_
                         counts_dset.attrs["timestep"] = dt1
                         i_out_group.create_dataset("dcounts_dt", data=dcounts_dt)
 
+
+def get_traj_from_file(filename, n_gillespie_realisations, iid):
+    with h5.File(filename, "r") as f:
+        counts = f[str(n_gillespie_realisations)][str(iid)]["counts"][:]
+        dcounts_dt = f[str(n_gillespie_realisations)][str(iid)]["dcounts_dt"][:]
+    return counts, dcounts_dt
+
 # gillespie_realisations = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 # n_iids = 10
 def do_cv(alpha=1., n_splits=5, gillespie_realisations=1, iid_id=0, traj_file_path="./gillespie_two_inits_conced.h5"):
@@ -316,11 +323,29 @@ def estimate(alpha=1., gillespie_realisations=1, iid_id=0, traj_file_path="./gil
         counts = counts_dset[:]
         timestep = counts_dset.attrs["timestep"]
         dcounts_dt = f[str(gillespie_realisations)][str(iid_id)]["dcounts_dt"][:]
+    return estimate_counts(alpha=alpha, counts=counts, dcounts_dt=dcounts_dt, timestep=timestep)
+
+
+def estimate_counts(alpha, counts, dcounts_dt, timestep):
     regulation_network, analysis = get_regulation_network(timestep, 0., 2., gillespie_realisations=1, scale=500.)
     traj = tools.Trajectory(counts, time_step=timestep)
     traj.dcounts_dt = dcounts_dt
     analysis._trajs = [traj]
-    rates = analysis.solve(0, alpha=alpha, l1_ratio=1., tol=1e-16, recompute=True, persist=False, concatenated=True)
+
+    tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
+
+    rates = None
+    for tol in tolerances_to_try:
+        try:
+            print("Trying tolerance {}".format(tol))
+            rates = analysis.solve(0, alpha=alpha, l1_ratio=1., tol=tol, recompute=True, persist=False,
+                                   concatenated=True)
+            break
+        except ValueError:
+            print("... this tolerance {} failed".format(tol))
+            if tol == tolerances_to_try[len(tolerances_to_try) - 1]:
+                raise
+
     return rates, analysis
 
 

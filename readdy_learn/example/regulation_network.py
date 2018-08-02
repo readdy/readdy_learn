@@ -64,7 +64,7 @@ class RegulationNetwork(_interface.AnalysisObjectGenerator):
 
         initial_states = [
             [1, 0, 0, 1, 0, 0, 1, 0, 0], [1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1, 2, 1, 0, 2.5, 1, 0, 2],
-            [1, 1, 2, 1, 0, 0, 1, 3, 0],
+            [1, 1.5, 0, 1, 0, 2., 1, 0, 1.],
             [1, 2, 0, 1, 0, 3, 1, 0, 1], [1, 0, 2, 1, 0, 2.5, 1, 0.5, 0]
         ]
         self._initial_states = [_np.array([arr]) for arr in initial_states]
