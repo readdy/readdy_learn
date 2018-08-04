@@ -181,7 +181,7 @@ def get_regulation_network(timestep, lma_noise=0., target_time=2., gillespie_rea
     regulation_network.desired_rates = desired_rates
     regulation_network.target_time = target_time
     # change init state here, case1 -> init1, case2 -> init1, case3 -> init1 and init2
-    regulation_network.initial_states = [regulation_network.initial_states[2]]
+    regulation_network.initial_states = [regulation_network.initial_states[3]]
 
     if scale > 1.:
         print("scaling population up, timestep down and bimol. rates down by factor {}".format(scale))
@@ -239,7 +239,7 @@ def generate_counts(dt=3e-3, lma_noise=0., target_time=2., gillespie_realisation
     return traj.counts, traj.dcounts_dt, traj.time_step
 
 
-def create_traj_file(traj_file_path="./gillespie_trajs_otherinit.h5", dt=3e-3, target_time=2.,
+def create_traj_file(traj_file_path="./gillespie_trajs_init_3.h5", dt=3e-3, target_time=2.,
                      realisations=[1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000],
                      number_of_iids=10):
     with h5.File(traj_file_path, "w") as f:
@@ -256,10 +256,10 @@ def create_traj_file(traj_file_path="./gillespie_trajs_otherinit.h5", dt=3e-3, t
                 i_group.create_dataset("dcounts_dt", data=dcounts_dt)
 
 
-def concatenate_two_traj_files(traj1="./gillespie_trajs.h5", traj2="./gillespie_trajs_otherinit.h5",
-                               traj_out="./gillespie_two_inits_conced.h5",
+def concatenate_two_traj_files(traj1="./gillespie_trajs_init_1.h5", traj2="./gillespie_trajs_init_3.h5",
+                               traj_out="./gillespie_trajs_conced_1_3_normal.h5",
                                realisations=[1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000],
-                               number_of_iids=10):
+                               number_of_iids=10, zipped=False):
     with h5.File(traj_out, "w") as f_out:
         with h5.File(traj1, "r") as f1:
             with h5.File(traj2, "r") as f2:
@@ -281,8 +281,19 @@ def concatenate_two_traj_files(traj1="./gillespie_trajs.h5", traj2="./gillespie_
 
                         print("c1.shape", c1.shape)
 
-                        counts = np.concatenate((c1, c2), axis=0)
-                        dcounts_dt = np.concatenate((dc_dt1, dc_dt2), axis=0)
+                        if zipped:
+                            # @todo zip
+                            counts = np.stack((c1, c2))
+                            dcounts_dt = np.stack((dc_dt1, dc_dt2))
+                            print("counts.shape", counts.shape)
+                            new_shape = counts.shape[1:]
+                            new_shape = (new_shape[0] * 2, *(new_shape[1:]))
+                            print("new_shape", new_shape)
+                            counts = np.reshape(counts, new_shape, order='F')
+                            dcounts_dt = np.reshape(dcounts_dt, new_shape, order='F')
+                        else:
+                            counts = np.concatenate((c1, c2), axis=0)
+                            dcounts_dt = np.concatenate((dc_dt1, dc_dt2), axis=0)
 
                         counts_dset = i_out_group.create_dataset("counts", data=counts)
                         counts_dset.attrs["timestep"] = dt1
