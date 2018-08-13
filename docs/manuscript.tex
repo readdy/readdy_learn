@@ -35,7 +35,7 @@
 	When presented with a time series of possibly noisy non-equilibrium concentration fluctuations of some species as output of, e.g., measurements from experiments or simulations that were parameterized by microscopic rates, one can ask for the corresponding macroscopic rates and a generating reaction network.
 	In this paper we present an application of the shallow learning method SINDy \cite{Brunton2015}. By sparse regression, it is able to identify generating nonlinear dynamics in data that stems from dynamical systems. The parsimonious nature of the results avoids overfitting and provides interpretability.
 	In our application we, as opposed to the original method, do not only look for macroscopic rates of net species change but investigate the specific reactions that might have lead to the observations.
-	We demonstrate the algorithm on two toy problems - one problem showing that when there is no ambiguity in the system, one converges to the correct rates with increasing resolution of concentration fluctuations and one in which we compute a sparse reaction network for given data.
+	We demonstrate the algorithm on three toy problems: When there is no noise in the data we can find all relevant processes of the ground truth. If there is noise in the data we converge to the correct reaction network and rates with decreasing noise. The last toy problem deals with the case that there are two realizations with different initial conditions, for which can also show convergence to the correct model with decreasing levels of noise.
 
 	\section{The method}
 	The underlying model is a law of mass action type dynamical system. To this end, let $S$ be the number of species, then the observed concentration at a time $t$ can be represented by a vector
@@ -44,19 +44,19 @@
 	x_1(t)\\ \vdots \\ x_S(t)
 	\end{pmatrix}\in \mathbb{R}^S.
 	\end{align}
-	Further, one can choose $R$ possible ansatz reactions with their respective reaction function
+	Further, one can choose $R$ possible ansatz reactions with their respective reaction functions
 	\begin{align}
 	\textbf{y}_r(\textbf{x}(t))=\begin{pmatrix}
 	y_{r,1}(\textbf{x}(t)) \\ \vdots \\ y_{r,S}(\textbf{x}(t))
-	\end{pmatrix}
+	\end{pmatrix},\quad r=1,\ldots,R,
 	\end{align}
-	so that the change of concentration for species $i$ at time $t$, is represented by the dynamical system
+	so that the change of concentration for species $i$ at time $t$ is represented by the dynamical system
 	\begin{align}
 	\dot{\textbf{x}}_i(t) = \sum_{r=1}^{R}y_{r,i}(\textbf{x}(t))\xi_r,\quad i=1,\ldots, S,
 	\label{method:the-system}\end{align}
 	where $\xi_r$ are the to-be estimated macroscopic rates.
 
-	When presented with a time series consisting of $T$ observations, the data can be represented as a matrix
+	When presented with a time series consisting of $T$ observations at points in time $t_1<\ldots < t_T$, the data can be represented as a matrix
 	\begin{align}
 	\textbf{X} = \begin{pmatrix}
 		x_1(t_1) & x_2(t_1) & \cdots & x_S(t_1) \\
@@ -65,7 +65,7 @@
 		x_1(t_T) & x_2(t_T) & \cdots & x_S(t_T)
 	\end{pmatrix} \in \mathbb{R}^{T\times S}.
 	\end{align}
-	Given this matrix, one can propose a library $\Theta(\textbf{X}) = \begin{pmatrix} \theta_1(\textbf{X}) & \theta_2(\textbf{X}) & \cdots & \theta_R(\textbf{X}) \end{pmatrix}$ of $R$ ansatz reactions with corresponding reaction functions
+	Given this matrix, a library $\Theta(\textbf{X}) = \begin{pmatrix} \theta_1(\textbf{X}) & \theta_2(\textbf{X}) & \cdots & \theta_R(\textbf{X}) \end{pmatrix}$ of $R$ ansatz reactions can be proposed with corresponding reaction functions
 	\begin{align}
 		\theta_r(\textbf{X}) = \begin{pmatrix}
 		\textbf{y}_r(\textbf{X}_1)^T \\ \vdots \\ \textbf{y}_r(\textbf{X}_T)^T
@@ -76,7 +76,7 @@
 	\begin{align}
 	\dot{\textbf{X}} = \Theta(\textbf{X})\Xi = \sum_{r=1}^{R}\theta_r(\textbf{X})\xi_r.
 	\end{align}
-	In particular, the system is linear in the coefficients $\Xi$, which makes potentially sparse regression tools such as elastic net regularization \cite{Zou2005} applicable. To this end, one can consider the minimization problem to find $\hat{\Xi}$ such that
+	In particular, the system is linear in the coefficients $\Xi$, which makes regression tools such as elastic net regularization \cite{Zou2005} applicable. To this end, one can consider the minimization problem to find $\hat{\Xi}$ such that
 	\begin{align}
 		\hat{\Xi} = \underset{\Xi}{\arg\min}\left( \frac{1}{2T}\left\| \dot{\textbf{X}} - \Theta(\textbf{X})\Xi \right\|_F^2 + \alpha\lambda\|\Xi\|_1 + \alpha(1-\lambda)\|\Xi\|_2^2 \right) \quad \text{subject to }\Xi \geq 0,
 	\label{method:minimizationproblem}\end{align}
