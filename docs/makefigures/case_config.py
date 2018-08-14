@@ -4,6 +4,55 @@ from readdy_learn.example.regulation_network import RegulationNetwork
 from tabulate import tabulate
 
 SPECIES = ["DNA_A", "mRNA_A", "A", "DNA_B", "mRNA_B", "B", "DNA_C", "mRNA_C", "C"]
+CASE1_CUTOFF = 0.38
+N_ADDITIONAL_FUNS = 2
+TARGET_TIME = 2.
+SCALE = 500.
+TIMESTEP = 3e-3
+
+DESIRED_RATES = np.array([
+    1.8,  # DA -> DA + MA, transcription A
+    2.1,  # MA -> MA + A, translation A
+    1.3,  # MA -> 0, decay
+    1.5,  # A -> 0, decay
+    2.2,  # DB -> DB + MB, transcription B
+    2.0,  # MB -> MB + B, translation B
+    2.0,  # MB -> 0, decay
+    2.5,  # B -> 0, decay
+    3.2,  # DC -> DC + MC, transcription C
+    3.0,  # MC -> MC + C, translation C
+    2.3,  # MC -> 0, decay
+    2.5,  # C -> 0, decay
+    # self regulation
+    0.,  # MA + A -> A, A regulates A
+    0.,  # MB + B -> B, B regulates B
+    0.,  # MC + C -> C, C regulates C
+    # cyclic forward
+    0.,  # MB + A -> A, A regulates B
+    0.,  # MC + B -> B, B regulates C
+    0.,  # MA + C -> C, C regulates A
+    # cyclic backward
+    6.,  # MC + A -> A, A regulates C
+    4.,  # MB + C -> C, C regulates B
+    3.,  # MA + B -> B, B regulates A
+    # nonsense reactions, mRNA eats protein self
+    0., 0., 0.,
+    # nonsense reactions, mRNA eats protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, mRNA eats protein  cyclic backward
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein self
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, protein eats protein cyclic backward
+    0., 0., 0.,
+    # nonsense reactions, protein becomes protein cyclic forward
+    0., 0., 0.,
+    # nonsense reactions, protein becomes protein cyclic backward
+    0., 0., 0.,
+])
+DESIRED_RATES = np.append(DESIRED_RATES, np.zeros((N_ADDITIONAL_FUNS,)))
 
 
 def get_bfc_custom():
@@ -106,59 +155,6 @@ def get_additional_funs(bfc):
     # ids     0   1   2  3   4   5  6   7   8
     bfc.add_fusion(4, 7, 1)  # MB + MC -> MA, ok (causes lsq trouble)
     bfc.add_fusion(2, 7, 8)  # A + MC -> C, ok (causes lsq trouble)
-
-
-def get_n_additional_funs():
-    return 2
-
-
-DESIRED_RATES = np.array([
-    1.8,  # DA -> DA + MA, transcription A
-    2.1,  # MA -> MA + A, translation A
-    1.3,  # MA -> 0, decay
-    1.5,  # A -> 0, decay
-    2.2,  # DB -> DB + MB, transcription B
-    2.0,  # MB -> MB + B, translation B
-    2.0,  # MB -> 0, decay
-    2.5,  # B -> 0, decay
-    3.2,  # DC -> DC + MC, transcription C
-    3.0,  # MC -> MC + C, translation C
-    2.3,  # MC -> 0, decay
-    2.5,  # C -> 0, decay
-    # self regulation
-    0.,  # MA + A -> A, A regulates A
-    0.,  # MB + B -> B, B regulates B
-    0.,  # MC + C -> C, C regulates C
-    # cyclic forward
-    0.,  # MB + A -> A, A regulates B
-    0.,  # MC + B -> B, B regulates C
-    0.,  # MA + C -> C, C regulates A
-    # cyclic backward
-    6.,  # MC + A -> A, A regulates C
-    4.,  # MB + C -> C, C regulates B
-    3.,  # MA + B -> B, B regulates A
-    # nonsense reactions, mRNA eats protein self
-    0., 0., 0.,
-    # nonsense reactions, mRNA eats protein cyclic forward
-    0., 0., 0.,
-    # nonsense reactions, mRNA eats protein  cyclic backward
-    0., 0., 0.,
-    # nonsense reactions, protein eats protein self
-    0., 0., 0.,
-    # nonsense reactions, protein eats protein cyclic forward
-    0., 0., 0.,
-    # nonsense reactions, protein eats protein cyclic backward
-    0., 0., 0.,
-    # nonsense reactions, protein becomes protein cyclic forward
-    0., 0., 0.,
-    # nonsense reactions, protein becomes protein cyclic backward
-    0., 0., 0.,
-])
-DESIRED_RATES = np.append(DESIRED_RATES, np.zeros((get_n_additional_funs(),)))
-
-TARGET_TIME = 2.
-SCALE = 500.
-TIMESTEP = 3e-3
 
 
 def print_config(print_reactions=True):
