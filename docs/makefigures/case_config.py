@@ -1,14 +1,29 @@
 import numpy as np
+import h5py as h5
 import readdy_learn.analyze.basis as basis
 from readdy_learn.example.regulation_network import RegulationNetwork
 from tabulate import tabulate
 
 SPECIES = ["DNA_A", "mRNA_A", "A", "DNA_B", "mRNA_B", "B", "DNA_C", "mRNA_C", "C"]
-CASE1_CUTOFF = 0.38
+SPECIES_TEX = {
+    -1: '\emptyset',
+    0: '\mathrm{DNA}_\mathrm{A}',
+    1: '\mathrm{mRNA}_\mathrm{A}',
+    2: '\mathrm{A}',
+    3: '\mathrm{DNA}_\mathrm{B}',
+    4: '\mathrm{mRNA}_\mathrm{B}',
+    5: '\mathrm{B}',
+    6: '\mathrm{DNA}_\mathrm{C}',
+    7: '\mathrm{mRNA}_\mathrm{C}',
+    8: '\mathrm{C}'
+}
+CASE1_CUTOFF = 0.22
+CASE1_MIN_L1_ERR = 2.4077475813223574
 N_ADDITIONAL_FUNS = 2
 TARGET_TIME = 2.
 SCALE = 500.
 TIMESTEP = 3e-3
+INITIAL_CONDITIONS = [[1, 2, 0, 1, 0, 3, 1, 0, 0], [1, 1.5, 0, 1, 0, 2., 1, 0, 1.]]
 
 DESIRED_RATES = np.array([
     1.8,  # DA -> DA + MA, transcription A
@@ -54,16 +69,18 @@ DESIRED_RATES = np.array([
 ])
 DESIRED_RATES = np.append(DESIRED_RATES, np.zeros((N_ADDITIONAL_FUNS,)))
 
+
 def failure_rate(estimated_rates):
     mask = np.zeros_like(DESIRED_RATES)
     active_processes = np.where(DESIRED_RATES > 0)
     mask[active_processes] = 1.
-    
+
     estimated_mask = np.zeros_like(DESIRED_RATES)
     estimated_mask[np.where(estimated_rates >= CASE1_CUTOFF)] = 1.
-    
+
     diff = np.sum(np.abs(mask - estimated_mask))
     return diff
+
 
 def get_bfc_custom():
     # species DA  MA  A  DB  MB  B  DC  MC  C
@@ -274,3 +291,24 @@ def get_regulation_network_gillespie(gillespie_realisations=1):
         traj = analysis.get_traj(i)
 
     return regulation_network, analysis2
+
+
+def get_traj_from_file(filename, n_gillespie_realisations, iid):
+    with h5.File(filename, "r") as f:
+        counts = f[str(n_gillespie_realisations)][str(iid)]["counts"][:]
+        dcounts_dt = f[str(n_gillespie_realisations)][str(iid)]["dcounts_dt"][:]
+    return counts, dcounts_dt
+
+
+def integrate(initial_condition, rates):
+    from scipy.integrate import odeint
+    bfc = get_bfc_custom()
+
+    def fun(data, _):
+        theta = np.array([f(data) for f in bfc.functions])
+        return np.matmul(rates, theta)
+
+    xs = np.arange(0, TARGET_TIME, TIMESTEP)
+    num_solution = odeint(fun, np.array(initial_condition).squeeze(), xs)
+
+    return xs, num_solution
