@@ -1,5 +1,5 @@
 ### SCHEME
-- [ ] plot exemplaratory concentration curve for case 1, 2
+- [ ] plot exemplaratory concentration curve for case 1, 2 [chris]
 
 ### Case 1
 - [x] LSQ fits well but doesnt necessarily recover the rates (varying $\alpha$)
@@ -18,8 +18,8 @@
 - [ ] plot
   - [x] convergence
   - [x] failure rate
-  - [ ] PANELIZE
-- [ ] add CV parameters to case_config.py
+  - [ ] PANELIZE [the hoff]
+- [ ] add CV parameters to case_config.py [chris]
 
 ### Case 3
 - [x] Extend to multiple initial conditions. (this probably works better)    
@@ -28,8 +28,8 @@
   - [x] Plot first and second initial condition trajectory concatenated ... bla
   - [x] Plot convergence in L1
   - [x] plot failure rate
-  - [ ] PANELIZE
-- [ ] add CV parameters to case_config.py
+  - [ ] PANELIZE [moritz]
+- [ ] add CV parameters to case_config.py [chris]
 
 ### General
 - [x] Minimization function: use normal Frobenius norm, stack all samples of $X$ and $\dot{X}$
