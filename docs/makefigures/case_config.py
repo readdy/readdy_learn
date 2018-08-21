@@ -54,6 +54,16 @@ DESIRED_RATES = np.array([
 ])
 DESIRED_RATES = np.append(DESIRED_RATES, np.zeros((N_ADDITIONAL_FUNS,)))
 
+def failure_rate(estimated_rates):
+    mask = np.zeros_like(DESIRED_RATES)
+    active_processes = np.where(DESIRED_RATES > 0)
+    mask[active_processes] = 1.
+    
+    estimated_mask = np.zeros_like(DESIRED_RATES)
+    estimated_mask[np.where(estimated_rates >= CASE1_CUTOFF)] = 1.
+    
+    diff = np.sum(np.abs(mask - estimated_mask))
+    return diff
 
 def get_bfc_custom():
     # species DA  MA  A  DB  MB  B  DC  MC  C
