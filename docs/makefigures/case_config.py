@@ -69,6 +69,32 @@ DESIRED_RATES = np.array([
 ])
 DESIRED_RATES = np.append(DESIRED_RATES, np.zeros((N_ADDITIONAL_FUNS,)))
 
+"""
+# Case2/3, trajs and cv
+
+Trajectories:
+    - generate gillespie trajectories with high number of particles, 
+    to yield a concentration trajectory with intrinsic chemical noise
+    - to control the noise level we average several of such gillespie trajectories
+    - TARGET_TIME, TIMESTEP and SCALE parameters as defined above
+    - gillespie_realisations = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
+    - 10 independently generated trajs for each gillespie_realisation
+
+Cross validation using kfold splitter with a number of folds, given one hyperparameter learn the model on one subset of the data, and calculate the validation loss of this model against the remaining data. This is done for all subsets of the splitting. From these losses we drop the first fold and average over the remaining. This is repeated for a range of hyperparameters, yielding validation loss as a function of the hyperparameter. This typically shows a minimum, which we find by a grid-search. This is the hyperparameter we eventually use to estimate the final model on all data in the trajectory.
+
+Case 2 (allegro run 19):
+    - traj from one initial condition, INITIAL_CONDITIONS[0], which is RegulationNetwork().initial_states[1]
+    - alphas = np.logspace(-8, -2, num=50)
+    - n_folds = 10
+
+Case 3 (allegro run 21):
+    - traj from two initial conditions, INITIAL_CONDITIONS[0] and INITIAL_CONDITIONS[1], 
+    which are RegulationNetwork().initial_states[1] and RegulationNetwork().initial_states[3]
+    - the trajectories from the two initial conditions are simply concatenated
+    - alphas = np.logspace(-6, 0, num=50)
+    - n_folds = 20
+
+"""
 
 def failure_rate(estimated_rates):
     mask = np.zeros_like(DESIRED_RATES)
@@ -244,7 +270,7 @@ def get_regulation_network_gillespie(gillespie_realisations=1):
     regulation_network.get_bfc = get_bfc_custom
     regulation_network.desired_rates = DESIRED_RATES
     regulation_network.target_time = TARGET_TIME
-    # change init state here, case1 -> init1, case2 -> init1, case3 -> init1 and init2
+    # change init state here, case1 -> init1, case2 -> init1, case3 -> init1 and init3
     regulation_network.initial_states = [regulation_network.initial_states[3]]
 
     if SCALE > 1.:
