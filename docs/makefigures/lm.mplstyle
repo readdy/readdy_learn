@@ -6,7 +6,7 @@ text.latex.preamble: \usepackage[T1]{fontenc},\usepackage{mathptmx},\usepackage{
 
 figure.figsize: 4, 3
 
-font.size: 14
+font.size: 16
 font.family: serif
 # font.weight: 400
 
