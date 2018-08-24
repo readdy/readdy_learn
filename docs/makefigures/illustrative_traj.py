@@ -8,7 +8,7 @@ plt.style.use("rlearn.mplstyle")
 DATA_ROOT = "/home/chris/Dropbox/readdy_learn/reaction_learn_data"
 # DATA_ROOT = "/srv/public/chrisfr/workspace/data/reaction_learn_data"
 
-traj = case_config.get_traj_from_file(os.path.join(DATA_ROOT, "gillespie_trajs_init_1.h5"), 20000, 0)
+traj = case_config.get_traj_from_file(os.path.join(DATA_ROOT, "gillespie_trajs_init_3.h5"), 1, 0)
 
 
 def plot_species(species):
@@ -54,7 +54,7 @@ fig.tight_layout()
 fig.subplots_adjust(hspace=0)
 plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
 
-plt.savefig("./illustrative-traj.pdf", transparent=True)
+plt.savefig("./illustrative-traj-case3-init3.pdf", transparent=True)
 plt.show()
 plt.clf()
 plt.close(fig)
