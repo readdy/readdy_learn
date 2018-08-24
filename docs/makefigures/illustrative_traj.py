@@ -19,7 +19,6 @@ def plot_species(species):
                  #color='C{}'.format(ix)
                  color="black"
                  )
-    plt.legend()
 
 
 t = np.arange(len(traj[0])) * case_config.TIMESTEP
@@ -27,6 +26,7 @@ stride = 1
 
 # width = 7.1 # double columns
 width = 7.1 / 2.  # single column
+width = 4.5
 n_rows = 3
 height = n_rows * 1.3
 n_cols = 1
@@ -37,15 +37,18 @@ axlist = axarr.flatten()
 plt.sca(axlist[0])
 plot_species(np.array([2, 1]))
 #plt.ylabel('Concentration in a.u.')
+plt.legend(loc="center left", bbox_to_anchor=(1,0.5))
 
 plt.sca(axlist[1])
 plot_species(np.array([5, 4]))
 plt.ylabel('Concentration in a.u.', labelpad=20)
+plt.legend(loc="center left", bbox_to_anchor=(1,0.5))
 
 plt.sca(axlist[2])
 plot_species(np.array([8, 7]))
 plt.xlabel('Time in a.u.')
 #plt.ylabel('Concentration in a.u.')
+plt.legend(loc="center left", bbox_to_anchor=(1,0.5))
 
 fig.tight_layout()
 fig.subplots_adjust(hspace=0)
