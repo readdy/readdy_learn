@@ -3,7 +3,7 @@ import os
 import numpy as np
 import case_config
 
-plt.style.use("lm.mplstyle")
+plt.style.use("rlearn.mplstyle")
 
 DATA_ROOT = "/home/chris/Dropbox/readdy_learn/reaction_learn_data"
 # DATA_ROOT = "/srv/public/chrisfr/workspace/data/reaction_learn_data"
@@ -28,7 +28,7 @@ stride = 1
 # width = 7.1 # double columns
 width = 7.1 / 2.  # single column
 n_rows = 3
-height = n_rows * 1.5
+height = n_rows * 1.3
 n_cols = 1
 
 fig, axarr = plt.subplots(n_rows, n_cols, figsize=(width, height), sharex=True)
@@ -40,7 +40,7 @@ plot_species(np.array([2, 1]))
 
 plt.sca(axlist[1])
 plot_species(np.array([5, 4]))
-#plt.ylabel('Concentration in a.u.')
+plt.ylabel('Concentration in a.u.', labelpad=20)
 
 plt.sca(axlist[2])
 plot_species(np.array([8, 7]))
