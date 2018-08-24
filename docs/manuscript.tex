@@ -110,10 +110,7 @@
     \begin{figure}
         \centering
         \includegraphics[width=.5\textwidth]{./figures_tex/scheme.pdf}
-        \caption{The regulation network example described in Section \ref{sec:generegulation}. Each circle depicts a species, each arrow corresponds to one reaction. The red arrows describe the regulatory network which generates the example data.}
-		\begin{colbox}{F8E0E0}
-        	fix caption
-        \end{colbox}
+        \caption{The regulation network example described in Sec.~\ref{sec:generegulation}. \textbf{(a)}: Each circle depicts a species, each arrow corresponds to one reaction. Blue arrows denote transcription from DNA to mRNA, green arrows denote translation from mRNA to protein, and red arrows denote the regulatory network. \textbf{(b)}: Concentration timeseries generated from the reaction network shown in~(a). The initial condition prescribes positive concentration values only for B protein and $\mathrm{mRNA}_\mathrm{A}$ species. This initial condition is used in the subsequent sections for further analysis.}
         \label{fig:network}
     \end{figure}
 
@@ -140,8 +137,8 @@
 	
 	\begin{figure}
 		\centering
-		\includegraphics[width=.9\textwidth]{./figures_tex/bubbles}
-		\caption{Generating and estimated reaction rates in the situation of Section \ref{sec:case-1}. The y and x axes contain reaction educts and products, respectively. The black outlines denote the reactions with which the system was generated and the area of the circles scales linearly with the reaction rate. The blue circles are least squares estimated reaction rates and the orange circles depict rates which were obtained by some $\alpha>0$ in the minimization problem (\ref{method:minimizationproblem}). If a certain rate was estimated in both cases, two wedges instead of once circle as displayed.}
+		\includegraphics[width=.9\textwidth]{./figures_tex/sparsity_pattern}
+		\caption{Estimated reaction rates in the system described in Sec.~\ref{sec:case-1}. The y and x axes contain reaction educts and products, respectively. A circle at position $(i,j)$ represents a reaction $i\rightharpoonup j$ whose rate has a linear relation with the area of the circle. The black outlines denote the reactions with which the system was generated and contain the respective rate value. Red crosses denote reactions that were used as additional ansatz reactions. Blue circles are estimated by linear least-squares and orange circles depict rates which were obtained by solving the minimization problem (\ref{method:minimizationproblem}). The latter rates are subject to a cutoff $c=0.22$ corresponding to the green circle's area under which a sparse solution with the correct processes can be recovered. If a certain rate was estimated in both cases, two wedges instead of one circle are displayed.}
 		\label{fig:case-1-sparsity-pattern}
 	\end{figure}
 
@@ -160,6 +157,7 @@
 	\begin{figure}
 		\centering
 		\includegraphics[width=.5\columnwidth]{./figures_tex/case2}
+		\caption{lalala}
 	\end{figure}
 
 	\subsection{Multiple initial conditions}\label{sec:case-3}
