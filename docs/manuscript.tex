@@ -157,7 +157,8 @@
 	\begin{figure}
 		\centering
 		\includegraphics[width=.5\columnwidth]{./figures_tex/case2}
-		\caption{lalala}
+		\caption{Convergence of the estimation error when estimating the system described in Sec.~\ref{sec:case-1} with decreasing levels of noise by application of the minimization problem (\ref{method:minimizationproblem}). The level of noise is regulated by the number of measurements being averaged. The hyperparameters for each level of noise were estimated using 10-fold cross validation. This was repeated 10 times giving rise to the mean and standard deviation depicted by dark blue graph and shaded blue area, respectively. The failure rate is the number of incorrectly identified processes. The estimation error is given by the $L_1$ difference of the generating reaction rates $\hat{\xi}$ and the estimated reaction rates $\xi_\mathrm{CV}$.}
+		\label{fig:case2-convergence}
 	\end{figure}
 
 	\subsection{Multiple initial conditions}\label{sec:case-3}
@@ -169,7 +170,8 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=.5\columnwidth]{./figures_tex/case3}
+		\includegraphics[width=\columnwidth]{./figures_tex/case3}
+		\caption{Convergence of the estimation error when using two concatenated concentration timeseries with different initial conditions. \textbf{(a)}: A realization of one of the initial conditions that were used. It is identical to the initial conditions used in Sec.~\ref{sec:case-1} and Sec.~\ref{sec:case-2}. \textbf{(b)}: A realization of the other initial condition that was used. It prescribes positive initial concentrations for $\mathrm{mRNA}_\mathrm{A}$, $\mathrm{B}$, and $\mathrm{C}$ species. \textbf{(c)}: Analogously to Fig.~\ref{fig:case2-convergence} with the difference that 20-fold cross validation was used for hyperparameter estimation.}
 	\end{figure}
     
 	\section{Conclusion}
