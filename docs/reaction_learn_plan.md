@@ -1,5 +1,6 @@
 ### SCHEME
 - [ ] plot exemplaratory concentration curve for case 1, 2 [chris]
+- [ ] make mRNA dashed
 
 ### Case 1
 - [x] LSQ fits well but doesnt necessarily recover the rates (varying $\alpha$)
@@ -15,20 +16,20 @@
 - [x] Same initial conditions, multiple measurements, noise is a variable.  -> in the limit of small noise you get a good fit, 
 - [x] obtain cutoff in noise free case (or case 1) -> compute failure rate, i.e., false positives and negatives
 - [x] $\| \Xi - \Xi_\mathrm{est} \|_1$ with cutoff and include $0$ noise as case in the plot
-- [ ] plot
+- [x] plot
   - [x] convergence
   - [x] failure rate
-  - [ ] PANELIZE [the hoff]
+  - [x] PANELIZE [the hoff]
 - [ ] add CV parameters to case_config.py [chris]
 
 ### Case 3
 - [x] Extend to multiple initial conditions. (this probably works better)    
 - [x] also compute failure rate
-- [ ] Plöt panelized:
+- [x] Plöt panelized:
   - [x] Plot first and second initial condition trajectory concatenated ... bla
   - [x] Plot convergence in L1
   - [x] plot failure rate
-  - [ ] PANELIZE [moritz]
+  - [x] PANELIZE [moritz]
 - [ ] add CV parameters to case_config.py [chris]
 
 ### General

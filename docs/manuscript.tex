@@ -109,8 +109,11 @@
     In our example proteins of type $A$ regulate the mRNA$_\mathrm{B}$ molecules, proteins of type $B$ regulate the mRNA$_\mathrm{A}$ molecules and proteins of type $C$ regulate the mRNA$_\mathrm{A}$ molecules. The network of all species and reactions is depicted in Figure \ref{fig:network}. This serves as reference model to generate the time series of concentrations.
     \begin{figure}
         \centering
-        \includegraphics[width=.5\textwidth]{./figures_tex/gene_regulation_full.pdf}
+        \includegraphics[width=.5\textwidth]{./figures_tex/scheme.pdf}
         \caption{The regulation network example described in Section \ref{sec:generegulation}. Each circle depicts a species, each arrow corresponds to one reaction. The red arrows describe the regulatory network which generates the example data.}
+		\begin{colbox}{F8E0E0}
+        	fix caption
+        \end{colbox}
         \label{fig:network}
     \end{figure}
 
@@ -154,12 +157,22 @@
 		\item obtain cutoff in noise free case, compute failure rate (number of false positives and negatives)
 	\end{itemize}
 
+	\begin{figure}
+		\centering
+		\includegraphics[width=.5\columnwidth]{./figures_tex/case2}
+	\end{figure}
+
 	\subsection{Multiple initial conditions}\label{sec:case-3}
 	
 	\begin{itemize}
 		\item extend situation of Section \ref{sec:case-3} to multiple initial conditions
 		\item compute failure rate
 	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=.5\columnwidth]{./figures_tex/case3}
+	\end{figure}
     
 	\section{Conclusion}
 	\begin{colbox}{F8E0E0}
