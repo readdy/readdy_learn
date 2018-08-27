@@ -1,6 +1,6 @@
 ### SCHEME
 - [ ] plot exemplaratory concentration curve for case 1, 2 [chris]
-- [ ] make mRNA dashed
+- [x] make mRNA dashed
 
 ### Case 1
 - [x] LSQ fits well but doesnt necessarily recover the rates (varying $\alpha$)
@@ -20,7 +20,7 @@
   - [x] convergence
   - [x] failure rate
   - [x] PANELIZE [the hoff]
-- [ ] add CV parameters to case_config.py [chris]
+- [x] add CV parameters to case_config.py [chris]
 
 ### Case 3
 - [x] Extend to multiple initial conditions. (this probably works better)    
@@ -30,7 +30,7 @@
   - [x] Plot convergence in L1
   - [x] plot failure rate
   - [x] PANELIZE [moritz]
-- [ ] add CV parameters to case_config.py [chris]
+- [x] add CV parameters to case_config.py [chris]
 
 ### General
 - [x] Minimization function: use normal Frobenius norm, stack all samples of $X$ and $\dot{X}$
