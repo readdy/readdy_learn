@@ -21,6 +21,7 @@
   - [x] failure rate
   - [x] PANELIZE [the hoff]
 - [x] add CV parameters to case_config.py [chris]
+- [ ] würger Chris: LSQ durchlösen für Realisierungen, failure rate auswerten (da LSQ vermutlich unreliable)
 
 ### Case 3
 - [x] Extend to multiple initial conditions. (this probably works better)    

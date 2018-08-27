@@ -31,13 +31,15 @@
 	\maketitle
 
 	\section{Introduction}
+	\textcolor{red}{Cite and mention previous works.}
+		
 	When presented with a time series of possibly noisy non-equilibrium concentration fluctuations of some species as output of, e.g., measurements from experiments or simulations that were parameterized by microscopic rates, one can ask for the corresponding macroscopic rates and a generating reaction network.
 	In this paper we present an application of the shallow learning method SINDy \cite{Brunton2015}. By sparse regression, it is able to identify generating nonlinear dynamics in data that stems from dynamical systems. The parsimonious nature of the results avoids overfitting and provides interpretability.
-	In our application we, as opposed to the original method, do not only look for macroscopic rates of net species change but investigate the specific reactions that might have lead to the observations.
-	We demonstrate the algorithm on three toy problems: When there is no noise in the data we can find all relevant processes of the ground truth. If there is noise in the data we converge to the correct reaction network and rates with decreasing noise. The last toy problem deals with the case that there are two realizations with different initial conditions, for which can also show convergence to the correct model with decreasing levels of noise.
+	In our application we, as opposed to the SINDy method, estimate parameters which are coupled across the equations of the arising ODE system, i.e., we look for specific reactions and their rate constants that might have lead to the observations instead of net flux across species.
+	We demonstrate the algorithm on a biologically motivated reaction kinetics system in three different scenarios of measurement: When there is no noise in the data we can find all relevant processes of the ground truth. If there is noise in the data we converge to the correct reaction network and rates with decreasing noise. The last scenario deals with the case that there are two realizations with different initial conditions, for which one can also show convergence to the correct model with decreasing levels of noise.
 
 	\section{The method}
-	The underlying model is a law of mass action type dynamical system. To this end, let $S$ be the number of species, then the observed concentration at a time $t$ can be represented by a vector
+	The underlying model are reaction-rate equations subject to the law of mass action. To this end, let $S$ be the number of species, then the observed concentration at a time $t$ can be represented by a vector
 	\begin{align}
 	\mathbf{x}(t)=\begin{pmatrix}
 	x_1(t)\\ \vdots \\ x_S(t)
@@ -53,7 +55,7 @@
 	\begin{align}
 	\dot{\textbf{x}}_i(t) = \sum_{r=1}^{R}y_{r,i}(\textbf{x}(t))\xi_r,\quad i=1,\ldots, S,
 	\label{method:the-system}\end{align}
-	where $\xi_r$ are the to-be estimated macroscopic rates.
+	where $\xi_r$ are the to-be estimated macroscopic rate constants.
 
 	When presented with a time series consisting of $T$ observations at points in time $t_1<\ldots < t_T$, the data can be represented as a matrix
 	\begin{align}
@@ -64,13 +66,13 @@
 		x_1(t_T) & x_2(t_T) & \cdots & x_S(t_T)
 	\end{pmatrix} \in \mathbb{R}^{T\times S}.
 	\end{align}
-	Given this matrix, a library $\Theta(\textbf{X}) = \begin{pmatrix} \theta_1(\textbf{X}) & \theta_2(\textbf{X}) & \cdots & \theta_R(\textbf{X}) \end{pmatrix}$ of $R$ ansatz reactions can be proposed with corresponding reaction functions
+	Given this matrix, a library $\Theta: \mathbb{R}^{T\times S}\to \mathbb{R}^{T \times S\times R},\;\mathbf{A}\mapsto \begin{pmatrix} \theta_1(\mathbf{A}) & \theta_2(\mathbf{A}) & \cdots & \theta_R(\mathbf{A}) \end{pmatrix}$ of $R$ ansatz reactions can be proposed with corresponding reaction functions
 	\begin{align}
-		\theta_r(\textbf{X}) = \begin{pmatrix}
-		\textbf{y}_r(\textbf{X}_1)^T \\ \vdots \\ \textbf{y}_r(\textbf{X}_T)^T
+		\theta_r(\mathbf{A}) = \begin{pmatrix}
+		\textbf{y}_r(\mathbf{A}_{1*})^T \\ \vdots \\ \textbf{y}_r(\mathbf{A}_{T*})^T
 		\end{pmatrix}\in \mathbb{R}^{T\times S},\quad r=1,\ldots,R,
 	\label{method:the-reactions}\end{align}
-	where $\textbf{X}_i$ denotes the $i$-th row in $\textbf{X}$. Applying the concentration trajectory to the library yields $\Theta(\textbf{X})\in\mathbb{R}^{T\times S\times R}$. Following the approach of SINDy, the goal is to find coefficients $\Xi = \begin{pmatrix} \xi_1 & \xi_2 & \cdots & \xi_R
+	where $\textbf{A}_{i*}$ denotes the $i$-th row in $\textbf{A}$. Applying the concentration trajectory to the library yields $\Theta(\textbf{X})\in\mathbb{R}^{T\times S\times R}$. Following the approach of SINDy, the goal is to find coefficients $\Xi = \begin{pmatrix} \xi_1 & \xi_2 & \cdots & \xi_R
 	\end{pmatrix}^T$, so that
 	\begin{align}
 	\dot{\textbf{X}} = \Theta(\textbf{X})\Xi = \sum_{r=1}^{R}\theta_r(\textbf{X})\xi_r.
@@ -81,31 +83,29 @@
 	\label{method:minimizationproblem}\end{align}
 	where $\|\cdot\|_F$ denotes the Frobenius norm, $\lambda\in[0,1]$ a hyperparameter that interpolates linearly between LASSO \cite{Tibshirani1996, Hastie2009} and Ridge \cite{Hoerl1} methods, and $\alpha\geq 0$ is a hyperparameter that, depending on $\lambda$, can induce sparsity and give preference to smaller solutions in the $L_1$ or $L_2$ sense.
 
-	When presented with multiple trajectories the data matrices $\mathbf{X}$ and $\dot{\mathbf{X}}$ can be stacked and inserted into the minimization problem.
-	
-	For $\alpha=0$ the minimization problem reduces to constrained least-squares. In order to solve (\ref{method:minimizationproblem}) the numerical sequential least-squares minimizer SLSQP \cite{Kraft1988} is applied via the software package SciPy \cite{SciPy}. Since only the concentration data $\mathbf{X}$ is available but not its temporal derivative $\dot{\mathbf{X}}$, it is approximated numerically by second order finite differences with the exception of boundary data.
+	For $\alpha=0$ the minimization problem reduces to constrained least-squares. In order to solve (\ref{method:minimizationproblem}) the numerical sequential least-squares minimizer SLSQP \cite{Kraft1988} is applied via the software package SciPy \cite{SciPy}. Since only the concentration data $\mathbf{X}$ is available but not its temporal derivative $\dot{\mathbf{X}}$, it is approximated numerically by second order finite differences with the exception of boundary data. Once the pair $(\mathbf{X}, \dot{\mathbf{X}})$ is obtained, the problem becomes invariant under temporal reordering. Hence, when presented with multiple trajectories the data matrices $\mathbf{X}_i$ and $\dot{\mathbf{X}}_i$ can simply be concatenated.
 	
     \section{Example system: Regulation of gene expression}\label{sec:generegulation}
 
-    To demonstrate the method a gene-regulatory network is estimated from time series of molecule-concentrations. The data of is generated by integrating the law of mass action equations of the underlying model and adding Gaussian noise.
+    To demonstrate the method a gene-regulatory network is estimated from time series of molecule-concentrations.
     
     To this end, let $\mathrm{A}$, $\mathrm{B}$, and $\mathrm{C}$ be three species of proteins which are being translated from a corresponding $\mathrm{mRNA}$ molecule. Each $\mathrm{mRNA}$ in turn has a corresponding $\mathrm{DNA}$ which it is transcribed from. The proteins and $\mathrm{mRNA}$ molecules decay over time whereas the $\mathrm{DNA}$ concentration remains constant.
     
     The following basic reactions can be formulated
 	\begin{align*}
 		\mathrm{DNA}_i &\rightharpoonup \mathrm{DNA}_i + \mathrm{mRNA}_i &&\text{(transcription)},\\
-		\mathrm{mRNA}_i &\rightharpoonup \mathrm{mRNA}_i + \mathrm{Protein}_i &&\text{(translation)},\\
+		\mathrm{mRNA}_i &\rightharpoonup \mathrm{mRNA}_i + i &&\text{(translation)},\\
 		\mathrm{mRNA}_i &\rightharpoonup \emptyset &&\text{(decay of mRNA)},\\
-		\mathrm{Protein}_i &\rightharpoonup \emptyset &&\text{(decay of Protein)},
+		i &\rightharpoonup \emptyset &&\text{(decay of protein)},
     \end{align*}
     for each of the species $i\in S:=\{\mathrm{A},\mathrm{B},\mathrm{C}\}$.
 
     The protein concentrations of $\mathrm{A}$, $\mathrm{B}$, and $\mathrm{C}$ regulate each other in a negative way by hindering the transcription process. In the law of mass action model we account for this by a reaction. A repression of species $j\in S$ by species $i\in S$ can be modeled as
     \begin{align*}
-    i + \mathrm{mRNA}_j \rightharpoonup i &&&\text{(regulation by repression).}
+    i + \mathrm{mRNA}_j \rightharpoonup i.
     \end{align*}
 
-    In our example proteins of type $\mathrm{A}$ regulate the $\mathrm{mRNA}_\mathrm{B}$ molecules, proteins of type $\mathrm{B}$ regulate the $\mathrm{mRNA}_\mathrm{A}$ molecules and proteins of type $\mathrm{C}$ regulate the $\mathrm{mRNA}_\mathrm{A}$ molecules. The network of all species and reactions is depicted in Figure \ref{fig:network}. This serves as reference model to generate the time series of concentrations.
+    In our example proteins of type $\mathrm{A}$ regulate the $\mathrm{mRNA}_\mathrm{B}$ molecules, proteins of type $\mathrm{B}$ regulate the $\mathrm{mRNA}_\mathrm{C}$ molecules and proteins of type $\mathrm{C}$ regulate the $\mathrm{mRNA}_\mathrm{A}$ molecules. The network of all species and reactions is depicted in Fig.~\ref{fig:network}. This serves as reference model to generate the time series of concentrations.
     \begin{figure}
         \centering
         \includegraphics[width=.5\textwidth]{./figures_tex/scheme.pdf}
@@ -115,13 +115,13 @@
 
 	\section{Results} \label{sec:results}
 	
-	The proposed estimation method is designed to find reaction networks and rates from experimental data. In the following the method is applied to data generated from the example described in Section \ref{sec:generegulation}.
+	The proposed estimation method is designed to find reaction networks and rate constants from experimental data. In the following the method is applied to data generated from the example described in Section \ref{sec:generegulation}.
 
-	First it is assumed that the concentration data can be obtained without noise and it is shown that while the minimization problem (\ref{method:minimizationproblem}) without regularization, i.e., $\alpha=0$, yields rates that fit well to the input data, the original rates cannot be recovered while adding $L_1$ regularization and applying a cutoff recovers the underlying reaction network \textcolor{red}{(and rates?)}.
+	In Sec.~\ref{sec:case-1} is assumed that the concentration data can be obtained without noise and it is shown that while the minimization problem (\ref{method:minimizationproblem}) without regularization, i.e., $\alpha=0$, yields rates that fit well to the input data, the original rates cannot be recovered while adding $L_1$ regularization and applying a cutoff recovers the underlying reaction network.
 	
-	In Section \ref{sec:case-2} the example data was generated using the Gillespie SSA \textbf{[cite]}. While the concentrations now contain stochastic noise, it is assumed that the initial state can be reproduced exactly and multiple measurements with that exact initial condition can be performed. It is shown that in the limit of many measurements a good fit can reliably be obtained.
+	In Sec.~\ref{sec:case-2} the example data was generated using the Gillespie SSA \textbf{[cite]}. While the concentrations now contain stochastic noise, it is assumed that the initial state can be reproduced exactly and multiple measurements with that exact initial condition can be performed. It is shown that in the limit of many measurements a good fit can reliably be obtained.
 	
-	The last example is described in Section \ref{sec:case-3} and is an extension of the situation in Section \ref{sec:case-2} to multiple initial conditions. Due to more varied data and more statistics a good fit can be obtained with fewer measurements than in the case of just one initial condition.
+	The last example is described in Sec.~\ref{sec:case-3} and is an extension of the situation in Sec.~\ref{sec:case-2} to multiple initial conditions. Due to more varied data and more statistics a good fit can be obtained with fewer measurements than in the case of just one initial condition.
 	
 	%measurement scenarios are considered that differ in how many time series are available and the level of noise that the data is subject to:
 	%\begin{enumerate}
@@ -132,9 +132,9 @@
 
 	\subsection{The noiseless case}\label{sec:case-1}
 	
-	In this section noiseless data generated from the law of mass action system described in Section \ref{sec:generegulation} is applied to the minimization problem (\ref{method:minimizationproblem}). When setting the hyperparameter $\alpha=0$ one obtains least squares regression with a constraint on the non-negativity of the estimated reaction rates.
+	In this section noiseless data is generated from integrating the reaction-rate equation (\ref{method:the-system}) of the system described in Sec.~\ref{sec:generegulation}. The minimization problem (\ref{method:minimizationproblem}) is solved with respect to this data. When setting the hyperparameter $\alpha=0$ one obtains linear least-squares regression with a constraint on the non-negativity of the estimated reaction rates.
 	
-	When applying no regularization, one can observe in Figure \ref{fig:case-1-sparsity-pattern} that the sparsity pattern does not match the generating reaction network and the reaction responsible for the decay of $\mathrm{A}$ particles is completely ignored. For a suitable choice of hyperparameters $\alpha \approx 1.91\cdot 10^{-7}$, $\lambda=1$, and a cutoff $\kappa = 0.22$ a sparser solution can be obtained and also the decay reaction as indicated by the red rings in the figure can be recovered. The cutoff $\kappa$ is applied so that for all reactions with an estimated rate $\hat{\xi} < \kappa$ a rate of $\hat{\xi} = 0$ is assigned. A bubble whose size corresponds to a rate of $\kappa$ is depicted in Fig.~\ref{fig:case-1-sparsity-pattern} in green.
+	When applying constrained linear least-squares regression, one can observe that the sparsity pattern does not match the generating reaction network and the reaction responsible for the decay of $\mathrm{A}$ particles is completely ignored (Fig.~\ref{fig:case-1-sparsity-pattern}). For a suitable choice of hyperparameters $\alpha \approx 1.91\cdot 10^{-7}$, $\lambda=1$, and a cutoff $\kappa = 0.22$ a sparse solution can be obtained and also the decay reaction can be recovered. The cutoff $\kappa$ is applied so that for all reactions with an estimated rate $\hat{\xi} < \kappa$ a rate of $\hat{\xi} = 0$ is assigned. A circle with size corresponding to a rate of $\kappa$ is depicted in Fig.~\ref{fig:case-1-sparsity-pattern} in green.
 	
 	\begin{figure}
 		\centering
@@ -143,16 +143,24 @@
 		\label{fig:case-1-sparsity-pattern}
 	\end{figure}
 
+	\textbf{Todo}:
+	\begin{enumerate}
+		\item mention finite statistics
+		\item how does LSQ compensate for $A\to\emptyset$
+		\item ansatzfunctions used in $\Theta$
+	\end{enumerate}
 	
-	
-	\subsection{Multiple measurements at the same noise level}\label{sec:case-2}
+	\subsection{Data with stochastic noise}\label{sec:case-2}
+	For Gillespie, the initial condition contains hundreds of particles such that the average over many realizations converges against the reaction-rate equation.
 	
 	\begin{itemize}
 		\item Same setup as in Section \ref{sec:case-1}
-		\item Cross validation with a shuffle split and 3 folds
-		\item comparison to LSQ: LSQ unreliable
+		\item def. of failure rate
+		\item $10$-fold cross validation discarding fold with test set at the (temporal) beginning (reason: more robust hyperparameter estimation as statisticial dependence of our data is higher at the initial equilibration phase, shuffle didn't really work well)
+		\item CV was independently carried out 10 times to obtain avg/std
+		\item comparison to LSQ: LSQ unreliable \textbf{[todo]}
 		\item in the limit of small noise one gets a good fit
-		\item obtain cutoff in noise free case, compute failure rate (number of false positives and negatives)
+		\item obtain cutoff in noise free case -> compute failure rate (number of false positives and negatives)
 	\end{itemize}
 
 	\begin{figure}
@@ -165,14 +173,16 @@
 	\subsection{Multiple initial conditions}\label{sec:case-3}
 	
 	\begin{itemize}
-		\item extend situation of Section \ref{sec:case-3} to multiple initial conditions
+		\item extend situation of Section \ref{sec:case-3} to multiple initial conditions (zipped / reorder)
+		\item $20$-fold CV discarding 1st fold (see sec 2)
 		\item compute failure rate
+		\item model can reliably be recovered in the limit of small noise
 	\end{itemize}
 
 	\begin{figure}
 		\centering
 		\includegraphics[width=\columnwidth]{./figures_tex/case3}
-		\caption{Convergence of the estimation error when using two concatenated concentration timeseries with different initial conditions. \textbf{(a)}: A realization of one of the initial conditions that were used. It is identical to the initial conditions used in Sec.~\ref{sec:case-1} and Sec.~\ref{sec:case-2}. \textbf{(b)}: A realization of the other initial condition that was used. It prescribes positive initial concentrations for $\mathrm{mRNA}_\mathrm{A}$, $\mathrm{B}$, and $\mathrm{C}$ species. \textbf{(c)}: Analogously to Fig.~\ref{fig:case2-convergence} with the difference that 20-fold cross validation was used for hyperparameter estimation.}
+		\caption{Convergence of the estimation error when using two concatenated concentration timeseries with different initial conditions. \textbf{(a)}: A realization of the concatenated timeseries. The first initial condition is identical to what was used in Sec.~\ref{sec:case-1} and Sec.~\ref{sec:case-2}. The second initial condition prescribes positive initial concentrations for $\mathrm{mRNA}_\mathrm{A}$, $\mathrm{B}$, and $\mathrm{C}$ species. \textbf{(b)}: Analogously to Fig.~\ref{fig:case2-convergence} with the difference that 20-fold cross validation was used for hyperparameter estimation.}
 	\end{figure}
     
 	\section{Conclusion}
@@ -181,9 +191,9 @@
 	\end{colbox}
 	In this work we have successfully applied and extended the SINDy method to not only parsimoniously detect potentially nonlinear terms in a dynamical system from noisy data, but also yield, in this case, a sparse set of rates with respect to generating reactions (\ref{method:the-reactions}).
 
-	In two examples it was demonstrated that despite noisy data and unavailable derivative measurements, a parsimonious generating reaction network that is qualitatively able to explain the observed data can be estimated.
-	In particular it was shown in the first example that if there is no ambiguity in the underlying model and ansatz reaction library, the actual rates can be recovered with decreasing time step, i.e., increasing resolution of the jump process.
-	In the second example we could obtain an even simpler model than what was used to generate data by making use of sparse regression and cross-validation.
+	%In two examples it was demonstrated that despite noisy data and unavailable derivative measurements, a parsimonious generating reaction network that is qualitatively able to explain the observed data can be estimated.
+	%In particular it was shown in the first example that if there is no ambiguity in the underlying model and ansatz reaction library, the actual rates can be recovered with decreasing time step, i.e., increasing resolution of the jump process.
+	%In the second example we could obtain an even simpler model than what was used to generate data by making use of sparse regression and cross-validation.
 
 	\newpage
 % 	\bibliographystyle{alpha}
