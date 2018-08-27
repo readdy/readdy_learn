@@ -109,7 +109,7 @@
     \begin{figure}
         \centering
         \includegraphics[width=.5\textwidth]{./figures_tex/scheme.pdf}
-        \caption{The regulation network example described in Sec.~\ref{sec:generegulation}. \textbf{(a)}: Each circle depicts a species, each arrow corresponds to one reaction. Blue arrows denote transcription from DNA to mRNA, green arrows denote translation from mRNA to protein, and red arrows denote the regulatory network. \textbf{(b)}: Concentration timeseries generated from the reaction network shown in~(a). The initial condition prescribes positive concentration values only for B protein and $\mathrm{mRNA}_\mathrm{A}$ species. This initial condition is used in the subsequent sections for further analysis.}
+        \caption{The regulation network example described in Sec.~\ref{sec:generegulation}. \textbf{(a)}: Each circle depicts a species, each arrow corresponds to one reaction. Blue arrows denote transcription from DNA to $\mathrm{mRNA}$, green arrows denote translation from $\mathrm{mRNA}$ to protein, and red arrows denote the regulatory network. \textbf{(b)}: Concentration timeseries generated from the reaction network shown in~(a). The initial condition prescribes positive concentration values only for $\mathrm{B}$ protein and $\mathrm{mRNA}_\mathrm{A}$ species. This initial condition is used in the subsequent sections for further analysis.}
         \label{fig:network}
     \end{figure}
 
@@ -117,11 +117,11 @@
 	
 	The proposed estimation method is designed to find reaction networks and rates from experimental data. In the following the method is applied to data generated from the example described in Section \ref{sec:generegulation}.
 
-	First it is assumed that the concentration data can be obtained without noise and it is shown that while the minimization problem (\ref{method:minimizationproblem}) without regularization, i.e., $\alpha=0$, yields rates that fit well to the input data, the original rates cannot be recovered while adding $L_1$ regularization and a certain cutoff improves the situation and the original model can be recovered.
+	First it is assumed that the concentration data can be obtained without noise and it is shown that while the minimization problem (\ref{method:minimizationproblem}) without regularization, i.e., $\alpha=0$, yields rates that fit well to the input data, the original rates cannot be recovered while adding $L_1$ regularization and applying a cutoff recovers the underlying reaction network \textcolor{red}{(and rates?)}.
 	
-	In Section \ref{sec:case-2} the example data contains additive Gaussian noise. It is assumed that the initial state can be reproduced exactly and one has several measurements. It is shown that in the limit of small noise one can obtain a good fit and regularization helps in the reliability of the estimated reaction rates.
+	In Section \ref{sec:case-2} the example data was generated using the Gillespie SSA \textbf{[cite]}. While the concentrations now contain stochastic noise, it is assumed that the initial state can be reproduced exactly and multiple measurements with that exact initial condition can be performed. It is shown that in the limit of many measurements a good fit can reliably be obtained.
 	
-	The last example is described in Section \ref{sec:case-3} and can be seen as an extension of the situation in Section \ref{sec:case-3} to multiple initial conditions.
+	The last example is described in Section \ref{sec:case-3} and is an extension of the situation in Section \ref{sec:case-2} to multiple initial conditions. Due to more varied data and more statistics a good fit can be obtained with fewer measurements than in the case of just one initial condition.
 	
 	%measurement scenarios are considered that differ in how many time series are available and the level of noise that the data is subject to:
 	%\begin{enumerate}
