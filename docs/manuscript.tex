@@ -134,14 +134,16 @@
 	
 	In this section noiseless data generated from the law of mass action system described in Section \ref{sec:generegulation} is applied to the minimization problem (\ref{method:minimizationproblem}). When setting the hyperparameter $\alpha=0$ one obtains least squares regression with a constraint on the non-negativity of the estimated reaction rates.
 	
+	When applying no regularization, one can observe in Figure \ref{fig:case-1-sparsity-pattern} that the sparsity pattern does not match the generating reaction network and the reaction responsible for the decay of $\mathrm{A}$ particles is completely ignored. For a suitable choice of hyperparameters $\alpha \approx 1.91\cdot 10^{-7}$, $\lambda=1$, and a cutoff $\kappa = 0.22$ a sparser solution can be obtained and also the decay reaction as indicated by the red rings in the figure can be recovered. The cutoff $\kappa$ is applied so that for all reactions with an estimated rate $\hat{\xi} < \kappa$ a rate of $\hat{\xi} = 0$ is assigned. A bubble whose size corresponds to a rate of $\kappa$ is depicted in Fig.~\ref{fig:case-1-sparsity-pattern} in green.
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=.9\textwidth]{./figures_tex/sparsity_pattern}
-		\caption{Estimated reaction rates in the system described in Sec.~\ref{sec:case-1}. The y and x axes contain reaction educts and products, respectively. A circle at position $(i,j)$ represents a reaction $i\rightharpoonup j$ whose rate has a linear relation with the area of the circle. The black outlines denote the reactions with which the system was generated and contain the respective rate value. Red crosses denote reactions that were used as additional ansatz reactions. Blue circles are estimated by linear least-squares and orange circles depict rates which were obtained by solving the minimization problem (\ref{method:minimizationproblem}). The latter rates are subject to a cutoff $c=0.22$ corresponding to the green circle's area under which a sparse solution with the correct processes can be recovered. If a certain rate was estimated in both cases, two wedges instead of one circle are displayed.}
+		\caption{Estimated reaction rates in the system described in Sec.~\ref{sec:case-1}. The y and x axes contain reaction educts and products, respectively. A circle at position $(i,j)$ represents a reaction $i\rightharpoonup j$ whose rate has a linear relation with the area of the circle. The black outlines denote the reactions with which the system was generated and contain the respective rate value. Red crosses denote reactions that were used as additional ansatz reactions. Blue circles are estimated by linear least-squares and orange circles depict rates which were obtained by solving the minimization problem (\ref{method:minimizationproblem}). The latter rates are subject to a cutoff $\kappa=0.22$ corresponding to the green circle's area under which a sparse solution with the correct processes can be recovered. If a certain rate was estimated in both cases, two wedges instead of one circle are displayed.}
 		\label{fig:case-1-sparsity-pattern}
 	\end{figure}
 
-	When applying no regularization, one can observe in Figure \ref{fig:case-1-sparsity-pattern} that the sparsity pattern does not match the generating reaction network and the reaction responsible for the decay of $\mathrm{A}$ particles is completely ignored. For a suitable choice of the hyperparameter $\alpha > 0$ and a cutoff one can obtain a sparser solution and also recover the decay reaction as indicated by the red rings in the figure.
+	
 	
 	\subsection{Multiple measurements at the same noise level}\label{sec:case-2}
 	
@@ -189,12 +191,9 @@
 	\bibliography{bibliography.bib}
 	\newpage	
 	\section{Appendix}\label{sec:appendix}
-	\begin{colbox}{F8E0E0}
-		the reaction table needs an update
-	\end{colbox}
 	\begin{table}[h]
 		\centering
-		\scalebox{0.7}{
+		\scalebox{.75}{
 			\begin{tabular}{rclcc}
 				\multicolumn{3}{c}{Reaction} & rate & description \\ \hline\noalign{\vskip .1cm}
 				$\mathrm{DNA}_\mathrm{A}$ &$\rightharpoonup$& $\mathrm{DNA}_\mathrm{A} + \mathrm{mRNA}_\mathrm{A}$ & $k_1 = 1.8$ & transcription of $\mathrm{mRNA}_\mathrm{A}$\\
@@ -246,7 +245,7 @@
 				$\mathrm{mRNA}_\mathrm{C} + \mathrm{C}$ &$\rightharpoonup$& $\mathrm{C}$ & $k_{43} = 0$ & artificial fusion
 			\end{tabular}
 		}
-		\caption{Full set of ansatz reactions $\Theta$ used in Section \ref{sec:examples}.}
+		\caption{Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:results}.}
 		\label{tab:reaction-library}
 	\end{table}
 \end{document}
