@@ -1,5 +1,5 @@
-#LyX 2.2 created this file. For more info see http://www.lyx.org/
-\lyxformat 508
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -8,7 +8,25 @@
 \begin_preamble
 
 
+\usepackage{xcolor}
 \usepackage{subcaption}
+
+
+
+
+\newsavebox{\selvestebox}
+\newenvironment{colbox}[1]{\newcommand\colboxcolor{#1}%
+	\begin{lrbox}{\selvestebox}%
+		\begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}{\end{minipage}\end{lrbox}%
+	\begin{center}
+		\colorbox[HTML]{\colboxcolor}{\usebox{\selvestebox}}
+\end{center}}
+\newcommand{\restr}[2]{{% we make the whole thing an ordinary symbol
+		\left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+		#1 % the function
+		\vphantom{\big|} % pretend it's a little taller at normal size
+		\right|_{#2} % this is the delimiter
+}}
 \end_preamble
 \options abstracton,titlepage
 \use_default_options false
@@ -27,6 +45,8 @@
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -56,6 +76,7 @@
 \suppress_date false
 \justification true
 \use_refstyle 0
+\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -64,7 +85,10 @@
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\quotes_language english
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -86,19 +110,26 @@ Introduction
 \end_layout
 
 \begin_layout Standard
+
+\color red
+Cite and mention previous works.
+\end_layout
+
+\begin_layout Standard
 When presented with a time series of possibly noisy non-equilibrium concentratio
 n fluctuations of some species as output of, e.g., measurements from experiments
- or simulations that were parameterized by microscopic rates 
-\color red
-(cite ReaDDy?)
-\color inherit
-, one can ask for the corresponding macroscopic rates and a generating reaction
- network.
+ or simulations that were parameterized by microscopic rates, one can ask
+ for the corresponding macroscopic rates and a generating reaction network.
  In this paper we present an application of the shallow learning method
- SINDy 
+ SINDy
+\begin_inset space ~
+\end_inset
+
+
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Brunton2015"
+literal "true"
 
 \end_inset
 
@@ -107,13 +138,18 @@ key "Brunton2015"
  in data that stems from dynamical systems.
  The parsimonious nature of the results avoids overfitting and provides
  interpretability.
- In our application we, as opposed to the original method, do not only look
- for macroscopic rates of net species change but investigate the specific
- reactions that might have lead to the observations.
- We demonstrate the algorithm on two toy problems - one problem showing
- that when there is no ambiguity in the system, one converges to the correct
- rates with increasing resolution of concentration fluctuations and one
- in which we compute a sparse reaction network for given data.
+ In our application we, as opposed to the SINDy method, estimate parameters
+ which are coupled across the equations of the arising ODE system, i.e., we
+ look for specific reactions and their rate constants that might have lead
+ to the observations instead of net flux across species.
+ We demonstrate the algorithm on a biologically motivated reaction kinetics
+ system in three different scenarios of measurement: When there is no noise
+ in the data we can find all relevant processes of the ground truth.
+ If there is noise in the data we converge to the correct reaction network
+ and rates with decreasing noise.
+ The last scenario deals with the case that there are two realizations with
+ different initial conditions, for which one can also show convergence to
+ the correct model with decreasing levels of noise.
 \end_layout
 
 \begin_layout Section
@@ -121,7 +157,8 @@ The method
 \end_layout
 
 \begin_layout Standard
-The underlying model is a law of mass action type dynamical system.
+The underlying model are reaction-rate equations subject to the law of mass
+ action.
  To this end, let 
 \begin_inset Formula $S$
 \end_inset
@@ -145,13 +182,13 @@ Further, one can choose
 \begin_inset Formula $R$
 \end_inset
 
- possible ansatz reactions with their respective reaction function 
+ possible ansatz reactions with their respective reaction functions 
 \begin_inset Formula 
 \begin{align}
 \textbf{y}_{r}(\textbf{x}(t))=\begin{pmatrix}y_{r,1}(\textbf{x}(t))\\
 \vdots\\
 y_{r,S}(\textbf{x}(t))
-\end{pmatrix}
+\end{pmatrix},\quad r=1,\ldots,R,
 \end{align}
 
 \end_inset
@@ -164,7 +201,7 @@ so that the change of concentration for species
 \begin_inset Formula $t$
 \end_inset
 
-, is represented by the dynamical system 
+ is represented by the dynamical system 
 \begin_inset Formula 
 \begin{align}
 \dot{\textbf{x}}_{i}(t)=\sum_{r=1}^{R}y_{r,i}(\textbf{x}(t))\xi_{r},\quad i=1,\ldots,S,\label{method:the-system}
@@ -176,7 +213,7 @@ where
 \begin_inset Formula $\xi_{r}$
 \end_inset
 
- are the to-be estimated macroscopic rates.
+ are the to-be estimated macroscopic rate constants.
 \end_layout
 
 \begin_layout Standard
@@ -184,7 +221,11 @@ When presented with a time series consisting of
 \begin_inset Formula $T$
 \end_inset
 
- observations, the data can be represented as a matrix 
+ observations at points in time 
+\begin_inset Formula $t_{1}<\ldots<t_{T}$
+\end_inset
+
+, the data can be represented as a matrix 
 \begin_inset Formula 
 \begin{align}
 \textbf{X}=\begin{pmatrix}x_{1}(t_{1}) & x_{2}(t_{1}) & \cdots & x_{S}(t_{1})\\
@@ -196,27 +237,28 @@ x_{1}(t_{T}) & x_{2}(t_{T}) & \cdots & x_{S}(t_{T})
 
 \end_inset
 
-Given this matrix, one can propose a library 
-\begin_inset Formula $\Theta(\textbf{X})=\begin{pmatrix}\theta_{1}(\textbf{X}) & \theta_{2}(\textbf{X}) & \cdots & \theta_{R}(\textbf{X})\end{pmatrix}$
+Given this matrix, a library 
+\begin_inset Formula $\Theta:\mathbb{R}^{T\times S}\to\mathbb{R}^{T\times S\times R},\;\mathbf{A}\mapsto\begin{pmatrix}\theta_{1}(\mathbf{A}) & \theta_{2}(\mathbf{A}) & \cdots & \theta_{R}(\mathbf{A})\end{pmatrix}$
 \end_inset
 
  of 
 \begin_inset Formula $R$
 \end_inset
 
- ansatz reactions with corresponding reaction functions 
+ ansatz reactions can be proposed with corresponding reaction functions
+ 
 \begin_inset Formula 
 \begin{align}
-\theta_{r}(\textbf{X})=\begin{pmatrix}\textbf{y}_{r}(\textbf{X}_{1})^{T}\\
+\theta_{r}(\mathbf{A})=\begin{pmatrix}\textbf{y}_{r}(\mathbf{A}_{1*})^{T}\\
 \vdots\\
-\textbf{y}_{r}(\textbf{X}_{T})^{T}
+\textbf{y}_{r}(\mathbf{A}_{T*})^{T}
 \end{pmatrix}\in\mathbb{R}^{T\times S},\quad r=1,\ldots,R,\label{method:the-reactions}
 \end{align}
 
 \end_inset
 
 where 
-\begin_inset Formula $\textbf{X}_{i}$
+\begin_inset Formula $\textbf{A}_{i*}$
 \end_inset
 
  denotes the 
@@ -224,7 +266,7 @@ where
 \end_inset
 
 -th row in 
-\begin_inset Formula $X$
+\begin_inset Formula $\textbf{A}$
 \end_inset
 
 .
@@ -233,7 +275,7 @@ where
 \end_inset
 
 .
- Following the approach of SINDy, the goal is now to find coefficients 
+ Following the approach of SINDy, the goal is to find coefficients 
 \begin_inset Formula $\Xi=\begin{pmatrix}\xi_{1} & \xi_{2} & \cdots & \xi_{R}\end{pmatrix}^{T}$
 \end_inset
 
@@ -249,10 +291,11 @@ In particular, the system is linear in the coefficients
 \begin_inset Formula $\Xi$
 \end_inset
 
-, which makes sparse regression tools such as LASSO 
+, which makes regression tools such as elastic net regularization 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Tibshirani1996, Hastie2009"
+key "Zou2005"
+literal "true"
 
 \end_inset
 
@@ -264,7 +307,7 @@ key "Tibshirani1996, Hastie2009"
  such that 
 \begin_inset Formula 
 \begin{align}
-\hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\|\Xi\|_{1}\right)\quad\text{subject to }\Xi\geq0,\label{method:minimizationproblem}
+\hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}^{2}\right)\quad\text{subject to }\Xi\geq0,\label{method:minimizationproblem}
 \end{align}
 
 \end_inset
@@ -273,82 +316,336 @@ where
 \begin_inset Formula $\|\cdot\|_{F}$
 \end_inset
 
- denotes the Frobenius norm and 
+ denotes the Frobenius norm, 
+\begin_inset Formula $\lambda\in[0,1]$
+\end_inset
+
+ a hyperparameter that interpolates linearly between LASSO 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tibshirani1996, Hastie2009"
+literal "true"
+
+\end_inset
+
+ and Ridge 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Hoerl1"
+literal "true"
+
+\end_inset
+
+ methods, and 
 \begin_inset Formula $\alpha\geq0$
 \end_inset
 
- is a sparsity inducing hyperparameter.
- For 
+ is a hyperparameter that, depending on 
+\begin_inset Formula $\lambda$
+\end_inset
+
+, can induce sparsity and give preference to smaller solutions in the 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ or 
+\begin_inset Formula $L_{2}$
+\end_inset
+
+ sense.
+\end_layout
+
+\begin_layout Standard
+For 
 \begin_inset Formula $\alpha=0$
 \end_inset
 
- the minimization problem reduces to constrained least-squares.
+ the minimization problem reduces to constrained least-squares (LSQ).
  In order to solve (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
-) we apply the sequential least-squares minimizer SLSQP, originally described
- in 
+) the numerical sequential least-squares minimizer SLSQP 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Kraft1988"
+literal "true"
 
 \end_inset
 
-, by the software package SciPy 
+ is applied via the software package SciPy 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "SciPy"
+literal "true"
 
 \end_inset
 
 .
- As initial guess for the regularized problem we use the solution of (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "method:minimizationproblem"
-
+ Since only the concentration data 
+\begin_inset Formula $\mathbf{X}$
 \end_inset
 
-) with 
-\begin_inset Formula $\alpha=0$
+ is available but not its temporal derivative 
+\begin_inset Formula $\dot{\mathbf{X}}$
 \end_inset
 
-.
+, it is approximated numerically by second order finite differences with
+ the exception of boundary data.
+ Once the pair 
+\begin_inset Formula $(\mathbf{X},\dot{\mathbf{X}})$
+\end_inset
+
+ is obtained, the problem becomes invariant under temporal reordering.
+ Hence, when presented with multiple trajectories the data matrices 
+\begin_inset Formula $\mathbf{X}_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{\mathbf{X}}_{i}$
+\end_inset
+
+ can simply be concatenated.
 \end_layout
 
 \begin_layout Section
-Examples
+Example system: Regulation of gene expression
 \end_layout
 
 \begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:generegulation"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To demonstrate the method a gene-regulatory network is estimated from time
+ series of molecule-concentrations.
+\end_layout
+
+\begin_layout Standard
+To this end, let 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+, and 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ be three species of proteins which are being translated from a corresponding
+ 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ molecule.
+ Each 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ in turn has a corresponding 
+\begin_inset Formula $\mathrm{DNA}$
+\end_inset
+
+ which it is transcribed from.
+ The proteins and 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ molecules decay over time whereas the 
+\begin_inset Formula $\mathrm{DNA}$
+\end_inset
+
+ concentration remains constant.
+\end_layout
+
+\begin_layout Standard
+The following basic reactions can be formulated 
+\begin_inset Formula 
+\begin{align*}
+\mathrm{DNA}_{i} & \rightharpoonup\mathrm{DNA}_{i}+\mathrm{mRNA}_{i} &  & \text{(transcription)},\\
+\mathrm{mRNA}_{i} & \rightharpoonup\mathrm{mRNA}_{i}+i &  & \text{(translation)},\\
+\mathrm{mRNA}_{i} & \rightharpoonup\emptyset &  & \text{(decay of mRNA)},\\
+i & \rightharpoonup\emptyset &  & \text{(decay of protein)},
+\end{align*}
+
+\end_inset
+
+for each of the species 
+\begin_inset Formula $i\in S:=\{\mathrm{A},\mathrm{B},\mathrm{C}\}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The protein concentrations of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+, and 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ regulate each other in a negative way by hindering the transcription process.
+ In the law of mass action model we account for this by a reaction.
+ A repression of species 
+\begin_inset Formula $j\in S$
+\end_inset
+
+ by species 
+\begin_inset Formula $i\in S$
+\end_inset
+
+ can be modeled as 
+\begin_inset Formula 
+\begin{align*}
+i+\mathrm{mRNA}_{j}\rightharpoonup i.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In our example proteins of type 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ regulate the 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ molecules, proteins of type 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ regulate the 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ molecules and proteins of type 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ regulate the 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ molecules.
+ The network of all species and reactions is depicted in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ This serves as reference model to generate the time series of concentrations.
+ 
 \begin_inset Float figure
 wide false
 sideways false
 status open
 
 \begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures_tex/aux_linear_approximation.eps
-	lyxscale 50
-	width 50text%
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
 
 \end_inset
 
  
-\end_layout
+\begin_inset Graphics
+	filename figures_tex/scheme.pdf
+	width 100col%
 
-\begin_layout Plain Layout
+\end_inset
+
+ 
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-This figure depicts a possible output yielded by an application of the Gillespie
- method and the performed piecewise linear approximation in order to obtain
- a better behaving derivative.
+The regulation network example described in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:generegulation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ 
+\series bold
+(a)
+\series default
+: Each circle depicts a species, each arrow corresponds to one reaction.
+ Blue arrows denote transcription from DNA to 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+, green arrows denote translation from 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ to protein, and red arrows denote the regulatory network.
+ 
+\series bold
+(b)
+\series default
+: Concentration timeseries generated from the reaction network shown in
+\begin_inset space ~
+\end_inset
+
+(a).
+ The initial condition prescribes positive concentration values only for
+ 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ protein and 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ species.
+ This initial condition is used in the subsequent sections for further analysis.
 \end_layout
 
 \end_inset
@@ -356,12 +653,26 @@ This figure depicts a possible output yielded by an application of the Gillespie
 
 \begin_inset CommandInset label
 LatexCommand label
-name "examples:linear-approximation"
+name "fig:network"
 
 \end_inset
 
  
 \end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:results"
 
 \end_inset
 
@@ -369,704 +680,364 @@ name "examples:linear-approximation"
 \end_layout
 
 \begin_layout Standard
-For generating time series data of concentrations we use the Gillespie method
- 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Gillespie1976"
+The proposed estimation method is designed to find reaction networks and
+ rate constants from experimental data.
+ In the following the method is applied to data generated from the example
+ described in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:generegulation"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
 .
- For given initial conditions, we produce several realizations which then
- are converted to a trajectory with fixed time step and averaged.
- Since these trajectories are piecewise constant, one has to take special
- care when approximating the data's temporal derivative that is needed in
- (
+\end_layout
+
+\begin_layout Standard
+In Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ is assumed that the concentration data can be obtained without noise and
+ it is shown that while the minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) without regularization, i.e., 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+, yields rates that fit well to the input data, the original rates cannot
+ be recovered while adding 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ regularization and applying a cutoff recovers the underlying reaction network.
+\end_layout
+
+\begin_layout Standard
+In Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ the example data was generated using the Gillespie SSA 
+\series bold
+[cite]
+\series default
+.
+ While the concentrations now contain stochastic noise, it is assumed that
+ the initial state can be reproduced exactly and multiple measurements with
+ that exact initial condition can be performed.
+ It is shown that in the limit of many measurements a good fit can reliably
+ be obtained.
+\end_layout
+
+\begin_layout Standard
+The last example is described in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and is an extension of the situation in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ to multiple initial conditions.
+ Due to more varied data and more statistics a good fit can be obtained
+ with fewer measurements than in the case of just one initial condition.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%measurement scenarios are considered that differ in how many time series
+ are available and the level of noise that the data is subject to:
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\backslash
+begin{enumerate}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%	
+\backslash
+item The initial state of the measurement apparatus can be reproduced exactly.
+ There is only one set of generating reaction rates.
+ Each frame of a time series is subject to noise.
+ The outcome of this scenario is one time series of concentrations with
+ a certain noise-level.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%	
+\backslash
+item The process is observed multiple times.
+ The initial state of the measurement apparatus differs in each observation.
+ The outcome of this scenario is multiple time series each with a certain
+ noise level and different initial states.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\backslash
+item The process is observed multiple times.
+ The initial state of the measurement apparatus differs in each observation.
+ Additionally the generating reaction rates differ slightly in each observation.
+ The outcome of this scenario is multiple time series each with a given
+ noise level, different initial states and slightly perturbed underlying
+ reaction rates.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\backslash
+end{enumerate}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+The noiseless case
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:case-1"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this section noiseless data is generated from integrating the reaction-rate
+ equation (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:the-system"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) of the system described in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:generegulation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is solved with respect to this data.
+ When setting the hyperparameter 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ one obtains linear least-squares regression with a constraint on the non-negati
+vity of the estimated reaction rates.
+\end_layout
+
+\begin_layout Standard
+When applying constrained linear least-squares regression, one can observe
+ that the sparsity pattern does not match the generating reaction network
+ and the reaction responsible for the decay of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ particles is completely ignored (Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case-1-sparsity-pattern"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
 ).
- Applying finite differences has the effect that, with decreasing time step,
- the derivative mostly constant zero and approaches infinity at the jump
- discontinuities.
- To counter this effect, we beforehand perform a linear approximation between
- each two adjacent discontinuities, as depicted in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "examples:linear-approximation"
-
-\end_inset
-
- and thus obtain a piecewise constant derivative.
- (
-\color red
-Use regularized derivative?
-\color inherit
-)
-\end_layout
-
-\begin_layout Subsection
-Regression without regularization
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset label
-LatexCommand label
-name "sec:ex1"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Here we demonstrate that, with decreasing time step 
-\begin_inset Formula $\Delta t$
-\end_inset
-
- and 
-\begin_inset Formula $\alpha=0$
-\end_inset
-
-, the estimated rates converge to the true rates if there is no ambiguity
- in the system.
- Let there be two species 
-\begin_inset Formula $A$
-\end_inset
-
- and 
-\begin_inset Formula $B$
-\end_inset
-
- which can unimolecularly convert into each other with macroscopic rates
- of 
-\begin_inset Formula $k_{1}=4.0$
-\end_inset
-
- and 
-\begin_inset Formula $k_{2}=0.5$
-\end_inset
-
-, respectively.
- The initial amount of particles is set to 
-\begin_inset Formula $70$
-\end_inset
-
- of type 
-\begin_inset Formula $A$
-\end_inset
-
- and 
-\begin_inset Formula $0$
-\end_inset
-
- of type 
-\begin_inset Formula $B$
-\end_inset
-
-.
- The law of mass action solution and Gillespie realization corresponding
- to this system are depicted in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex1:concentration-curves"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures_tex/aux_ex1_concentration_curves.eps
-	lyxscale 50
-	width 50text%
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-The law of mass action solution and a Gillespie realization of the example
- given in Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:ex1"
-
-\end_inset
-
-.
-\end_layout
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "ex1:concentration-curves"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-For each 
-\begin_inset Formula $\Delta t$
-\end_inset
-
-, eight different realizations with identical starting conditions are averaged
- into a single trajectory, of which then the rates for reactions 
-\begin_inset Formula $A\to B$
-\end_inset
-
- and 
-\begin_inset Formula $B\to A$
-\end_inset
-
- are estimated.
- This procedure was repeated 
-\begin_inset Formula $30$
-\end_inset
-
- times.
- In Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex1:rates-convergence"
-
-\end_inset
-
-, the average estimates with their standard deviations are shown.
- One can see that, with decreasing 
-\begin_inset Formula $\Delta t$
-\end_inset
-
-, the estimates become better and the rates can be recovered.
- Further it can be observed that in this case a time step of 
-\begin_inset Formula $\Delta t\approx10^{-2}$
-\end_inset
-
- suffices.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures_tex/aux_rates_convergence.eps
-	lyxscale 50
-	width 50text%
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Convergence of estimated rates with decreasing 
-\begin_inset Formula $\Delta t$
-\end_inset
-
-.
-\end_layout
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "ex1:rates-convergence"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection
-Regression with regularization
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset label
-LatexCommand label
-name "sec:ex2"
-
-\end_inset
-
- In this example there are four species 
-\begin_inset Formula $A$
+ For a suitable choice of hyperparameters 
+\begin_inset Formula $\alpha\approx1.91\cdot10^{-7}$
 \end_inset
 
 , 
-\begin_inset Formula $B$
+\begin_inset Formula $\lambda=1$
 \end_inset
 
-, 
-\begin_inset Formula $C$
+, and a cutoff 
+\begin_inset Formula $\kappa=0.22$
 \end_inset
 
-, and 
-\begin_inset Formula $D$
+ a sparse solution can be obtained and also the decay reaction can be recovered.
+ The cutoff 
+\begin_inset Formula $\kappa$
 \end_inset
 
-.
- The system was generated with reactions 
-\begin_inset Formula $A\xrightarrow{k_{1}}D$
+ is applied so that for all reactions with an estimated rate 
+\begin_inset Formula $\hat{\xi}<\kappa$
 \end_inset
 
-, 
-\begin_inset Formula $D\xrightarrow{k_{2}}A$
+ a rate of 
+\begin_inset Formula $\hat{\xi}=0$
 \end_inset
 
-, 
-\begin_inset Formula $D\xrightarrow{k_{3}}B$
+ is assigned.
+ A circle with size corresponding to a rate of 
+\begin_inset Formula $\kappa$
 \end_inset
 
-, 
-\begin_inset Formula $A+B\xrightarrow{k_{4}}C$
-\end_inset
-
-, and 
-\begin_inset Formula $C\xrightarrow{k_{5}}D+B$
-\end_inset
-
-, where the rates are given in Table 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "tab:estimated-rates"
-
-\end_inset
-
-.
- These reactions are inserted into the ansatz library 
-\begin_inset Formula $\Theta(\cdot)$
-\end_inset
-
-.
- Additionally the reactions 
-\begin_inset Formula $A\leftrightarrow B$
-\end_inset
-
-, 
-\begin_inset Formula $A\leftrightarrow C$
-\end_inset
-
-, and 
-\begin_inset Formula $A+C\leftrightarrow D$
-\end_inset
-
- are inserted into the library.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-centering
-\end_layout
-
-\end_inset
-
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-begin{subfigure}[b]
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-{
-\end_layout
-
-\end_inset
-
-.45
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-textwidth
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Graphics
-	filename figures_tex/cv_concentrations_train.eps
-	lyxscale 50
-	width 100text%
-
-\end_inset
-
- 
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Train data set.
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{subfigure}
-\end_layout
-
-\end_inset
-
- 
+ is depicted in Fig.
 \begin_inset space ~
 \end_inset
 
- 
-\begin_inset ERT
-status collapsed
 
-\begin_layout Plain Layout
-
-
-\backslash
-begin{subfigure}[b]
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-{
-\end_layout
-
-\end_inset
-
-.45
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-textwidth
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Graphics
-	filename figures_tex/cv_concentrations_test.eps
-	lyxscale 50
-	width 100text%
-
-\end_inset
-
- 
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Test data set.
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-end{subfigure}
-\end_layout
-
-\end_inset
-
- 
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Train and test data sets for the example given in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sec:ex2"
+reference "fig:case-1-sparsity-pattern"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
-.
-\end_layout
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "ex2:test-train-concentration-curves"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The problem now is to find a suitable 
-\begin_inset Formula $\alpha$
-\end_inset
-
- such that a parsimonious solution is yielded.
- To this end, cross-validation is applied.
- The trajectories that are used as training and test data set are depicted
- in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex2:test-train-concentration-curves"
-
-\end_inset
-
-.
- 
-\color red
-Perhaps use several test trajectories with different initial conditions
- to get something like a confidence interval?
-\color inherit
- As an indicator to the estimation error one can use the scoring function
- 
-\begin_inset Formula 
-\begin{align}
-f_{\alpha}=\frac{1}{T}\|\mathbf{\dot{X}}_{\text{test}}-\Theta(\textbf{X}_{\text{test}})\Xi_{\text{train}}\|_{F}^{2},\label{ex2:score-function}
-\end{align}
-
-\end_inset
-
-where the best possible score is 
-\begin_inset Formula $f_{\alpha}=0$
-\end_inset
-
- and larger values indicate worse models.
- For a selection of hyperparameters 
-\begin_inset Formula $\alpha\in[0,100]$
-\end_inset
-
-, the model parameters 
-\begin_inset Formula $\Xi$
-\end_inset
-
- are estimated and the scoring function (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex2:score-function"
-
-\end_inset
-
-) evaluated, yielding a dependency of the score on 
-\begin_inset Formula $\alpha$
-\end_inset
-
- as depicted in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex2:score-graph"
-
-\end_inset
-
-.
+ in green.
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures_tex/cv_score.eps
-	lyxscale 50
-	width 50text%
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Score function (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex2:score-function"
-
-\end_inset
-
-) evaluated for a range of 
-\begin_inset Formula $\alpha$
-\end_inset
-
- values.
-\end_layout
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "ex2:score-graph"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-One can see that the minimum score is achieved at 
-\begin_inset Formula 
-\begin{align}
-\hat{\alpha}=\underset{\alpha\in[0,100]}{\arg\min}f_{\alpha}\approx10.
-\end{align}
-
-\end_inset
-
-When evaluating the minimization problem (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "method:minimizationproblem"
-
-\end_inset
-
-) with 
-\begin_inset Formula $\hat{\alpha}$
-\end_inset
-
- as hyperparameter for the regularizer and applying a cut-off of 
-\begin_inset Formula $10^{-10}$
-\end_inset
-
- to the yielded parameters, one obtains the simpler set of reactions 
-\begin_inset Formula $A\xrightarrow{\hat{k}_{1}}D$
-\end_inset
-
-, 
-\begin_inset Formula $D\xrightarrow{\hat{k}_{3}}B$
-\end_inset
-
-, and 
-\begin_inset Formula $A+B\xrightarrow{\hat{k}_{4}}C$
-\end_inset
-
- with rates as in Table 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "tab:estimated-rates"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float table
 wide false
 sideways false
 status open
@@ -1080,23 +1051,625 @@ status collapsed
 
 \backslash
 centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Graphics
+	filename figures_tex/sparsity_pattern.pdf
+	width 90line%
+
+\end_inset
+
+ 
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Estimated reaction rates in the system described in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The y and x axes contain reaction educts and products, respectively.
+ A circle at position 
+\begin_inset Formula $(i,j)$
+\end_inset
+
+ represents a reaction 
+\begin_inset Formula $i\rightharpoonup j$
+\end_inset
+
+ whose rate has a linear relation with the area of the circle.
+ The black outlines denote the reactions with which the system was generated
+ and contain the respective rate value.
+ Red crosses denote reactions that were used as additional ansatz reactions.
+ Blue circles are estimated by linear least-squares and orange circles depict
+ rates which were obtained by solving the minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ The latter rates are subject to a cutoff 
+\begin_inset Formula $\kappa=0.22$
+\end_inset
+
+ corresponding to the green circle's area under which a sparse solution
+ with the correct processes can be recovered.
+ If a certain rate was estimated in both cases, two wedges instead of one
+ circle are displayed.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:case-1-sparsity-pattern"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Todo
+\series default
+: 
+\end_layout
+
+\begin_layout Enumerate
+mention finite statistics 
+\end_layout
+
+\begin_layout Enumerate
+how does LSQ compensate for 
+\begin_inset Formula $A\to\emptyset$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Enumerate
+ansatzfunctions used in 
+\begin_inset Formula $\Theta$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Subsection
+Data with stochastic noise
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:case-2"
+
+\end_inset
+
+ For Gillespie, the initial condition contains hundreds of particles such
+ that the average over many realizations converges against the reaction-rate
+ equation.
+\end_layout
+
+\begin_layout Itemize
+Same setup as in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Itemize
+def.
+ of failure rate 
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $10$
+\end_inset
+
+-fold cross validation discarding fold with test set at the (temporal) beginning
+ (reason: more robust hyperparameter estimation as statisticial dependence
+ of our data is higher at the initial equilibration phase, shuffle didn't
+ really work well) 
+\end_layout
+
+\begin_layout Itemize
+CV was independently carried out 10 times to obtain avg/std 
+\end_layout
+
+\begin_layout Itemize
+comparison to LSQ: LSQ unreliable 
+\series bold
+[todo]
+\series default
+ 
+\end_layout
+
+\begin_layout Itemize
+in the limit of small noise one gets a good fit 
+\end_layout
+
+\begin_layout Itemize
+obtain cutoff in noise free case -> compute failure rate (number of false
+ positives and negatives) 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Graphics
+	filename figures_tex/case2.pdf
+	width 100col%
+
+\end_inset
+
+ 
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Convergence of the estimation error when estimating the system described
+ in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ with decreasing levels of noise by application of the minimization problem
+ (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) for 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ (LSQ) and a 
+\begin_inset Formula $(\alpha,\lambda)$
+\end_inset
+
+ combination found through 
+\begin_inset Formula $10$
+\end_inset
+
+-fold cross-validation (regularized).
+ The level of noise is regulated by the number of measurements being averaged.
+ The procedure was repeated 10 times with different realizations giving
+ rise to the mean and standard deviation depicted by dark blue graph and
+ shaded blue area, respectively.
+ The failure rate is the number of incorrectly identified processes up to
+ the cutoff value introduced in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The estimation error is given by the 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ difference of the generating reaction rates 
+\begin_inset Formula $\xi$
+\end_inset
+
+ and the estimated reaction rates 
+\begin_inset Formula $\hat{\xi}$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:case2-convergence"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Multiple initial conditions
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:case-3"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+extend situation of Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ to multiple initial conditions (zipped / reorder) 
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $20$
+\end_inset
+
+-fold CV discarding 1st fold (see sec 4.2) 
+\end_layout
+
+\begin_layout Itemize
+compute failure rate 
+\end_layout
+
+\begin_layout Itemize
+model can reliably be recovered in the limit of small noise 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Graphics
+	filename figures_tex/case3.pdf
+	width 100col%
+
+\end_inset
+
+ 
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Convergence of the estimation error when using two concatenated concentration
+ timeseries with different initial conditions.
+ 
+\series bold
+(a)
+\series default
+: A realization of the concatenated timeseries.
+ The first initial condition is identical to what was used in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The second initial condition prescribes positive initial concentrations
+ for 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+, 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+, and 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ species.
+ 
+\series bold
+(b)
+\series default
+: Analogously to Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case2-convergence"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ with the difference that 20-fold cross validation was used for hyperparameter
+ estimation.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+In this work we have successfully applied and extended the SINDy method
+ to not only parsimoniously detect potentially nonlinear terms in a dynamical
+ system from noisy data, but also yield, in this case, a sparse set of rates
+ with respect to generating reactions (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:the-reactions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%In two examples it was demonstrated that despite noisy data and unavailable
+ derivative measurements, a parsimonious generating reaction network that
+ is qualitatively able to explain the observed data can be estimated.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%In particular it was shown in the first example that if there is no ambiguity
+ in the underlying model and ansatz reaction library, the actual rates can
+ be recovered with decreasing time step, i.e., increasing resolution of the
+ jump process.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%In the second example we could obtain an even simpler model than what was
+ used to generate data by making use of sparse regression and cross-validation.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+ 
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "bibliography.bib"
+options "abbrv"
+
+\end_inset
+
+ 
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Appendix
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:appendix"
+
+\end_inset
+
+ 
+\begin_inset Float table
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+scalebox{.75}{
 \end_layout
 
 \end_inset
 
  
 \begin_inset Tabular
-<lyxtabular version="3" rows="6" columns="3">
+<lyxtabular version="3" rows="48" columns="5">
 <features tabularvalignment="middle">
+<column alignment="right" valignment="top">
 <column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <row>
-<cell alignment="center" valignment="top" usebox="none">
+<cell multicolumn="1" alignment="none" valignment="top" usebox="none" special="c">
 \begin_inset Text
 
 \begin_layout Plain Layout
-Reaction 
+Reaction
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -1105,7 +1678,7 @@ Reaction
 \begin_inset Text
 
 \begin_layout Plain Layout
-original rate 
+rate 
 \end_layout
 
 \end_inset
@@ -1114,14 +1687,14 @@ original rate
 \begin_inset Text
 
 \begin_layout Plain Layout
-estimated rate 
+description 
 \end_layout
 
 \end_inset
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" usebox="none">
+<cell alignment="right" valignment="top" topline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -1173,7 +1746,7 @@ status collapsed
 \end_inset
 
  
-\begin_inset Formula $A\to D$
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{A}}$
 \end_inset
 
  
@@ -1185,7 +1758,19 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $k_{1}=2\cdot10^{-2}$
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{A}}+\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
  
@@ -1197,7 +1782,20 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\hat{k}_{1}\approx3.5\cdot10^{-3}$
+\begin_inset Formula $k_{1}=1.8$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+transcription of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
 
@@ -1207,11 +1805,11 @@ status collapsed
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" usebox="none">
+<cell alignment="right" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $D\to A$
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
  
@@ -1223,7 +1821,19 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $k_{2}=2\cdot10^{-2}$
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{A}$
 \end_inset
 
  
@@ -1235,21 +1845,7 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\hat{k}_{2}=0$
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $D\to B$
+\begin_inset Formula $k_{2}=2.1$
 \end_inset
 
  
@@ -1261,33 +1857,22 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $k_{3}=1\cdot10^{-2}$
+translation of 
+\begin_inset Formula $\mathrm{A}$
 \end_inset
 
- 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset Formula $\hat{k}_{3}\approx9.1\cdot10^{-3}$
-\end_inset
-
- 
+ proteins
 \end_layout
 
 \end_inset
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" usebox="none">
+<cell alignment="right" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $A+B\to C$
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
  
@@ -1299,7 +1884,19 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $k_{4}=1\cdot10^{-4}$
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\emptyset$
 \end_inset
 
  
@@ -1311,21 +1908,33 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\hat{k}_{4}\approx8.7\cdot10^{-5}$
+\begin_inset Formula $k_{3}=1.3$
 \end_inset
 
  
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ decay
 \end_layout
 
 \end_inset
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" usebox="none">
+<cell alignment="right" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $C\to D+B$
+\begin_inset Formula $\mathrm{A}$
 \end_inset
 
  
@@ -1337,7 +1946,19 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $k_{5}=1\cdot10^{-4}$
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\emptyset$
 \end_inset
 
  
@@ -1349,10 +1970,2647 @@ status collapsed
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset Formula $\hat{k}_{5}=0$
+\begin_inset Formula $k_{4}=1.5$
 \end_inset
 
  
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+decay of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{B}}+\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{5}=2.2$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+transcription of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{6}=2.0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+translation of 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\emptyset$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{7}=2.0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ decay
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\emptyset$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{8}=2.5$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+decay of 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{C}}+\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{9}=3.2$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+transcription of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{10}=3.0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+translation of 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\emptyset$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{11}=2.3$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ decay
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\emptyset$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{12}=2.5$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+decay of 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{13}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+self regulation of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{14}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+self regulation of 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{15}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+self regulation of 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{16}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+cyclic regulation of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{17}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+cyclic regulation of 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{18}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+cyclic regulation of 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{16}=6.0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+cyclic regulation of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{17}=4.0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+cyclic regulation of 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{18}=3.0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+cyclic regulation of 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{19}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{20}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{21}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{22}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{23}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{24}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{25}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{26}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ regulates 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{27}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ regulates 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{28}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ regulates 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{29}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{30}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{31}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{32}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{33}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}+\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{34}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{35}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial conversion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{36}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial conversion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{37}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial conversion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{38}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial conversion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{39}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial conversion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{40}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial conversion between proteins
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{41}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{42}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{43}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="right" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\rightharpoonup$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k_{43}=0$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+artificial fusion 
 \end_layout
 
 \end_inset
@@ -1363,13 +4621,35 @@ status collapsed
 \end_inset
 
 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Original and estimated reaction rates for the example in Section 
+Full set of ansatz reactions 
+\begin_inset Formula $\Theta$
+\end_inset
+
+ used in Sec.
+\begin_inset space ~
+\end_inset
+
+
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sec:ex2"
+reference "sec:results"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
@@ -1381,155 +4661,12 @@ reference "sec:ex2"
 
 \begin_inset CommandInset label
 LatexCommand label
-name "tab:estimated-rates"
+name "tab:reaction-library"
 
 \end_inset
 
  
 \end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-One can see in Figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "ex2:result"
-
-\end_inset
-
- that with this simpler set of reactions the observed concentration curves
- can be explained as well.
- Further, it can be argued that the second reaction of the original model
- 
-\begin_inset Formula $D\xrightarrow{k_{2}}A$
-\end_inset
-
- is compensated by a smaller rate 
-\begin_inset Formula $\hat{k}_{1}<k_{1}$
-\end_inset
-
- and that the fifth reaction of the generating model can be neglected altogether
- in the observed timescale as its rate is two orders of magnitude smaller
- than the other unimolecular reactions' rates.
- The parameters 
-\begin_inset Formula $k_{3}$
-\end_inset
-
- and 
-\begin_inset Formula $k_{4}$
-\end_inset
-
- are approximately recovered by 
-\begin_inset Formula $\hat{k}_{3}$
-\end_inset
-
- and 
-\begin_inset Formula $\hat{k}_{4}$
-\end_inset
-
-, respectively.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename figures_tex/cv_expected_estimated_concentrations.eps
-	lyxscale 50
-	width 50text%
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Integrated law of mass action equations (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "method:the-system"
-
-\end_inset
-
-) for the sparse estimated parameters and the corresponding Gillespie realizatio
-n for the example in Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:ex2"
-
-\end_inset
-
-.
-\end_layout
-
-\end_inset
-
-
-\begin_inset CommandInset label
-LatexCommand label
-name "ex2:result"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Conclusion
-\end_layout
-
-\begin_layout Standard
-In this work we have successfully applied and extended the SINDy method
- to not only parsimoniously detect potentially nonlinear terms in a dynamical
- system from possibly noisy data, but also yield, in this case, a sparse
- set of rates with respect to generating reactions (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "method:the-reactions"
-
-\end_inset
-
-).
-\end_layout
-
-\begin_layout Standard
-In two examples it was demonstrated that, despite noisy data and unavailability
- of derivative measurements, a parsimonious generating reaction network
- that is qualitatively able to explain the observed data can be estimated.
- In particular it was shown in the first example that if there is no ambiguity
- in the underlying model and ansatz reaction library, the actual rates can
- be recovered with decreasing time step, i.e., increasing resolution of the
- jump process.
- In the second example we could obtain an even simpler model than what was
- used to generate data by making use of sparse regression and cross-validation.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Newpage newpage
-\end_inset
-
- 
-\begin_inset CommandInset bibtex
-LatexCommand bibtex
-bibfiles "bibliography.bib"
-options "abbrv"
 
 \end_inset
 
