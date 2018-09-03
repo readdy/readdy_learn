@@ -2,13 +2,13 @@
 Title: Maybe "Learning Reaction Mechanisms from Data" or so
 
 ### Method:
-- [ ] rename section to be more specific, such as sparse learning of reaction kinetics
+- [x] rename section to be more specific, such as sparse learning of reaction kinetics
 - [ ] I would set up the section differently. Start with a general formulation of mass-action reaction kinetics. That leads to a system of ODEs where the change of the concentrations are given by a sum of terms that contain constants (order-0 reactions), the concentrations (order-1 reactions), the products of concentrations (order-2 reactions) etc. Then introduce basis functions for reactions by substituting concentrations and products of concentrations with basis functions. Then turn into a sparse linear regression problem and refer to SINDy.
 The current formulation is purely mathematical and it's not obvious that this formulation is physically meaningful.
 
 ### Example System:
 - [ ] move to results section
-- [ ] regulation should be part of the set of equations defining the system (p. 4, top)
+- [x] regulation should be part of the set of equations defining the system (p. 4, top)
 
 ### Results:
 - [ ] don't give table-of-content like previews of what's going to come. A paper is not a book, the abstract/intro are already giving an overview of the contents. You don't need to do that chapter-wise. If you wanna do a reminder, restrict to 1 sentence.

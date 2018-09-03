@@ -153,7 +153,7 @@ literal "true"
 \end_layout
 
 \begin_layout Section
-The method
+Sparse learning of reaction kinetics
 \end_layout
 
 \begin_layout Standard
@@ -435,19 +435,11 @@ To demonstrate the method a gene-regulatory network is estimated from time
 
 \begin_layout Standard
 To this end, let 
-\begin_inset Formula $\mathrm{A}$
+\begin_inset Formula $S:=\{A,B,C\}$
 \end_inset
 
-, 
-\begin_inset Formula $\mathrm{B}$
-\end_inset
-
-, and 
-\begin_inset Formula $\mathrm{C}$
-\end_inset
-
- be three species of proteins which are being translated from a corresponding
- 
+ be a set of three species of proteins which are being translated from a
+ corresponding 
 \begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
@@ -479,54 +471,23 @@ The following basic reactions can be formulated
 \mathrm{DNA}_{i} & \rightharpoonup\mathrm{DNA}_{i}+\mathrm{mRNA}_{i} &  & \text{(transcription)},\\
 \mathrm{mRNA}_{i} & \rightharpoonup\mathrm{mRNA}_{i}+i &  & \text{(translation)},\\
 \mathrm{mRNA}_{i} & \rightharpoonup\emptyset &  & \text{(decay of mRNA)},\\
-i & \rightharpoonup\emptyset &  & \text{(decay of protein)},
+i & \rightharpoonup\emptyset &  & \text{(decay of protein)},\\
+i+\mathrm{mRNA}_{j} & \rightharpoonup i &  & \text{(regulation of protein }j\in S\text{),}
 \end{align*}
 
 \end_inset
 
 for each of the species 
-\begin_inset Formula $i\in S:=\{\mathrm{A},\mathrm{B},\mathrm{C}\}$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-The protein concentrations of 
-\begin_inset Formula $\mathrm{A}$
-\end_inset
-
-, 
-\begin_inset Formula $\mathrm{B}$
-\end_inset
-
-, and 
-\begin_inset Formula $\mathrm{C}$
-\end_inset
-
- regulate each other in a negative way by hindering the transcription process.
- In the law of mass action model we account for this by a reaction.
- A repression of species 
-\begin_inset Formula $j\in S$
-\end_inset
-
- by species 
 \begin_inset Formula $i\in S$
 \end_inset
 
- can be modeled as 
-\begin_inset Formula 
-\begin{align*}
-i+\mathrm{mRNA}_{j}\rightharpoonup i.
-\end{align*}
-
+.
+ The regulation reaction models a repression of species 
+\begin_inset Formula $j$
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
-In our example proteins of type 
+ by hindering its transcription process.
+ In our example proteins of type 
 \begin_inset Formula $\mathrm{A}$
 \end_inset
 
