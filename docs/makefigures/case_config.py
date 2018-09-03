@@ -239,7 +239,7 @@ def print_config(print_reactions=True):
         print(tabulate(data, headers=["Type", "Involved species", "Rate"]))
 
 
-def get_regulation_network_lma():
+def get_regulation_network_lma(init=1):
     regulation_network = RegulationNetwork()
     regulation_network.timestep = TIMESTEP
     regulation_network.realisations = 1.
@@ -249,7 +249,7 @@ def get_regulation_network_lma():
     regulation_network.target_time = TARGET_TIME
     print(len(regulation_network.desired_rates))
     print(regulation_network.get_bfc().n_basis_functions)
-    regulation_network.initial_states = [regulation_network.initial_states[1]]
+    regulation_network.initial_states = [regulation_network.initial_states[init]]
     analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
     for i in range(len(regulation_network.initial_states)):
         analysis.generate_or_load_traj_lma(i, regulation_network.target_time,
