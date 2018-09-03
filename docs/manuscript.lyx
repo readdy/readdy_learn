@@ -630,7 +630,7 @@ noprefix "false"
 \series bold
 (b)
 \series default
-: Concentration timeseries generated from the reaction network shown in
+: Concentration time series generated from the reaction network shown in
 \begin_inset space ~
 \end_inset
 
@@ -1201,7 +1201,7 @@ def.
 \end_inset
 
 -fold cross validation discarding fold with test set at the (temporal) beginning
- (reason: more robust hyperparameter estimation as statisticial dependence
+ (reason: more robust hyperparameter estimation as statistical dependence
  of our data is higher at the initial equilibration phase, shuffle didn't
  really work well) 
 \end_layout
@@ -1422,7 +1422,7 @@ centering
 
 \begin_layout Plain Layout
 Convergence of the estimation error when using two concatenated concentration
- timeseries with different initial conditions.
+ time series with different initial conditions.
  
 \series bold
 (a)
