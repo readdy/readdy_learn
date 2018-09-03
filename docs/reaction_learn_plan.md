@@ -7,11 +7,11 @@ Title: Maybe "Learning Reaction Mechanisms from Data" or so
 The current formulation is purely mathematical and it's not obvious that this formulation is physically meaningful.
 
 ### Example System:
-- [ ] move to results section
+- [x] move to results section
 - [x] regulation should be part of the set of equations defining the system (p. 4, top)
 
 ### Results:
-- [ ] don't give table-of-content like previews of what's going to come. A paper is not a book, the abstract/intro are already giving an overview of the contents. You don't need to do that chapter-wise. If you wanna do a reminder, restrict to 1 sentence.
+- [x] don't give table-of-content like previews of what's going to come. A paper is not a book, the abstract/intro are already giving an overview of the contents. You don't need to do that chapter-wise. If you wanna do a reminder, restrict to 1 sentence.
 - [ ] 4.1: noiseless but there is still a certain amount of data used and starting from a certain initial point, using a certain number of time steps etc. This needs to be specified, because the results will depend on it.
 - [ ] 4.1: You say for certain settings you get the right result. But can we find the right result without knowing it, i.e. by cross-validation or another systematic approach?
 - [ ] 4.2/Fig. 3:
@@ -23,8 +23,8 @@ The current formulation is purely mathematical and it's not obvious that this fo
 - [ ] 4.3/Fig. 4:
     - [ ] need to describe how the initial conditions were generated
     - [x] Fig. 4a is ugly.
-    - [ ] Fig. 4a will be more clear if you also show the noise-free trajectory from that initial condition, otherwise it just looks messy.
-    - [ ] Fig. 4: design as one-column figure.
+    - [x] Fig. 4a will be more clear if you also show the noise-free trajectory from that initial condition, otherwise it just looks messy.
+    - [x] Fig. 4: design as one-column figure.
 
 
 

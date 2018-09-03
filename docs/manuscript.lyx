@@ -1142,7 +1142,7 @@ Convergence of the estimation error when using two concatenated concentration
 \series bold
 (a)
 \series default
-: A realization of the concatenated timeseries.
+: A realization of the concatenated time series.
  The first initial condition is identical to what was used in Sec.
 \begin_inset space ~
 \end_inset
