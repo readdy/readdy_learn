@@ -964,7 +964,7 @@ centering
  
 \begin_inset Graphics
 	filename figures_tex/case2.pdf
-	width 100col%
+	width 50col%
 
 \end_inset
 
@@ -1128,7 +1128,7 @@ centering
  
 \begin_inset Graphics
 	filename figures_tex/case3.pdf
-	width 100col%
+	width 50col%
 
 \end_inset
 
