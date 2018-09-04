@@ -1017,12 +1017,17 @@ noprefix "false"
 \end_inset
 
 -fold cross-validation (regularized).
- The level of noise is regulated by the number of measurements being averaged.
+ The noise level is an effective quantity given by the mean squared deviation
+ from the integrated reaction-rate equation subject to the law of mass action.
  The procedure was repeated 10 times with different realizations giving
  rise to the mean and standard deviation depicted by dark blue graph and
  shaded blue area, respectively.
- The failure rate is the number of incorrectly identified processes up to
- the cutoff value introduced in Sec.
+ 
+\series bold
+(a)
+\series default
+: The number of spuriously detected reactions up to the cutoff value introduced
+ in Sec.
 \begin_inset space ~
 \end_inset
 
@@ -1036,12 +1041,18 @@ noprefix "false"
 
 \end_inset
 
-.
- The estimation error is given by the 
+ over different levels of noise.
+ The regularized method shows a tendency toward a model with fewer spurious
+ reactions compared to the unregularized (LSQ) method.
+ 
+\series bold
+(b)
+\series default
+: The estimation error given by the 
 \begin_inset Formula $L_{1}$
 \end_inset
 
- difference of the generating reaction rates 
+ difference between the generating reaction rates 
 \begin_inset Formula $\xi$
 \end_inset
 
@@ -1049,7 +1060,7 @@ noprefix "false"
 \begin_inset Formula $\hat{\xi}$
 \end_inset
 
-.
+ over different levels of noise.
 \end_layout
 
 \end_inset
