@@ -520,8 +520,36 @@ noprefix "false"
 
 \end_inset
 
+a.
+ This serves as reference model to generate time series of concentrations
+ under the initial condition described in Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ The generation uses a discrete time step of 
+\begin_inset Formula $\tau=3\cdot10^{-3}$
+\end_inset
+
+ to generate 
+\begin_inset Formula $667$
+\end_inset
+
+ frames amounting to a cumulative time of roughly 
+\begin_inset Formula $T=2$
+\end_inset
+
 .
- This serves as reference model to generate time series of concentrations.
  
 \begin_inset Float figure
 wide false
@@ -544,7 +572,7 @@ centering
  
 \begin_inset Graphics
 	filename figures_tex/scheme.pdf
-	width 100col%
+	width 50col%
 
 \end_inset
 
@@ -578,7 +606,11 @@ noprefix "false"
 (a)
 \series default
 : Each circle depicts a species, each arrow corresponds to one reaction.
- Blue arrows denote transcription from DNA to 
+ Blue arrows denote transcription from 
+\begin_inset Formula $\mathrm{DNA}$
+\end_inset
+
+ to 
 \begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
@@ -605,8 +637,443 @@ noprefix "false"
 \begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
- species.
+ species (Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a).
  This initial condition is used in the subsequent sections for further analysis.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="10">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{A}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{B}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{DNA}_{\mathrm{C}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+(a)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $2$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $3$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+(b)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1.5$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $2$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $0$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Initial-conditions"
+
+\end_inset
+
+Initial conditions used to generate concentration time series.
 \end_layout
 
 \end_inset
@@ -623,6 +1090,24 @@ noprefix "false"
 These time series of concentrations are then applied to the proposed estimation
  method which is designed to find reaction networks and rate constants from
  experimental data.
+ This method uses a library of ansatz functions given in Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:reaction-library"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The initial conditions were chosen so that all the processes with positive
+ rate constant significantly contribute to the temporal evolution of the
+ system's concentration.
 \end_layout
 
 \begin_layout Subsection
@@ -648,7 +1133,7 @@ noprefix "false"
 
 \end_inset
 
-) of the system described in Sec.
+) of the system with time step and initial condition as described in Sec.
 \begin_inset space ~
 \end_inset
 
@@ -683,9 +1168,9 @@ vity of the estimated reaction rates.
 \end_layout
 
 \begin_layout Standard
-When applying constrained linear least-squares regression, one can observe
- that the sparsity pattern does not match the generating reaction network
- and the reaction responsible for the decay of 
+When applying LSQ regression, one can observe that the sparsity pattern
+ does not match the generating reaction network and the reaction responsible
+ for the decay of 
 \begin_inset Formula $\mathrm{A}$
 \end_inset
 
@@ -749,6 +1234,45 @@ noprefix "false"
 \end_inset
 
  in green.
+ 
+\end_layout
+
+\begin_layout Standard
+The value of the cutoff can be determined by comparing the magnitude of
+ estimated rates and finding a gap, see Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reaction-rates-sorted"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The hyperparameter pair 
+\begin_inset Formula $(\alpha,\lambda)$
+\end_inset
+
+ was obtained by a grid search and evaluating the difference 
+\begin_inset Formula $\|\hat{\Xi}_{\alpha,\lambda}-\Xi\|_{1}$
+\end_inset
+
+, where 
+\begin_inset Formula $\hat{\Xi}_{\alpha,\lambda}$
+\end_inset
+
+ is the estimated model under a particular hyperparameter choice and 
+\begin_inset Formula $\Xi$
+\end_inset
+
+ is the ground truth.
+ If the ground truth is unknown, a hyperparameter pair can be estimated
+ by utilizing cross-validation as in the following sections.
 \end_layout
 
 \begin_layout Standard
@@ -815,8 +1339,8 @@ noprefix "false"
  The black outlines denote the reactions with which the system was generated
  and contain the respective rate value.
  Red crosses denote reactions that were used as additional ansatz reactions.
- Blue circles are estimated by linear least-squares and orange circles depict
- rates which were obtained by solving the minimization problem (
+ Blue circles are estimated by LSQ and orange circles depict rates which
+ were obtained by solving the minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
@@ -848,31 +1372,27 @@ noprefix "false"
 \end_layout
 
 \begin_layout Standard
-
-\series bold
-Todo
-\series default
-: 
-\end_layout
-
-\begin_layout Enumerate
-mention finite statistics 
-\end_layout
-
-\begin_layout Enumerate
-how does LSQ compensate for 
-\begin_inset Formula $A\to\emptyset$
+Even though only finite amounts of data were used, the regularized minimization
+ was able to find the underlying model.
+ On the other hand, using LSQ lead to spurious reactions and a model which
+ ignores the decay of 
+\begin_inset Formula $\mathrm{A}$
 \end_inset
 
- 
-\end_layout
-
-\begin_layout Enumerate
-ansatzfunctions used in 
-\begin_inset Formula $\Theta$
+ particles.
+ Instead, multiple other reactions (especially 
+\begin_inset Formula $\mathrm{A}+\mathrm{A}\rightharpoonup\mathrm{A}$
 \end_inset
 
- 
+ and 
+\begin_inset Formula $\mathrm{A}+\mathrm{C}\rightharpoonup\mathrm{C}$
+\end_inset
+
+) were identified which effectively also remove 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ but yield a denser model.
 \end_layout
 
 \begin_layout Subsection
@@ -887,10 +1407,75 @@ name "sec:case-2"
 \end_layout
 
 \begin_layout Standard
-For Gillespie, the initial condition contains hundreds of particles such
- that the average over many realizations converges against the reaction-rate
- equation.
- 
+Contrary to Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, the data used in this section for estimating a model is subject to noise.
+ To that end, the system was integrated using the Gillespie stochastic simulatio
+n algorithm (SSA) 
+\series bold
+[cite]
+\series default
+.
+ In the limit of many particles and realizations, the Gillespie SSA converges
+ to the integrated reaction-rate equations subject to the law of mass action.
+ Therefore, the initial condition's concentrations are interpreted in terms
+ of hundreds of particles.
+ Each realization is then transformed back to a time series of concentrations.
+\end_layout
+
+\begin_layout Standard
+Data is prepared for different noise levels.
+ Here, a noise level is an effective quantity given by the mean-squared
+ deviation of the concentration time series from the integrated reaction-rate
+ equations.
+ Different levels of noise are achieved by averaging multiple realizations
+ of the time series obtained by the Gillespie SSA.
+\end_layout
+
+\begin_layout Standard
+It can be observed that decreasing levels of noise lead fewer spurious reactions
+ when applying the minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), see Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case2-convergence"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ Also the estimation error 
+\begin_inset Formula $\|\xi-\hat{\xi}\|_{1}$
+\end_inset
+
+ decreases.
 \end_layout
 
 \begin_layout Itemize
@@ -993,7 +1578,7 @@ noprefix "false"
 
 \end_inset
 
- with decreasing levels of noise by application of the minimization problem
+ with varying levels of noise by application of the minimization problem
  (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -1017,8 +1602,6 @@ noprefix "false"
 \end_inset
 
 -fold cross-validation (regularized).
- The noise level is an effective quantity given by the mean squared deviation
- from the integrated reaction-rate equation subject to the law of mass action.
  The procedure was repeated 10 times with different realizations giving
  rise to the mean and standard deviation depicted by dark blue graph and
  shaded blue area, respectively.
@@ -1110,7 +1693,7 @@ noprefix "false"
 \end_layout
 
 \begin_layout Itemize
-compute failure rate 
+compute # spurious reactions
 \end_layout
 
 \begin_layout Itemize
@@ -1324,6 +1907,104 @@ Appendix
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:appendix"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures_tex/case1_cutoff.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:reaction-rates-sorted"
+
+\end_inset
+
+Reaction rates sorted by their magnitude to determine the cutoff 
+\begin_inset Formula $\kappa=0.22$
+\end_inset
+
+ of Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The rates were estimated using the regularized minimization problem.
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+There is a problem when comparing the rates of unimolecular reactions with
+ rates of bimolecular reactions as bimolecular reactions depend quadratically
+ on the concentration.
+ In a highly concentrated environment a very low rate might still have a
+ large effect while unimolecular rates scale linearly and the effect to
+ be low.
+ However in our system all concentrations are roughly in the order of 
+\begin_inset Formula $10^{0}$
+\end_inset
+
+.
+ If that is not the case we could think of introducing two separate cutoffs
+ - one for unimolecular reactions and one for bimolecular reactions.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
 
 \end_inset
 

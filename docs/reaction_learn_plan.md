@@ -12,14 +12,14 @@ The current formulation is purely mathematical and it's not obvious that this fo
 
 ### Results:
 - [x] don't give table-of-content like previews of what's going to come. A paper is not a book, the abstract/intro are already giving an overview of the contents. You don't need to do that chapter-wise. If you wanna do a reminder, restrict to 1 sentence.
-- [ ] 4.1: noiseless but there is still a certain amount of data used and starting from a certain initial point, using a certain number of time steps etc. This needs to be specified, because the results will depend on it.
-- [ ] 4.1: You say for certain settings you get the right result. But can we find the right result without knowing it, i.e. by cross-validation or another systematic approach?
-- [ ] 4.2/Fig. 3:
+- [x] 4.1: noiseless but there is still a certain amount of data used and starting from a certain initial point, using a certain number of time steps etc. This needs to be specified, because the results will depend on it.
+- [x] 4.1: You say for certain settings you get the right result. But can we find the right result without knowing it, i.e. by cross-validation or another systematic approach?
+- [x] 4.2/Fig. 3:
     - [x] Use panel labeling (a/b) in all Figures.
     - [x] I don't like "failure rate". May just "number of spurious reactions"?
     - [x] Fig 3 panel 2: Use Estimation error in the y-Axis (you can use "estimation error |xi-^xi|"), then the legend becomes simpler.
     - [x] Fig 3: put legend into Figure space.
-    - [ ] What does number of measurements mean? I guess you are measuring at different time points. So is this the number of complete trajectories at a fixed noise level? This should correspond to a certain effective noise level at each time point (noise variance divided by number of measurements at that point), which may be the more interesting quantity because it's transferable.
+    - [x] What does number of measurements mean? I guess you are measuring at different time points. So is this the number of complete trajectories at a fixed noise level? This should correspond to a certain effective noise level at each time point (noise variance divided by number of measurements at that point), which may be the more interesting quantity because it's transferable.
 - [ ] 4.3/Fig. 4:
     - [ ] need to describe how the initial conditions were generated
     - [x] Fig. 4a is ugly.
