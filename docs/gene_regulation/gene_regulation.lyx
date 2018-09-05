@@ -1,0 +1,275 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass scrartcl
+\begin_preamble
+
+\end_preamble
+\options abstracton,titlepage
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding utf8
+\fontencoding default
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 2
+\use_package amssymb 2
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Notes
+\end_layout
+
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tian2007a"
+literal "false"
+
+\end_inset
+
+ do a likelihood method to estimate regulatory networks, especially with
+ noise, we should mention them and highlight what is different about our
+ method (focus on sparsity)
+\end_layout
+
+\begin_layout Itemize
+Relevance of gene regulation for cancer research
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Abramovitch2004"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Most famous example of gene regulation being the 
+\emph on
+lac
+\emph default
+ operon.
+ Crystal structure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lewis1996"
+literal "false"
+
+\end_inset
+
+, model of the dynamics
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Yildirim2003"
+literal "false"
+
+\end_inset
+
+, system's biology study of the 
+\begin_inset Quotes eld
+\end_inset
+
+combinatorial control
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Kuhlman2007"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+We use a similar modeling of reactions as
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Thattai2001a"
+literal "false"
+
+\end_inset
+
+, DNA leads to mRNA production, mRNA leads to protein production, proteins
+ regulate mRNA in a positive or negative way.
+ We, in contrast, do not study the noise itself, nor the bistability of
+ the systems.
+ Specifically our system only incorporates negative regulation, in which
+ no bistability is to expected.
+\end_layout
+
+\begin_layout Itemize
+Noise in mRNA and protein concentrations not only comes from measurements,
+ but due to intrinsically noisy processes, e.g.
+ when only few copy numbers of mRNA are present
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Golding2005,Berg1978,Elowitz2002"
+literal "false"
+
+\end_inset
+
+.
+ The noise we incorporate stems from stochastic realizations of the process
+ using the Gillespie method.
+ However, for the sake of demonstrating the concept we assume many molecules
+ such that their amount is well described by concentrations.
+\end_layout
+
+\begin_layout Section
+Results
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:results"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To demonstrate the method a gene-regulatory network is estimated from time
+ series of molecule-concentrations.
+ To this end, let 
+\begin_inset Formula $S:=\{A,B,C\}$
+\end_inset
+
+ be a set of three species of proteins which are being translated from a
+ corresponding 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ molecule.
+ Each 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ in turn has a corresponding 
+\begin_inset Formula $\mathrm{DNA}$
+\end_inset
+
+ which it is transcribed from.
+ The proteins and 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ molecules decay over time whereas the 
+\begin_inset Formula $\mathrm{DNA}$
+\end_inset
+
+ concentration remains constant.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "bio"
+options "abbrv"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
