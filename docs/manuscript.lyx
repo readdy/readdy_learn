@@ -1148,6 +1148,21 @@ noprefix "false"
 \end_inset
 
 .
+ The generated concentration time series is depicted in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+b.
  The minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -1445,8 +1460,8 @@ Data is prepared for different noise levels.
 \end_layout
 
 \begin_layout Standard
-It can be observed that decreasing levels of noise lead fewer spurious reactions
- when applying the minimization problem (
+It can be observed that decreasing levels of noise lead to fewer spurious
+ reactions when applying the minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
@@ -1651,37 +1666,157 @@ name "sec:case-3"
 
 \end_layout
 
-\begin_layout Itemize
-extend situation of Section
+\begin_layout Standard
+This section extends the situation of Sec.
 \begin_inset space ~
 \end_inset
 
 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sec:case-3"
+reference "sec:case-2"
 plural "false"
 caps "false"
 noprefix "false"
 
 \end_inset
 
- to multiple initial conditions (zipped / reorder) 
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Formula $20$
+ to two initial conditions, where the first initial condition is identical
+ to the initial condition used in the previous sections and the second initial
+ condition is given in Tab.
+\begin_inset space ~
 \end_inset
 
--fold CV discarding 1st fold (see sec 4.2) 
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+b.
+ The corresponding time series are depicted in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case3-convergence"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ The gray graph corresponds to an exemplary integration by the Gillespie
+ SSA.
+ For both initial conditions the same time step of 
+\begin_inset Formula $\tau=3\cdot10^{-3}$
+\end_inset
+
+ has been applied, amounting to 
+\begin_inset Formula $2\cdot667=1334$
+\end_inset
+
+ frames.
+ Once the data matrices 
+\begin_inset Formula 
+\[
+\mathbf{X}_{1}=\begin{pmatrix}\boldsymbol{x}_{1}(t_{1}) & \cdots & \boldsymbol{x}_{1}(t_{667})\end{pmatrix},\;\mathbf{X}_{2}=\begin{pmatrix}\boldsymbol{x}_{2}(t_{1}) & \cdots & \boldsymbol{x}_{2}(t_{667})\end{pmatrix}
+\]
+
+\end_inset
+
+ and the corresponding derivatives 
+\begin_inset Formula $\dot{\mathbf{X}}_{1}$
+\end_inset
+
+,
+\begin_inset Formula $\dot{\mathbf{X}}_{2}$
+\end_inset
+
+ have been evaluated, the frames are concatenated and reordered so that
+ 
+\begin_inset Formula 
+\[
+\mathbf{X}=\begin{pmatrix}\boldsymbol{x}_{1}(t_{1}) & \boldsymbol{x}_{2}(t_{1}) & \cdots & \boldsymbol{x}_{1}(t_{667}) & \boldsymbol{x}_{2}(t_{667})\end{pmatrix},
+\]
+
+\end_inset
+
+analogously for 
+\begin_inset Formula $\dot{\boldsymbol{X}}$
+\end_inset
+
+.
 \end_layout
 
-\begin_layout Itemize
-compute # spurious reactions
-\end_layout
+\begin_layout Standard
+Similarly to Sec.
+\begin_inset space ~
+\end_inset
 
-\begin_layout Itemize
-model can reliably be recovered in the limit of small noise 
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, decreasing levels of noise lead to fewer spurious reactions (Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case3-convergence"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+b) and a smaller 
+\begin_inset Formula $\mathrm{L}_{1}$
+\end_inset
+
+ distance to the ground truth (Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case3-convergence"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+c).
+ Again applying the optimization problem with a suitable set of parameters
+ 
+\begin_inset Formula $(\alpha,\lambda,\kappa)$
+\end_inset
+
+ performs better than LSQ.
+ Compared to the previous section the convergence is better due to twice
+ as much available data.
+ At noise levels of smaller than roughly 
+\begin_inset Formula $10^{-6}$
+\end_inset
+
+ the model can reliably be recovered when using the regularized method.
 \end_layout
 
 \begin_layout Standard
@@ -1714,13 +1849,55 @@ centering
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Convergence of the estimation error when using two concatenated concentration
- time series with different initial conditions.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:case3-convergence"
+
+\end_inset
+
+Extended concentration time series used in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ as well as convergence of the number of spurious reactions and estimation
+ error when using two concatenated concentration time series with different
+ initial conditions.
+ The minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) was solved for 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ (LSQ) and with regularization.
+ This was repeated 
+\begin_inset Formula $10$
+\end_inset
+
+ times on different Gillespie SSA generated realizations, giving rise to
+ mean and standard deviation (solid lines and shaded areas, respectively).
  
 \series bold
 (a)
 \series default
-: A realization of the concatenated time series.
+: Concentration time series corresponding to the initial conditions.
  The first initial condition is identical to what was used in Sec.
 \begin_inset space ~
 \end_inset
@@ -1750,8 +1927,21 @@ noprefix "false"
 \end_inset
 
 .
- The second initial condition prescribes positive initial concentrations
- for 
+ The second initial condition (Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+b) prescribes positive initial concentrations for 
 \begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
@@ -1764,9 +1954,15 @@ noprefix "false"
 \end_inset
 
  species.
+ The gray graphs are exemplary realizations of integration using the Gillespie
+ SSA.
  
 \series bold
 (b)
+\series default
+,
+\series bold
+(c)
 \series default
 : Analogously to Fig.
 \begin_inset space ~
@@ -1794,6 +1990,37 @@ noprefix "false"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The hyperparameters 
+\begin_inset Formula $(\alpha,\lambda)$
+\end_inset
+
+ are obtained by performing a 
+\begin_inset Formula $20$
+\end_inset
+
+-fold cross validation and discarding the first fold.
+ Due to the reordering of the frames in 
+\begin_inset Formula $\mathbf{X}$
+\end_inset
+
+, the first fold contains, analogously to Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, the initial equilibration phase for both initial conditions.
 \end_layout
 
 \begin_layout Section
@@ -1923,7 +2150,7 @@ centering
 
 \begin_inset Graphics
 	filename figures_tex/case1_cutoff.pdf
-	width 100col%
+	width 50col%
 
 \end_inset
 
