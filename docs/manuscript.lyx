@@ -1740,8 +1740,7 @@ a.
 \begin_inset Formula $\dot{\mathbf{X}}_{2}$
 \end_inset
 
- have been evaluated, the frames are concatenated and reordered so that
- 
+ have been obtained, the frames are concatenated and reordered so that 
 \begin_inset Formula 
 \[
 \mathbf{X}=\begin{pmatrix}\boldsymbol{x}_{1}(t_{1}) & \boldsymbol{x}_{2}(t_{1}) & \cdots & \boldsymbol{x}_{1}(t_{667}) & \boldsymbol{x}_{2}(t_{667})\end{pmatrix},
@@ -2042,56 +2041,6 @@ noprefix "false"
 \end_inset
 
 ).
-\end_layout
-
-\begin_layout Standard
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-%In two examples it was demonstrated that despite noisy data and unavailable
- derivative measurements, a parsimonious generating reaction network that
- is qualitatively able to explain the observed data can be estimated.
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-%In particular it was shown in the first example that if there is no ambiguity
- in the underlying model and ansatz reaction library, the actual rates can
- be recovered with decreasing time step, i.e., increasing resolution of the
- jump process.
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-%In the second example we could obtain an even simpler model than what was
- used to generate data by making use of sparse regression and cross-validation.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
