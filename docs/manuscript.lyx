@@ -172,7 +172,7 @@ The temporal change for each species
 \begin_layout Standard
 \begin_inset Formula 
 \begin{equation}
-\dot{x}_{s}=\sum_{i}\alpha_{s,0}^{(i)}+\sum_{i}\alpha_{s,1}^{(i)}x_{i}+\sum_{i,j}\alpha_{s,2}^{(i,j)}x_{i}x_{j}+\ldots\label{eq:lma}
+\dot{x}_{s}=\sum_{i}\beta_{s,0}^{(i)}+\sum_{i}\beta_{s,1}^{(i)}x_{i}+\sum_{i,j}\beta_{s,2}^{(i,j)}x_{i}x_{j}+\ldots\label{eq:lma}
 \end{equation}
 
 \end_inset
@@ -182,10 +182,10 @@ The temporal change for each species
 
 \begin_layout Standard
 where the 
-\begin_inset Formula $\alpha_{s,k}^{(\ldots)}$
+\begin_inset Formula $\beta_{s,k}^{(\ldots)}$
 \end_inset
 
--values are rate constants belonging to order-
+-values are constants belonging to order-
 \begin_inset Formula $k$
 \end_inset
 
@@ -200,7 +200,7 @@ where the
 \end_inset
 
  amount to 
-\begin_inset Formula $\dot{x}_{1}=\alpha_{1,1}^{(1)}x_{1}=-(\xi_{1}+\xi_{2})x_{1}$
+\begin_inset Formula $\dot{x}_{1}=\beta_{1,1}^{(1)}x_{1}=-(\xi_{1}+\xi_{2})x_{1}$
 \end_inset
 
 .
