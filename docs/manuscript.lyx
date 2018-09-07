@@ -162,26 +162,49 @@ x_{S}(t)
 \end_layout
 
 \begin_layout Standard
-The temporal change of the observed concentration is given by the dynamical
- system
+The temporal change for each species 
+\begin_inset Formula $s=1,\ldots,S$
+\end_inset
+
+ of the observed concentration is given by
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
-\begin{align}
-\dot{x}_{1} & =\sum_{i}\alpha_{1,i}x_{i}+\sum_{i\neq j}\alpha_{1,ij}x_{i}x_{j}+\ldots\nonumber\\
- & \vdots\label{eq:lma}\\
-\dot{x}_{S} & =\sum_{i}\alpha_{S,i}x_{i}+\sum_{i\neq j}\alpha_{S,ij}x_{i}x_{j}+\ldots\nonumber
-\end{align}
+\begin{equation}
+\dot{x}_{s}=\sum_{i}\alpha_{s,0}^{(i)}+\sum_{i}\alpha_{s,1}^{(i)}x_{i}+\sum_{i,j}\alpha_{s,2}^{(i,j)}x_{i}x_{j}+\ldots\label{eq:lma}
+\end{equation}
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Standard
 where the 
-\begin_inset Formula $\alpha$
+\begin_inset Formula $\alpha_{s,k}^{(\ldots)}$
 \end_inset
 
--values are rates of net concentration change.
- The terms on the right-hand side of (
+-values are rate constants belonging to order-
+\begin_inset Formula $k$
+\end_inset
+
+ reactions.
+ These rate constants however can incorporate several reactions at once,
+ e.g., reactions 
+\begin_inset Formula $s_{1}\xrightharpoonup{\xi_{1}}s_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $s_{1}\xrightharpoonup{\xi_{2}}s_{3}$
+\end_inset
+
+ amount to 
+\begin_inset Formula $\dot{x}_{1}=\alpha_{1,1}^{(1)}x_{1}=-(\xi_{1}+\xi_{2})x_{1}$
+\end_inset
+
+.
+ To disentangle the single reactions from (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:lma"
@@ -191,9 +214,7 @@ noprefix "false"
 
 \end_inset
 
-) can be grouped into specific reactions which contribute to the net concentrati
-on change.
- To this end, choose 
+), choose 
 \begin_inset Formula $R$
 \end_inset
 
@@ -229,42 +250,12 @@ where
 \end_inset
 
  are the to-be estimated macroscopic rate constants.
- The dynamical systems (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:lma"
-plural "false"
-caps "false"
-noprefix "false"
-
+ In the above example this means that 
+\begin_inset Formula $y_{1}(\mathbf{x})=(-x_{1},x_{1},0)^{T}$
 \end_inset
 
-) and (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "method:the-system"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-) are equivalent with the 
-\begin_inset Formula $\alpha$
-\end_inset
-
--values of (
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "eq:lma"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-) being sums of subsets of 
-\begin_inset Formula $\{\xi_{i}:i=1,\ldots,R\}$
+ and 
+\begin_inset Formula $y_{2}(\mathbf{x})=(-x_{1},0,x_{1})^{T}$
 \end_inset
 
 .
