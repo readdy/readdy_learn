@@ -320,7 +320,7 @@ where
 \end_inset
 
 .
- Following the approach of SINDy, the goal is to find coefficients 
+ The goal is to find coefficients 
 \begin_inset Formula $\Xi=\begin{pmatrix}\xi_{1} & \xi_{2} & \cdots & \xi_{R}\end{pmatrix}^{T}$
 \end_inset
 
@@ -410,6 +410,18 @@ literal "true"
 \end_inset
 
  sense.
+ Minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) is therefore an application of the SINDy method and also generalizes a
+ bit due to the vector-valued ansatz functions.
 \end_layout
 
 \begin_layout Standard
