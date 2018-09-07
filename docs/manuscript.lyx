@@ -158,7 +158,42 @@ x_{S}(t)
 
 \end_inset
 
-Further, one can choose 
+
+\end_layout
+
+\begin_layout Standard
+The temporal change of the observed concentration is given by the dynamical
+ system
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align}
+\dot{x}_{1} & =\sum_{i}\alpha_{1,i}x_{i}+\sum_{i\neq j}\alpha_{1,ij}x_{i}x_{j}+\ldots\nonumber\\
+ & \vdots\label{eq:lma}\\
+\dot{x}_{S} & =\sum_{i}\alpha_{S,i}x_{i}+\sum_{i\neq j}\alpha_{S,ij}x_{i}x_{j}+\ldots\nonumber
+\end{align}
+
+\end_inset
+
+where the 
+\begin_inset Formula $\alpha$
+\end_inset
+
+-values are rates of net concentration change.
+ The terms on the right-hand side of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:lma"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) can be grouped into specific reactions which contribute to the net concentrati
+on change.
+ To this end, choose 
 \begin_inset Formula $R$
 \end_inset
 
@@ -194,6 +229,45 @@ where
 \end_inset
 
  are the to-be estimated macroscopic rate constants.
+ The dynamical systems (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:lma"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:the-system"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) are equivalent with the 
+\begin_inset Formula $\alpha$
+\end_inset
+
+-values of (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:lma"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) being sums of subsets of 
+\begin_inset Formula $\{\xi_{i}:i=1,\ldots,R\}$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
