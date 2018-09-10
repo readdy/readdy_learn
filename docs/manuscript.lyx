@@ -89,10 +89,288 @@ Discovering governing reactions from concentration data
 Introduction
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
+Very general paper on complex networks in nature
+\begin_inset space ~
+\end_inset
 
-\color red
-Cite and mention previous works.
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Newman2003"
+literal "false"
+
+\end_inset
+
+ [good for introduction]
+\end_layout
+
+\begin_layout Itemize
+Paper on networks in biology
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Barabasi2004"
+literal "false"
+
+\end_inset
+
+ [intro]
+\end_layout
+
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tian2007a"
+literal "false"
+
+\end_inset
+
+ do a likelihood method to estimate regulatory networks, especially with
+ noise, we should mention them and highlight what is different about our
+ method (focus on sparsity).
+\end_layout
+
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Margolin2006"
+literal "false"
+
+\end_inset
+
+ identify regulatory networks from experimental essays with an algorithm.
+\end_layout
+
+\begin_layout Itemize
+Relevance of gene regulation for cancer research
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Abramovitch2004"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Most famous example of gene regulation being the 
+\emph on
+lac
+\emph default
+ operon.
+ Crystal structure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lewis1996"
+literal "false"
+
+\end_inset
+
+, model of the dynamics
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Yildirim2003"
+literal "false"
+
+\end_inset
+
+, system's biology study of the 
+\begin_inset Quotes eld
+\end_inset
+
+combinatorial control
+\begin_inset Quotes erd
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Kuhlman2007"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Gene regulation often appears in complex networks
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Shen-Orr2002"
+literal "false"
+
+\end_inset
+
+, e.g.
+ for EColi there exists databases
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Gama-Castro2016"
+literal "false"
+
+\end_inset
+
+, similar for yeast
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lee2002"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rudy2017data"
+literal "false"
+
+\end_inset
+
+: data-driven discovery of PDEs, use of noise (additive gaussian), no vector-val
+ued ansatz functions
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mangan2016inferring"
+literal "false"
+
+\end_inset
+
+: Inferring Biological Networks by Sparse Identification of Nonlinear Dynamics,
+ no vector valued ansatz functions
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "brunton2016sparse"
+literal "false"
+
+\end_inset
+
+: sindy with control, comparison to DMD and Koopman analysis
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "manohar2017environment"
+literal "false"
+
+\end_inset
+
+: application of SINDy with noisy data
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "dam2017sparse"
+literal "false"
+
+\end_inset
+
+: sindy for plasmas, estimate predator prey type model
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "quade2018sparse"
+literal "false"
+
+\end_inset
+
+: modification of SINDy (abrupt-SINDy) - update identified models by addition/de
+letion/modification of existing model terms (abrupt-SINDy is less sensitive
+ to noise, lower runtime complexity, needs less data)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pantazis2017unified"
+literal "false"
+
+\end_inset
+
+: get rid of temporal derivative by weak formulation (integration by parts,
+ test functions), apply resulting system to sparse learning method (such
+ as SINDy) -> could be applied to our problem to get rid of temporal derivatives
+ amplifying noise; application to protein interaction system (and another
+ example)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "boninsegna2018sparse"
+literal "false"
+
+\end_inset
+
+: SINDy on SDEs, application of cross validation to determine sparsity level
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "zhang2018convergence"
+literal "false"
+
+\end_inset
+
+: Convergence of the SINDy algorithm (sufficient conditions for general
+ convergence, rate of convergence)
 \end_layout
 
 \begin_layout Standard
@@ -190,8 +468,8 @@ where the
 \end_inset
 
  reactions.
- These rate constants however can incorporate several reactions at once,
- e.g., reactions 
+ These rate constants however can incorporate several underlying reactions
+ at once, e.g., reactions 
 \begin_inset Formula $s_{1}\xrightharpoonup{\xi_{1}}s_{2}$
 \end_inset
 
@@ -500,6 +778,49 @@ name "sec:results"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Itemize
+We use a similar modeling of reactions as
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Thattai2001a"
+literal "false"
+
+\end_inset
+
+, DNA leads to mRNA production, mRNA leads to protein production, proteins
+ regulate mRNA in a positive or negative way.
+ We, in contrast, do not study the noise itself, nor the bistability of
+ the systems.
+ Specifically our system only incorporates negative regulation, in which
+ no bistability is to expected.
+\end_layout
+
+\begin_layout Itemize
+Noise in mRNA and protein concentrations not only comes from measurements,
+ but due to intrinsically noisy processes, e.g.
+ when only few copy numbers of mRNA are present
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Golding2005,Berg1978,Elowitz2002"
+literal "false"
+
+\end_inset
+
+.
+ The noise we incorporate stems from stochastic realizations of the process
+ using the Gillespie method.
+ However, for the sake of demonstrating the concept we assume many molecules
+ such that their amount is well described by concentrations.
 \end_layout
 
 \begin_layout Standard
@@ -2211,7 +2532,7 @@ noprefix "false"
 .
  The rates were estimated using the regularized minimization problem.
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
 There is a problem when comparing the rates of unimolecular reactions with
