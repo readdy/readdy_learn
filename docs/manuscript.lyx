@@ -90,6 +90,11 @@ Introduction
 \end_layout
 
 \begin_layout Itemize
+Papers dealing with networks in nature | biology:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
 Very general paper on complex networks in nature
 \begin_inset space ~
 \end_inset
@@ -119,40 +124,6 @@ literal "false"
 \end_inset
 
  [intro]
-\end_layout
-
-\begin_layout Itemize
-These guys
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Tian2007a"
-literal "false"
-
-\end_inset
-
- do a likelihood method to estimate regulatory networks, especially with
- noise, we should mention them and highlight what is different about our
- method (focus on sparsity).
-\end_layout
-
-\begin_layout Itemize
-These guys
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Margolin2006"
-literal "false"
-
-\end_inset
-
- identify regulatory networks from experimental essays with an algorithm.
 \end_layout
 
 \begin_layout Itemize
@@ -265,6 +236,82 @@ literal "false"
 .
 \end_layout
 
+\end_deeper
+\begin_layout Itemize
+Learning of structures:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tian2007a"
+literal "false"
+
+\end_inset
+
+ do a likelihood method to estimate regulatory networks, especially with
+ noise, we should mention them and highlight what is different about our
+ method (focus on sparsity).
+\end_layout
+
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Margolin2006"
+literal "false"
+
+\end_inset
+
+ identify regulatory networks from experimental essays with an algorithm.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Sparse learning of structures:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Biochemical networks from data with sparse Bayesian learning and compressive
+ sensing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Pan2012"
+literal "false"
+
+\end_inset
+
+.
+ A quite similar description of the ODE problem, they have generic activation
+ functions instead of LMA only and stoichiometric matrices.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Brunton2015"
+literal "false"
+
+\end_inset
+
+ SINDy
+\end_layout
+
 \begin_layout Itemize
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -275,18 +322,6 @@ literal "false"
 
 : data-driven discovery of PDEs, use of noise (additive gaussian), no vector-val
 ued ansatz functions
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "mangan2016inferring"
-literal "false"
-
-\end_inset
-
-: Inferring Biological Networks by Sparse Identification of Nonlinear Dynamics,
- no vector valued ansatz functions
 \end_layout
 
 \begin_layout Itemize
@@ -303,28 +338,6 @@ literal "false"
 \begin_layout Itemize
 \begin_inset CommandInset citation
 LatexCommand cite
-key "manohar2017environment"
-literal "false"
-
-\end_inset
-
-: application of SINDy with noisy data
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "dam2017sparse"
-literal "false"
-
-\end_inset
-
-: sindy for plasmas, estimate predator prey type model
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
 key "quade2018sparse"
 literal "false"
 
@@ -333,21 +346,6 @@ literal "false"
 : modification of SINDy (abrupt-SINDy) - update identified models by addition/de
 letion/modification of existing model terms (abrupt-SINDy is less sensitive
  to noise, lower runtime complexity, needs less data)
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "pantazis2017unified"
-literal "false"
-
-\end_inset
-
-: get rid of temporal derivative by weak formulation (integration by parts,
- test functions), apply resulting system to sparse learning method (such
- as SINDy) -> could be applied to our problem to get rid of temporal derivatives
- amplifying noise; application to protein interaction system (and another
- example)
 \end_layout
 
 \begin_layout Itemize
@@ -373,6 +371,142 @@ literal "false"
  convergence, rate of convergence)
 \end_layout
 
+\end_deeper
+\begin_layout Itemize
+(mostly biological) applications of SINDy
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "manohar2017environment"
+literal "false"
+
+\end_inset
+
+: application of SINDy with noisy data
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "dam2017sparse"
+literal "false"
+
+\end_inset
+
+: sindy for plasmas, estimate predator prey type model
+\end_layout
+
+\begin_layout Itemize
+Reaction networks:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+They highlight issues with uniqueness of networks that are identified from
+ data
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Szederkenyi2011"
+literal "false"
+
+\end_inset
+
+.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+[...] certain mechanisms may remain undetected (or they are falsely detected)
+ while the inferred model is fully consistent with the measured data.
+ It is also shown that sparsity enforcing approaches for determining ‘true’
+ reaction structures are generally not enough without additional prior informati
+on.
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mangan2016inferring"
+literal "false"
+
+\end_inset
+
+: Inferring Biological Networks by Sparse Identification of Nonlinear Dynamics,
+ no vector valued ansatz functions (SINDy applied to LMA protein stuff)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pantazis2017unified"
+literal "false"
+
+\end_inset
+
+: get rid of temporal derivative by weak formulation (integration by parts,
+ test functions), apply resulting system to sparse learning method (such
+ as SINDy) -> could be applied to our problem to get rid of temporal derivatives
+ amplifying noise; application to protein interaction system (and another
+ example)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Pan2012"
+literal "false"
+
+\end_inset
+
+ (including bayesian POV)
+\end_layout
+
+\begin_layout Itemize
+Different approach to identifying biological networks
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Friedman2000"
+literal "false"
+
+\end_inset
+
+, Bayesian inference from multiple snapshots of the system variables 
+\begin_inset Formula $\mathbf{x}$
+\end_inset
+
+.
+ Another very similar
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Rogers2005"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Standard
 When presented with a time series of possibly noisy non-equilibrium concentratio
 n fluctuations of some species as output of, e.g., measurements from experiments
