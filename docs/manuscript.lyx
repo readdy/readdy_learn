@@ -90,6 +90,148 @@ Introduction
 \end_layout
 
 \begin_layout Itemize
+Learning of structures:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tian2007a"
+literal "false"
+
+\end_inset
+
+ do a likelihood method to estimate regulatory networks, especially with
+ noise, we should mention them and highlight what is different about our
+ method (focus on sparsity).
+\end_layout
+
+\begin_layout Itemize
+These guys
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Margolin2006"
+literal "false"
+
+\end_inset
+
+ identify regulatory networks from experimental essays with an algorithm.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Sparse learning of structures:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Biochemical networks from data with sparse Bayesian learning and compressive
+ sensing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Pan2012"
+literal "false"
+
+\end_inset
+
+.
+ A quite similar description of the ODE problem, they have generic activation
+ functions instead of LMA only and stoichiometric matrices.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Brunton2015"
+literal "false"
+
+\end_inset
+
+ SINDy
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rudy2017data"
+literal "false"
+
+\end_inset
+
+: data-driven discovery of PDEs, use of noise (additive gaussian), no vector-val
+ued ansatz functions
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "brunton2016sparse"
+literal "false"
+
+\end_inset
+
+: sindy with control, comparison to DMD and Koopman analysis
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "quade2018sparse"
+literal "false"
+
+\end_inset
+
+: modification of SINDy (abrupt-SINDy) - update identified models by addition/de
+letion/modification of existing model terms (abrupt-SINDy is less sensitive
+ to noise, lower runtime complexity, needs less data)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "boninsegna2018sparse"
+literal "false"
+
+\end_inset
+
+: SINDy on SDEs, application of cross validation to determine sparsity level
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset citation
+LatexCommand cite
+key "zhang2018convergence"
+literal "false"
+
+\end_inset
+
+: Convergence of the SINDy algorithm (sufficient conditions for general
+ convergence, rate of convergence)
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+When presented with a time series of possibly noisy non-equilibrium concentratio
+ns of some species as output of, e.g., measurements from experiments or simulation
+s that were parameterized by microscopic rates, one can ask for the correspondin
+g macroscopic rates and a generating reaction network.
+\end_layout
+
+\begin_layout Itemize
 Papers dealing with networks in nature | biology:
 \end_layout
 
@@ -237,141 +379,38 @@ literal "false"
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-Learning of structures:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-These guys
+\begin_layout Standard
+In this paper we present an application of the shallow learning method SINDy
 \begin_inset space ~
 \end_inset
 
 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Tian2007a"
-literal "false"
-
-\end_inset
-
- do a likelihood method to estimate regulatory networks, especially with
- noise, we should mention them and highlight what is different about our
- method (focus on sparsity).
-\end_layout
-
-\begin_layout Itemize
-These guys
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Margolin2006"
-literal "false"
-
-\end_inset
-
- identify regulatory networks from experimental essays with an algorithm.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Sparse learning of structures:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Biochemical networks from data with sparse Bayesian learning and compressive
- sensing
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Pan2012"
-literal "false"
+key "Brunton2015"
+literal "true"
 
 \end_inset
 
 .
- A quite similar description of the ODE problem, they have generic activation
- functions instead of LMA only and stoichiometric matrices.
+ By sparse regression, it is able to identify generating nonlinear dynamics
+ in data that stems from dynamical systems.
+ The parsimonious nature of the results avoids overfitting and provides
+ interpretability.
+ In our application we, as opposed to the SINDy method, estimate parameters
+ which are coupled across the equations of the arising ODE system, i.e., we
+ look for specific reactions and their rate constants that might have lead
+ to the observations instead of net flux across species.
+ We demonstrate the algorithm on a biologically motivated reaction kinetics
+ system in three different scenarios of measurement: When there is no noise
+ in the data we can find all relevant processes of the ground truth.
+ If there is noise in the data we converge to the correct reaction network
+ and rates with decreasing noise.
+ The last scenario deals with the case that there are two realizations with
+ different initial conditions, for which one can also show convergence to
+ the correct model with decreasing levels of noise.
 \end_layout
 
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Brunton2015"
-literal "false"
-
-\end_inset
-
- SINDy
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "rudy2017data"
-literal "false"
-
-\end_inset
-
-: data-driven discovery of PDEs, use of noise (additive gaussian), no vector-val
-ued ansatz functions
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "brunton2016sparse"
-literal "false"
-
-\end_inset
-
-: sindy with control, comparison to DMD and Koopman analysis
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "quade2018sparse"
-literal "false"
-
-\end_inset
-
-: modification of SINDy (abrupt-SINDy) - update identified models by addition/de
-letion/modification of existing model terms (abrupt-SINDy is less sensitive
- to noise, lower runtime complexity, needs less data)
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "boninsegna2018sparse"
-literal "false"
-
-\end_inset
-
-: SINDy on SDEs, application of cross validation to determine sparsity level
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "zhang2018convergence"
-literal "false"
-
-\end_inset
-
-: Convergence of the SINDy algorithm (sufficient conditions for general
- convergence, rate of convergence)
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 (mostly biological) applications of SINDy
 \end_layout
@@ -507,43 +546,6 @@ literal "false"
 
 \end_deeper
 \end_deeper
-\begin_layout Standard
-When presented with a time series of possibly noisy non-equilibrium concentratio
-n fluctuations of some species as output of, e.g., measurements from experiments
- or simulations that were parameterized by microscopic rates, one can ask
- for the corresponding macroscopic rates and a generating reaction network.
- In this paper we present an application of the shallow learning method
- SINDy
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Brunton2015"
-literal "true"
-
-\end_inset
-
-.
- By sparse regression, it is able to identify generating nonlinear dynamics
- in data that stems from dynamical systems.
- The parsimonious nature of the results avoids overfitting and provides
- interpretability.
- In our application we, as opposed to the SINDy method, estimate parameters
- which are coupled across the equations of the arising ODE system, i.e., we
- look for specific reactions and their rate constants that might have lead
- to the observations instead of net flux across species.
- We demonstrate the algorithm on a biologically motivated reaction kinetics
- system in three different scenarios of measurement: When there is no noise
- in the data we can find all relevant processes of the ground truth.
- If there is noise in the data we converge to the correct reaction network
- and rates with decreasing noise.
- The last scenario deals with the case that there are two realizations with
- different initial conditions, for which one can also show convergence to
- the correct model with decreasing levels of noise.
-\end_layout
-
 \begin_layout Section
 Sparse learning of reaction kinetics
 \end_layout
