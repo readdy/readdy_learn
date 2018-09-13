@@ -82,187 +82,48 @@
 \begin_body
 
 \begin_layout Section
-Notes
+Results
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:results"
+
+\end_inset
+
+
 \end_layout
 
-\begin_layout Itemize
-Very general paper on complex networks in nature
-\begin_inset space ~
+\begin_layout Standard
+To demonstrate the method a gene-regulatory network of chemical reactions
+ is estimated from time series of molecule-concentrations.
+ Let 
+\begin_inset Formula $S:=\{A,B,C\}$
 \end_inset
 
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Newman2003"
-literal "false"
-
+ be a set of three species of proteins which are being translated each from
+ their respective 
+\begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
- [good for introduction]
-\end_layout
-
-\begin_layout Itemize
-Paper on networks in biology
-\begin_inset space ~
+ molecule.
+ Each 
+\begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Barabasi2004"
-literal "false"
-
+ in turn has a corresponding 
+\begin_inset Formula $\mathrm{DNA}$
 \end_inset
 
- [intro]
-\end_layout
-
-\begin_layout Itemize
-These guys
-\begin_inset space ~
+ which it is transcribed from.
+ The proteins and 
+\begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Tian2007a"
-literal "false"
-
+ molecules decay over time whereas the 
+\begin_inset Formula $\mathrm{DNA}$
 \end_inset
 
- do a likelihood method to estimate regulatory networks, especially with
- noise, we should mention them and highlight what is different about our
- method (focus on sparsity).
-\end_layout
-
-\begin_layout Itemize
-These guys
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Margolin2006"
-literal "false"
-
-\end_inset
-
- identify regulatory networks from experimental essays with an algorithm.
-\end_layout
-
-\begin_layout Itemize
-Relevance of gene regulation for cancer research
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Abramovitch2004"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-Most famous example of gene regulation being the 
-\emph on
-lac
-\emph default
- operon.
- Crystal structure
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lewis1996"
-literal "false"
-
-\end_inset
-
-, model of the dynamics
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Yildirim2003"
-literal "false"
-
-\end_inset
-
-, system's biology study of the 
-\begin_inset Quotes eld
-\end_inset
-
-combinatorial control
-\begin_inset Quotes erd
-\end_inset
-
-
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Kuhlman2007"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-Gene regulation often appears in complex networks
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Shen-Orr2002"
-literal "false"
-
-\end_inset
-
-, e.g.
- for EColi there exists databases
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Gama-Castro2016"
-literal "false"
-
-\end_inset
-
-, similar for yeast
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lee2002"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-We use a similar modeling of reactions as
+ concentration remains constant.
+ The network contains reactions of the following form
 \begin_inset space ~
 \end_inset
 
@@ -274,18 +135,135 @@ literal "false"
 
 \end_inset
 
-, DNA leads to mRNA production, mRNA leads to protein production, proteins
- regulate mRNA in a positive or negative way.
- We, in contrast, do not study the noise itself, nor the bistability of
- the systems.
- Specifically our system only incorporates negative regulation, in which
- no bistability is to expected.
+
+\begin_inset Formula 
+\begin{align*}
+\mathrm{DNA}_{i} & \rightharpoonup\mathrm{DNA}_{i}+\mathrm{mRNA}_{i} &  & \text{(transcription)},\\
+\mathrm{mRNA}_{i} & \rightharpoonup\mathrm{mRNA}_{i}+i &  & \text{(translation)},\\
+\mathrm{mRNA}_{i} & \rightharpoonup\emptyset &  & \text{(decay of mRNA)},\\
+i & \rightharpoonup\emptyset &  & \text{(decay of protein)},\\
+i+\mathrm{mRNA}_{j} & \rightharpoonup i &  & \text{(regulation of protein }j\in S\text{),}
+\end{align*}
+
+\end_inset
+
+for each of the species 
+\begin_inset Formula $i\in S$
+\end_inset
+
+.
+ The regulation reaction models a repression of species 
+\begin_inset Formula $j$
+\end_inset
+
+ by hindering its transcription process.
+ In our example proteins of type 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ regulate the 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
+\end_inset
+
+ molecules, proteins of type 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ regulate the 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
+\end_inset
+
+ molecules and proteins of type 
+\begin_inset Formula $\mathrm{C}$
+\end_inset
+
+ regulate the 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ molecules.
+ The network of all species and reactions is depicted in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ This serves as reference model to generate time series of concentrations
+ under the initial condition described in Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ The generation uses a discrete time step of 
+\begin_inset Formula $\tau=3\cdot10^{-3}$
+\end_inset
+
+ to generate 
+\begin_inset Formula $667$
+\end_inset
+
+ frames amounting to a cumulative time of roughly 
+\begin_inset Formula $T=2$
+\end_inset
+
+.
+ 
 \end_layout
 
-\begin_layout Itemize
-Noise in mRNA and protein concentrations not only comes from measurements,
- but due to intrinsically noisy processes, e.g.
- when only few copy numbers of mRNA are present
+\begin_layout Subsection
+Data with stochastic noise
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:case-2"
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Contrary to Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, the data used in this section for estimating a model is subject to noise.
+ Such noise can stem from an experimental measurement or arises due to the
+ stochastic nature of the process.
+ In gene regulatory networks this is typically observed, when only few copy
+ numbers of 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ are present
 \begin_inset space ~
 \end_inset
 
@@ -298,103 +276,32 @@ literal "false"
 \end_inset
 
 .
- The noise we incorporate stems from stochastic realizations of the process
- using the Gillespie method.
- However, for the sake of demonstrating the concept we assume many molecules
- such that their amount is well described by concentrations.
-\end_layout
-
-\begin_layout Section
-New stuff (10.09.2018)
-\end_layout
-
-\begin_layout Itemize
-Biochemical networks from data with sparse Bayesian learning and compressive
- sensing
+ Thus, the system
 \begin_inset space ~
 \end_inset
 
 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Pan2012"
-literal "false"
-
-\end_inset
-
-.
- A quite similar description of the ODE problem, they have generic activation
- functions instead of LMA only and stoichiometric matrices.
-\end_layout
-
-\begin_layout Itemize
-They highlight issues with uniqueness of networks that are identified from
- data
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Szederkenyi2011"
-literal "false"
-
-\end_inset
-
-.
+\series bold
+[REFERENCE]
+\series default
+ is integrated using the Gillespie stochastic simulation algorithm (SSA)
  
-\begin_inset Quotes eld
-\end_inset
-
-[...] certain mechanisms may remain undetected (or they are falsely detected)
- while the inferred model is fully consistent with the measured data.
- It is also shown that sparsity enforcing approaches for determining ‘true’
- reaction structures are generally not enough without additional prior informati
-on.
-\begin_inset Quotes erd
-\end_inset
-
-
-\end_layout
-
-\begin_layout Itemize
-Different approach to identifying biological networks
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Friedman2000"
-literal "false"
-
-\end_inset
-
-, Bayesian inference from multiple snapshots of the system variables 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
+\series bold
+[cite]
+\series default
 .
- Another very similar
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Rogers2005"
-literal "false"
-
-\end_inset
-
-.
+ In the limit of many particles and realizations, the Gillespie SSA converges
+ to the integrated reaction-rate equations subject to the law of mass action.
+ Therefore, the initial condition's concentrations are interpreted in terms
+ of hundreds of particles.
+ Each realization is then transformed back to a time series of concentrations.
 \end_layout
 
 \begin_layout Standard
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
 btprint "btPrintCited"
-bibfiles "bio,newstuff"
+bibfiles "bibliography"
 options "abbrv"
 
 \end_inset
