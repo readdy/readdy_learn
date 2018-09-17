@@ -131,7 +131,7 @@ literal "false"
 
 \end_inset
 
- and the dynamics were modelled in
+ and the dynamics were modeled in
 \begin_inset space ~
 \end_inset
 
@@ -170,20 +170,9 @@ literal "false"
 
 \end_inset
 
-, so that there exist databases for some types of cells, e.g., for yeast
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lee2002"
-literal "false"
-
-\end_inset
-
- and E.
- coli
+ and there exist databases resolving these for certain types of cells, e.g.,
+ E.
+ coli cells
 \begin_inset space ~
 \end_inset
 
@@ -195,6 +184,18 @@ literal "false"
 
 \end_inset
 
+ and yeast cells
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Lee2002"
+literal "false"
+
+\end_inset
+
 .
 \end_layout
 
@@ -202,7 +203,105 @@ literal "false"
 Due to the complex nature of these networks it is desirable to apply machine
  learning to, e.g., trajectories of concentrations of certain species in order
  to infer the underlying model in a data-driven manner.
- 
+ Already existing methods to infer the regulatory network are, e.g., ARCANE
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Margolin2006"
+literal "false"
+
+\end_inset
+
+ based on experimental essay data and information theory or the likelihood
+ approach presented in
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Tian2007a"
+literal "false"
+
+\end_inset
+
+ taking the process's stochasticity into account.
+\end_layout
+
+\begin_layout Standard
+Following the law of parsimony it can be desirable to have sparsity in the
+ results making the model interpretable.
+ If the problem is formulated in terms of a dynamical system the SINDy method
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Brunton2015"
+literal "false"
+
+\end_inset
+
+ can be applied which solves for the parameters of the dynamical system
+ by regression equipped with the sparsity inducing 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ regularization.
+ This method was investigated, generalized, and applied in many different
+ ways, e.g., including control
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "brunton2016sparse"
+literal "false"
+
+\end_inset
+
+ (SINDYc), in the context of partial differential equations
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rudy2017data"
+literal "false"
+
+\end_inset
+
+, updating already existing models
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "quade2018sparse"
+literal "false"
+
+\end_inset
+
+ (abrupt-SINDy), and looking into convergence properties
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "zhang2018convergence"
+literal "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Itemize
@@ -250,25 +349,6 @@ Sparse learning of structures:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Biochemical networks from data with sparse Bayesian learning and compressive
- sensing
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Pan2012"
-literal "false"
-
-\end_inset
-
-.
- A quite similar description of the ODE problem, they have generic activation
- functions instead of LMA only and stoichiometric matrices.
-\end_layout
-
 \begin_layout Itemize
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -337,6 +417,25 @@ literal "false"
 
 : Convergence of the SINDy algorithm (sufficient conditions for general
  convergence, rate of convergence)
+\end_layout
+
+\begin_layout Itemize
+Biochemical networks from data with sparse Bayesian learning and compressive
+ sensing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Pan2012"
+literal "false"
+
+\end_inset
+
+.
+ A quite similar description of the ODE problem, they have generic activation
+ functions instead of LMA only and stoichiometric matrices.
 \end_layout
 
 \end_deeper
