@@ -1032,58 +1032,15 @@ name "sec:results"
 
 \end_layout
 
-\begin_layout Itemize
-We use a similar modeling of reactions as
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Thattai2001a"
-literal "false"
-
-\end_inset
-
-, DNA leads to mRNA production, mRNA leads to protein production, proteins
- regulate mRNA in a positive or negative way.
- We, in contrast, do not study the noise itself, nor the bistability of
- the systems.
- Specifically our system only incorporates negative regulation, in which
- no bistability is to expected.
-\end_layout
-
-\begin_layout Itemize
-Noise in mRNA and protein concentrations not only comes from measurements,
- but due to intrinsically noisy processes, e.g.
- when only few copy numbers of mRNA are present
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Golding2005,Berg1978,Elowitz2002"
-literal "false"
-
-\end_inset
-
-.
- The noise we incorporate stems from stochastic realizations of the process
- using the Gillespie method.
- However, for the sake of demonstrating the concept we assume many molecules
- such that their amount is well described by concentrations.
-\end_layout
-
 \begin_layout Standard
-To demonstrate the method a gene-regulatory network is estimated from time
- series of molecule-concentrations.
- To this end, let 
+To demonstrate the method a gene-regulatory network of chemical reactions
+ is estimated from time series of molecule-concentrations.
+ Let 
 \begin_inset Formula $S:=\{A,B,C\}$
 \end_inset
 
- be a set of three species of proteins which are being translated from a
- corresponding 
+ be a set of three species of proteins which are being translated each from
+ their respective 
 \begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
@@ -1106,10 +1063,19 @@ To demonstrate the method a gene-regulatory network is estimated from time
 \end_inset
 
  concentration remains constant.
-\end_layout
+ The network contains reactions of the following form
+\begin_inset space ~
+\end_inset
 
-\begin_layout Standard
-The following basic reactions can be formulated 
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Thattai2001a"
+literal "false"
+
+\end_inset
+
+
 \begin_inset Formula 
 \begin{align*}
 \mathrm{DNA}_{i} & \rightharpoonup\mathrm{DNA}_{i}+\mathrm{mRNA}_{i} &  & \text{(transcription)},\\
@@ -1200,7 +1166,9 @@ a.
 \end_inset
 
 .
- 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
@@ -2087,11 +2055,66 @@ noprefix "false"
 \end_inset
 
 , the data used in this section for estimating a model is subject to noise.
- To that end, the system was integrated using the Gillespie stochastic simulatio
-n algorithm (SSA) 
-\series bold
-[cite]
-\series default
+ Such noise can stem from an experimental measurement or arises due to the
+ stochastic nature of the process.
+ In gene regulatory networks this is typically observed, when only few copy
+ numbers of 
+\begin_inset Formula $\mathrm{mRNA}$
+\end_inset
+
+ are present
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Golding2005,Berg1978,Elowitz2002"
+literal "false"
+
+\end_inset
+
+.
+ Thus, the system of Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:results"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ with initial conditions as given in Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a is integrated using the Gillespie stochastic simulation algorithm (SSA)
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "gillespie1976general,gillespie1977exact"
+literal "false"
+
+\end_inset
+
 .
  In the limit of many particles and realizations, the Gillespie SSA converges
  to the integrated reaction-rate equations subject to the law of mass action.
