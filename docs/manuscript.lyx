@@ -360,7 +360,7 @@ literal "false"
 \end_layout
 
 \begin_layout Standard
-Our extension of the original SINDy method involves estimating parameters
+Our extension of the original SINDy method mostly involves estimating parameters
  which are coupled across the equations of the arising dynamical system.
  In the context of learning reaction networks this means that we look for
  specific reactions and their rate constants that might have lead to the
