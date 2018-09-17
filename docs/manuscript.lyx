@@ -118,8 +118,8 @@ literal "false"
 \end_inset
 
 .
- A well-known example of gene regulation is the lactose operon.
- Its crystal structure was resolved in
+ A well-known example of gene regulation is the lactose operon whose crystal
+ structure was resolved in
 \begin_inset space ~
 \end_inset
 
@@ -131,7 +131,7 @@ literal "false"
 
 \end_inset
 
- and the dynamics were modeled in
+ and dynamics were modeled in
 \begin_inset space ~
 \end_inset
 
@@ -144,7 +144,15 @@ literal "false"
 \end_inset
 
 .
- The system's combinatorial control in E.
+ The system's 
+\begin_inset Quotes eld
+\end_inset
+
+combinatorial control
+\begin_inset Quotes erd
+\end_inset
+
+ in E.
  coli cells was quantitatively investigated in
 \begin_inset space ~
 \end_inset
@@ -203,7 +211,7 @@ literal "false"
 Due to the complex nature of these networks it is desirable to apply machine
  learning to, e.g., time series of concentrations of certain species in order
  to infer the underlying model in a data-driven manner.
- Already existing methods that infer the regulatory network are, e.g., ARCANE
+ Already existing methods that infer regulatory networks are, e.g., ARCANE
 \begin_inset space ~
 \end_inset
 
@@ -215,7 +223,7 @@ literal "false"
 
 \end_inset
 
- based on experimental essay data and information theory and the likelihood
+ using experimental essay data as well as information theory and the likelihood
  approach presented in
 \begin_inset space ~
 \end_inset
@@ -235,8 +243,8 @@ literal "false"
 The method presented in this work follows the law of parsimony as it can
  be desirable to have sparsity in the results making the model interpretable
  and also avoids overfitting.
- The problem is formulated in terms of a dynamical system making the SINDy
- method
+ The problem is formulated in terms of a dynamical system so that it fits
+ into the framework of the SINDy method
 \begin_inset space ~
 \end_inset
 
@@ -248,10 +256,11 @@ literal "false"
 
 \end_inset
 
- applicable.
- It solves for the parameters of a library of possibly nonlinear ansatz
- functions describing the dynamical system by regression equipped with a
- sparsity inducing 
+.
+ A linear combination from a library of possibly nonlinear ansatz functions
+ is sought so that it describes the dynamical system.
+ The parameters are determined by regression equipped with a sparsity inducing
+ 
 \begin_inset Formula $L_{1}$
 \end_inset
 
@@ -351,10 +360,11 @@ literal "false"
 \end_layout
 
 \begin_layout Standard
-In contrast to the original SINDy method, the estimated parameters are coupled
- across the equations of the arising dynamical system, i.e., we look for specific
- reactions and their rate constants that might have lead to the observations
- instead of net flux across species.
+Our extension of the original SINDy method involves estimating parameters
+ which are coupled across the equations of the arising dynamical system.
+ In the context of learning reaction networks this means that we look for
+ specific reactions and their rate constants that might have lead to the
+ observations instead of net flux across species.
  We demonstrate the algorithm on a gene regulatory system in three different
  scenarios of measurement: When there is no noise in the data we can find,
  given sufficient amounts data, all relevant processes of the ground truth.
@@ -500,13 +510,6 @@ literal "false"
 \end_layout
 
 \end_deeper
-\begin_layout Standard
-When presented with a time series of possibly noisy non-equilibrium concentratio
-ns of some species as output of, e.g., measurements from experiments or simulation
-s that were parameterized by microscopic rates, one can ask for the correspondin
-g macroscopic rates and a generating reaction network.
-\end_layout
-
 \begin_layout Itemize
 Papers dealing with networks in nature | biology:
 \end_layout
@@ -655,38 +658,6 @@ literal "false"
 \end_layout
 
 \end_deeper
-\begin_layout Standard
-In this paper we present an application of the shallow learning method SINDy
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Brunton2015"
-literal "true"
-
-\end_inset
-
-.
- By sparse regression, it is able to identify generating nonlinear dynamics
- in data that stems from dynamical systems.
- The parsimonious nature of the results avoids overfitting and provides
- interpretability.
- In our application we, as opposed to the SINDy method, estimate parameters
- which are coupled across the equations of the arising ODE system, i.e., we
- look for specific reactions and their rate constants that might have lead
- to the observations instead of net flux across species.
- We demonstrate the algorithm on a biologically motivated reaction kinetics
- system in three different scenarios of measurement: When there is no noise
- in the data we can find all relevant processes of the ground truth.
- If there is noise in the data we converge to the correct reaction network
- and rates with decreasing noise.
- The last scenario deals with the case that there are two realizations with
- different initial conditions, for which one can also show convergence to
- the correct model with decreasing levels of noise.
-\end_layout
-
 \begin_layout Itemize
 (mostly biological) applications of SINDy
 \end_layout
