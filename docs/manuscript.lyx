@@ -240,9 +240,10 @@ literal "false"
 \end_layout
 
 \begin_layout Standard
-The method presented in this work follows the law of parsimony as it can
- be desirable to have sparsity in the results making the model interpretable
- and also avoids overfitting.
+The method presented in this work can identify underlying complex reaction
+ networks from concentration time series by following the law of parsimony,
+ i.e., there is sparsity in the results making the model interpretable and
+ also avoids overfitting.
  The problem is formulated in terms of a dynamical system so that it fits
  into the framework of the SINDy method
 \begin_inset space ~
@@ -375,424 +376,6 @@ Our extension of the original SINDy method mostly involves estimating parameters
  levels of noise.
 \end_layout
 
-\begin_layout Itemize
-Learning of structures:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-These guys
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Tian2007a"
-literal "false"
-
-\end_inset
-
- do a likelihood method to estimate regulatory networks, especially with
- noise, we should mention them and highlight what is different about our
- method (focus on sparsity).
-\end_layout
-
-\begin_layout Itemize
-These guys
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Margolin2006"
-literal "false"
-
-\end_inset
-
- identify regulatory networks from experimental essays with an algorithm.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Sparse learning of structures:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Brunton2015"
-literal "false"
-
-\end_inset
-
- SINDy
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "rudy2017data"
-literal "false"
-
-\end_inset
-
-: data-driven discovery of PDEs, use of noise (additive gaussian), no vector-val
-ued ansatz functions
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "brunton2016sparse"
-literal "false"
-
-\end_inset
-
-: sindy with control, comparison to DMD and Koopman analysis
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "quade2018sparse"
-literal "false"
-
-\end_inset
-
-: modification of SINDy (abrupt-SINDy) - update identified models by addition/de
-letion/modification of existing model terms (abrupt-SINDy is less sensitive
- to noise, lower runtime complexity, needs less data)
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "boninsegna2018sparse"
-literal "false"
-
-\end_inset
-
-: SINDy on SDEs, application of cross validation to determine sparsity level
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "zhang2018convergence"
-literal "false"
-
-\end_inset
-
-: Convergence of the SINDy algorithm (sufficient conditions for general
- convergence, rate of convergence)
-\end_layout
-
-\begin_layout Itemize
-Biochemical networks from data with sparse Bayesian learning and compressive
- sensing
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Pan2012"
-literal "false"
-
-\end_inset
-
-.
- A quite similar description of the ODE problem, they have generic activation
- functions instead of LMA only and stoichiometric matrices.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Papers dealing with networks in nature | biology:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Very general paper on complex networks in nature
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Newman2003"
-literal "false"
-
-\end_inset
-
- [good for introduction]
-\end_layout
-
-\begin_layout Itemize
-Paper on networks in biology
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Barabasi2004"
-literal "false"
-
-\end_inset
-
- [intro]
-\end_layout
-
-\begin_layout Itemize
-Relevance of gene regulation for cancer research
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Abramovitch2004"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-Most famous example of gene regulation being the 
-\emph on
-lac
-\emph default
- operon.
- Crystal structure
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lewis1996"
-literal "false"
-
-\end_inset
-
-, model of the dynamics
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Yildirim2003"
-literal "false"
-
-\end_inset
-
-, system's biology study of the 
-\begin_inset Quotes eld
-\end_inset
-
-combinatorial control
-\begin_inset Quotes erd
-\end_inset
-
-
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Kuhlman2007"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Itemize
-Gene regulation often appears in complex networks
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Shen-Orr2002"
-literal "false"
-
-\end_inset
-
-, e.g.
- for EColi there exists databases
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Gama-Castro2016"
-literal "false"
-
-\end_inset
-
-, similar for yeast
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Lee2002"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-(mostly biological) applications of SINDy
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "manohar2017environment"
-literal "false"
-
-\end_inset
-
-: application of SINDy with noisy data
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "dam2017sparse"
-literal "false"
-
-\end_inset
-
-: sindy for plasmas, estimate predator prey type model
-\end_layout
-
-\begin_layout Itemize
-Reaction networks:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-They highlight issues with uniqueness of networks that are identified from
- data
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Szederkenyi2011"
-literal "false"
-
-\end_inset
-
-.
- 
-\begin_inset Quotes eld
-\end_inset
-
-[...] certain mechanisms may remain undetected (or they are falsely detected)
- while the inferred model is fully consistent with the measured data.
- It is also shown that sparsity enforcing approaches for determining ‘true’
- reaction structures are generally not enough without additional prior informati
-on.
-\begin_inset Quotes erd
-\end_inset
-
-
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "mangan2016inferring"
-literal "false"
-
-\end_inset
-
-: Inferring Biological Networks by Sparse Identification of Nonlinear Dynamics,
- no vector valued ansatz functions (SINDy applied to LMA protein stuff)
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "pantazis2017unified"
-literal "false"
-
-\end_inset
-
-: get rid of temporal derivative by weak formulation (integration by parts,
- test functions), apply resulting system to sparse learning method (such
- as SINDy) -> could be applied to our problem to get rid of temporal derivatives
- amplifying noise; application to protein interaction system (and another
- example)
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Pan2012"
-literal "false"
-
-\end_inset
-
- (including bayesian POV)
-\end_layout
-
-\begin_layout Itemize
-Different approach to identifying biological networks
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Friedman2000"
-literal "false"
-
-\end_inset
-
-, Bayesian inference from multiple snapshots of the system variables 
-\begin_inset Formula $\mathbf{x}$
-\end_inset
-
-.
- Another very similar
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Rogers2005"
-literal "false"
-
-\end_inset
-
-.
-\end_layout
-
-\end_deeper
-\end_deeper
 \begin_layout Section
 Sparse learning of reaction kinetics
 \end_layout
@@ -2831,10 +2414,10 @@ Conclusion
 \end_layout
 
 \begin_layout Standard
-In this work we have successfully applied and extended the SINDy method
- to not only parsimoniously detect potentially nonlinear terms in a dynamical
- system from noisy data, but also yield, in this case, a sparse set of rates
- with respect to generating reactions (
+In this work we have extended the SINDy method to not only parsimoniously
+ detect potentially nonlinear terms in a dynamical system from noisy data,
+ but also yield, in this case, a sparse set of rates with respect to generating
+ reactions (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:the-reactions"
@@ -2845,6 +2428,66 @@ noprefix "false"
 \end_inset
 
 ).
+ We have applied this method on data generated from a gene regulation network
+ and could successfully recover the underlying model.
+\end_layout
+
+\begin_layout Standard
+Potentially, this method could be used to identify reaction networks from
+ time series measurements even if the initial conditions are not always
+ exactly identical, as was demonstrated in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ One apparent limitation of the method is that it only works if the data
+ stems from the equilibration phase, otherwise the dynamics cannot be recovered.
+ Concentration fluctuations that are present in the equilibrium phase are
+ not part of the ansatz model.
+\end_layout
+
+\begin_layout Standard
+The studies of Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ have shown that the applied regularization terms can mitigate noise up
+ to a certain degree compared to the unregularized method, so that identificatio
+n of the reaction network is more robust and closer to the ground truth.
 \end_layout
 
 \begin_layout Standard
