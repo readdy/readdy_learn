@@ -99,19 +99,30 @@ TODOs
 \end_layout
 
 \begin_layout Plain Layout
+- Autoren + Adressen hinzufügen
+\end_layout
 
-\change_inserted 880794617 1537400248
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537400432
 - Abstract schreiben
 \end_layout
 
 \begin_layout Plain Layout
-- Autoren + Adressen hinzufügen
+
+\change_inserted 880794617 1537400477
+- Intro: Schreibt 1-2 Sätze zur Relevanz des Identifizierenz von Reaktionen
+ + Parametern für komplexe Simulationen wie iPRD + gebt ein paar passende
+ Zitate dazu (z.B.
+ Euer Readdy paper :)
 \end_layout
 
 \begin_layout Plain Layout
 - In Fig.
  5 ist ein lustiger vertikaler Strich links.
  Sieht aus wie gescannt :)
+\change_inserted 880794617 1537400431
+
 \end_layout
 
 \end_inset
