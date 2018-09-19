@@ -72,11 +72,12 @@
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
-\tracking_changes false
+\tracking_changes true
 \output_changes false
 \html_math_output 0
 \html_css_as_file 0
 \html_be_strict false
+\author 880794617 "Frank Noe"
 \end_header
 
 \begin_body
@@ -85,11 +86,62 @@
 Discovering governing reactions from concentration data
 \end_layout
 
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\series bold
+TODOs
+\series default
+:
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537400248
+- Abstract schreiben
+\end_layout
+
+\begin_layout Plain Layout
+- Autoren + Adressen hinzufügen
+\end_layout
+
+\begin_layout Plain Layout
+- In Fig.
+ 5 ist ein lustiger vertikaler Strich links.
+ Sieht aus wie gescannt :)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Introduction
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1537298352
+Mapping out the reaction networks behind biological processes, such as gene
+ regulation in cancer
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Abramovitch2004"
+literal "false"
+
+\end_inset
+
+, is paramount to understanding the mechanisms of life and disease.
+ 
+\change_deleted 880794617 1537298345
 Complex networks in nature and biology have been in the focus of many publicatio
 ns as displayed in the review papers
 \begin_inset space ~
@@ -117,6 +169,8 @@ literal "false"
 
 \end_inset
 
+
+\change_unchanged
 .
  A well-known example of gene regulation is the lactose operon whose crystal
  structure was resolved in
@@ -205,13 +259,87 @@ literal "false"
 \end_inset
 
 .
+
+\change_inserted 880794617 1537298485
+ Another example where mapping the active reactions is important is that
+ of chemical reactors, where understanding which reactions are accessible
+ for a given set of educts and reaction conditions is important to design
+ synthesis pathways.
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537298501
+If you find a relavant citation, give it here.
+ But not essential
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1537304695
+In complex reaction environments such as biological cells, the number of
+ reactive species and possible reactions is practically unlimited – as an
+ illustration, consider vast amount of possible isomerizations and posttranslati
+onal modifications for a single protein molecule.
+ Therefore, the question 
+\begin_inset Quotes eld
+\end_inset
+
+which reactions are occuring in a given cell
+\begin_inset Quotes erd
+\end_inset
+
+ is not useful.
+ A more useful formulation is 
+\begin_inset Quotes eld
+\end_inset
+
+given observations of a set of chemical species, what is the 
+\emph on
+minimal set
+\emph default
+ of reactions necessary to explain their time evolution?
+\begin_inset Quotes erd
+\end_inset
+
+.
+ This formulation calls for a machine learning method that can infer the
+ reaction network underlying the observation data.
+\end_layout
+
+\begin_layout Standard
+
+\change_deleted 880794617 1537304710
 Due to the complex nature of these networks it is desirable to apply machine
  learning to, e.g., time series of concentrations of certain species in order
  to infer the underlying model in a data-driven manner.
- Already existing methods that infer regulatory networks are, e.g., ARCANE
+ Already e
+\change_inserted 880794617 1537304710
+E
+\change_unchanged
+xisting methods 
+\change_deleted 880794617 1537304712
+that
+\change_inserted 880794617 1537304712
+to
+\change_unchanged
+ infer regulatory networks 
+\change_inserted 880794617 1537304714
+include
+\change_deleted 880794617 1537304718
+are, e.g.,
+\change_unchanged
+ ARCANE
 \begin_inset space ~
 \end_inset
 
@@ -223,8 +351,25 @@ literal "false"
 
 \end_inset
 
- using experimental essay data as well as information theory and the likelihood
- approach presented in
+ 
+\change_inserted 880794617 1537306704
+that uses
+\change_deleted 880794617 1537306705
+using
+\change_unchanged
+ experimental essay data 
+\change_inserted 880794617 1537306724
+and
+\change_deleted 880794617 1537306725
+as well as
+\change_unchanged
+ information theory
+\change_inserted 880794617 1537306727
+, as well as
+\change_deleted 880794617 1537306727
+ and
+\change_unchanged
+ the likelihood approach presented in
 \begin_inset space ~
 \end_inset
 
@@ -236,16 +381,67 @@ literal "false"
 
 \end_inset
 
- taking the process's stochasticity into account.
+ 
+\change_inserted 880794617 1537306766
+that takes the stochasticity of observed rectant time series
+\change_deleted 880794617 1537306767
+taking the process's stochasticity 
+\change_inserted 880794617 1537306767
+ 
+\change_unchanged
+into account.
 \end_layout
 
 \begin_layout Standard
 The method presented in this work can identify underlying complex reaction
  networks from concentration time series by following the law of parsimony,
- i.e., there is sparsity in the results making the model interpretable and
- also avoids overfitting.
- The problem is formulated in terms of a dynamical system so that it fits
- into the framework of the SINDy method
+ i.e., 
+\change_inserted 880794617 1537306795
+by inducing
+\change_deleted 880794617 1537306796
+there is
+\change_unchanged
+ sparsity in the resul
+\change_inserted 880794617 1537306821
+ting reaction network.
+ This promotes the interpretability of
+\change_deleted 880794617 1537306806
+ts making
+\change_unchanged
+ the model 
+\change_deleted 880794617 1537306826
+interpretable 
+\change_unchanged
+and 
+\change_deleted 880794617 1537306828
+also 
+\change_unchanged
+avoids overfitting.
+ 
+\change_inserted 880794617 1537306889
+We formulate the problem as data-driven indentification of a 
+\change_deleted 880794617 1537306893
+The problem is formulated in terms of a 
+\change_unchanged
+dynamical system
+\change_inserted 880794617 1537307179
+, which renders the method consistent with and an extension of the
+\change_deleted 880794617 1537306910
+ so that it fits into the
+\change_unchanged
+ framework of 
+\change_inserted 880794617 1537306932
+stochastic identification of nonlinear dynamics (
+\change_deleted 880794617 1537306933
+the 
+\change_unchanged
+SINDy
+\change_inserted 880794617 1537306934
+)
+\change_deleted 880794617 1537306936
+ method
+\change_unchanged
+
 \begin_inset space ~
 \end_inset
 
@@ -258,16 +454,79 @@ literal "false"
 \end_inset
 
 .
- A linear combination from a library of possibly nonlinear ansatz functions
- is sought so that it describes the dynamical system.
- The parameters are determined by regression equipped with a sparsity inducing
  
+\change_inserted 880794617 1537307002
+Specifically, the problem of identifying a reaction network from time traces
+ of reactant concentrations can be solved by finding a
+\change_deleted 880794617 1537307002
+A
+\change_unchanged
+ linear combination from a library of 
+\change_deleted 880794617 1537307021
+possibly 
+\change_unchanged
+nonlinear ansatz functions 
+\change_inserted 880794617 1537307050
+that each corresponds to a reaction of a combination of reactions acting
+ on a set of reactants.
+\change_deleted 880794617 1537307052
+is sought so that it describes the dynamical system.
+
+\change_unchanged
+ 
+\change_inserted 880794617 1537307058
+With this formulation, t
+\change_deleted 880794617 1537307059
+T
+\change_unchanged
+he 
+\change_inserted 880794617 1537307063
+reaction rates can be
+\change_deleted 880794617 1537307064
+parameters are
+\change_unchanged
+ determined 
+\change_inserted 880794617 1537307074
+
+\emph on
+via
+\change_deleted 880794617 1537307073
+
+\emph default
+by
+\change_unchanged
+ regression
+\change_inserted 880794617 1537307080
+.
+
+\change_unchanged
+ 
+\change_inserted 880794617 1537307084
+Sparsity is induced by 
+\change_unchanged
+equipp
+\change_inserted 880794617 1537307090
+ing the regression algorithms
+\change_deleted 880794617 1537307091
+ed
+\change_unchanged
+ with a sparsity inducing 
+\change_deleted 880794617 1537307098
+
 \begin_inset Formula $L_{1}$
 \end_inset
 
- regularization.
- This method was investigated, generalized, and applied in many different
- ways, e.g., including control
+ 
+\change_unchanged
+regularization.
+ 
+\change_inserted 880794617 1537307203
+SINDy
+\change_deleted 880794617 1537307205
+This method
+\change_unchanged
+ was investigated, generalized, and applied in many different ways, e.g.,
+ including control
 \begin_inset space ~
 \end_inset
 
@@ -381,36 +640,74 @@ Sparse learning of reaction kinetics
 \end_layout
 
 \begin_layout Standard
-The underlying model are reaction-rate equations subject to the law of mass
- action.
- To this end, let 
+
+\change_inserted 880794617 1537307534
+We are observing the concentrations of 
 \begin_inset Formula $S$
 \end_inset
 
- be the number of species, then the observed concentration at a time 
+ chemical species in time 
 \begin_inset Formula $t$
 \end_inset
 
- can be represented by a vector 
+: 
 \begin_inset Formula 
 \begin{align}
 \mathbf{x}(t)=\begin{pmatrix}x_{1}(t)\\
 \vdots\\
 x_{S}(t)
-\end{pmatrix}\in\mathbb{R}^{S}.
+\end{pmatrix}\in\mathbb{R}^{S}.\label{eq:concentration_vector}
 \end{align}
 
 \end_inset
 
+We assume that their dynamics are governed by
+\change_deleted 880794617 1537307423
+The underlying model are
+\change_unchanged
+ 
+\change_inserted 880794617 1537307547
+classical 
+\change_unchanged
+reaction-rate equations subject to the law of mass action.
+ 
+\change_deleted 880794617 1537307448
+To this end, let 
+\begin_inset Formula $S$
+\end_inset
 
-\end_layout
+ be the number of species, then t
+\change_inserted 880794617 1537307676
+A general expression for the change of concentration of reactant 
+\begin_inset Formula $s$
+\end_inset
 
-\begin_layout Standard
-The temporal change for each species 
+ as a result of order-0 reactions (creation or annihilation), order-1 reactions
+ (transitions of other species into 
+\begin_inset Formula $s$
+\end_inset
+
+ or transitions of 
+\begin_inset Formula $s$
+\end_inset
+
+ into other species), order-2 reactions (production or consumption of 
+\begin_inset Formula $s$
+\end_inset
+
+ by the encounter of two species), etc, is given by:
+\change_deleted 880794617 1537307678
+he observed concentration at a time 
+\begin_inset Formula $t$
+\end_inset
+
+ can be represented by a vector The temporal change for each species 
 \begin_inset Formula $s=1,\ldots,S$
 \end_inset
 
  of the observed concentration is given by
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
@@ -421,34 +718,66 @@ The temporal change for each species
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Standard
 where the 
 \begin_inset Formula $\beta_{s,k}^{(\ldots)}$
 \end_inset
 
--values are constants belonging to order-
+-values are constants belonging to 
+\change_inserted 880794617 1537307694
+the reactions of 
+\change_unchanged
+order
+\change_deleted 880794617 1537307695
+-
+\change_inserted 880794617 1537307695
+ 
+\change_unchanged
+
 \begin_inset Formula $k$
 \end_inset
 
- reactions.
+.
  These rate constants however can incorporate several underlying reactions
- at once, e.g., reactions 
+ at once
+\change_inserted 880794617 1537314022
+.
+ For example, the two reactions
+\change_deleted 880794617 1537314027
+, e.g., reactions 
 \begin_inset Formula $s_{1}\xrightharpoonup{\xi_{1}}s_{2}$
 \end_inset
 
+
+\change_inserted 880794617 1537314028
+
+\begin_inset Formula 
+\begin{align}
+s_{1}\xrightharpoonup{\xi_{1}}s_{2}\label{eq:example_reaction_1}\\
+s_{1}\xrightharpoonup{\xi_{2}}s_{3}\label{eq:example_reaction_2}
+\end{align}
+
+\end_inset
+
+
+\change_deleted 880794617 1537314085
  and 
 \begin_inset Formula $s_{1}\xrightharpoonup{\xi_{2}}s_{3}$
 \end_inset
 
- amount to 
+ 
+\change_inserted 880794617 1537307732
+both contribute to
+\change_deleted 880794617 1537307733
+amount to
+\change_unchanged
+ 
 \begin_inset Formula $\dot{x}_{1}=\beta_{1,1}^{(1)}x_{1}=-(\xi_{1}+\xi_{2})x_{1}$
 \end_inset
 
 .
- To disentangle the single reactions from (
+ To disentangle 
+\change_inserted 880794617 1537307744
+(
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "eq:lma"
@@ -458,21 +787,77 @@ noprefix "false"
 
 \end_inset
 
-), choose 
+) into 
+\change_deleted 880794617 1537307745
+the 
+\change_unchanged
+single reactions
+\change_deleted 880794617 1537313774
+ from (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:lma"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+)
+\change_unchanged
+, 
+\change_inserted 880794617 1537313830
+we 
+\change_unchanged
+choose
+\change_inserted 880794617 1537313833
+ a library
+\change_unchanged
+ 
 \begin_inset Formula $R$
 \end_inset
 
- possible ansatz reactions with their respective reaction functions 
+ possible 
+\change_deleted 880794617 1537313843
+a
+\change_inserted 880794617 1537313843
+A
+\change_unchanged
+nsatz reactions 
+\change_inserted 880794617 1537313906
+that each represent a single reaction:
+\change_deleted 880794617 1537313908
+with their respective reaction functions
+\change_unchanged
+ 
 \begin_inset Formula 
 \begin{align}
 \textbf{y}_{r}(\textbf{x}(t))=\begin{pmatrix}y_{r,1}(\textbf{x}(t))\\
 \vdots\\
 y_{r,S}(\textbf{x}(t))
-\end{pmatrix},\quad r=1,\ldots,R,
+\end{pmatrix},\quad r=1,\ldots,R.
 \end{align}
 
 \end_inset
 
+
+\change_inserted 880794617 1537313990
+With this ansatz, the reaction dynamics (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:lma"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) becomes a set of linear equations with unknown parameters 
+\begin_inset Formula $\xi_{r}$
+\end_inset
+
+ that represent the sought macroscopic rate constants:
+\change_deleted 880794617 1537313992
 so that the change of concentration for species 
 \begin_inset Formula $i$
 \end_inset
@@ -481,7 +866,9 @@ so that the change of concentration for species
 \begin_inset Formula $t$
 \end_inset
 
- is represented by the dynamical system 
+ is represented by the dynamical system
+\change_unchanged
+ 
 \begin_inset Formula 
 \begin{align}
 \dot{\textbf{x}}_{i}(t)=\sum_{r=1}^{R}y_{r,i}(\textbf{x}(t))\xi_{r},\quad i=1,\ldots,S,\label{method:the-system}
@@ -494,8 +881,71 @@ where
 \end_inset
 
  are the to-be estimated macroscopic rate constants.
- In the above example this means that 
-\begin_inset Formula $y_{1}(\mathbf{x})=(-x_{1},x_{1},0)^{T}$
+ 
+\change_inserted 880794617 1537314128
+The two reactions i
+\change_deleted 880794617 1537314128
+I
+\change_unchanged
+n the 
+\change_inserted 880794617 1537314098
+previous
+\change_deleted 880794617 1537314099
+above
+\change_unchanged
+ example
+\change_inserted 880794617 1537314121
+ (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:example_reaction_1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+-
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:example_reaction_2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+)
+\change_unchanged
+ 
+\change_inserted 880794617 1537314148
+would be modeled by the Ansatz functions
+\change_deleted 880794617 1537314149
+this means that
+\change_inserted 880794617 1537314218
+
+\begin_inset Formula 
+\begin{align*}
+y_{1}(\mathbf{x}) & =(-x_{1},x_{1},0)^{T}\\
+y_{2}(\mathbf{x}) & =(-x_{1},0,x_{1})^{T},
+\end{align*}
+
+\end_inset
+
+illustrating that the values of the coefficients 
+\begin_inset Formula $\xi_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $\xi_{2}$
+\end_inset
+
+ can be used to decide whether a single reaction is present and to what
+ degree.
+
+\change_deleted 880794617 1537314219
+ 
+\begin_inset Formula $ $
 \end_inset
 
  and 
@@ -503,18 +953,55 @@ where
 \end_inset
 
 .
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1537314295
+Now suppose we have measured the concentration vector (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:concentration_vector"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) at 
+\begin_inset Formula $T$
+\end_inset
+
+ 
+\change_deleted 880794617 1537314297
 When presented with a time series consisting of 
 \begin_inset Formula $T$
 \end_inset
 
- observations at points in time 
+ observations at points in 
+\change_unchanged
+time
+\change_inserted 880794617 1537314299
+ points
+\change_unchanged
+ 
 \begin_inset Formula $t_{1}<\cdots<t_{T}$
 \end_inset
 
-, the data can be represented as a matrix 
+
+\change_inserted 880794617 1537314309
+.
+ We represent these
+\change_deleted 880794617 1537314310
+, the
+\change_unchanged
+ data 
+\change_deleted 880794617 1537314314
+can be represented 
+\change_unchanged
+as a matrix 
 \begin_inset Formula 
 \begin{align}
 \textbf{X}=\begin{pmatrix}x_{1}(t_{1}) & x_{2}(t_{1}) & \cdots & x_{S}(t_{1})\\
@@ -526,6 +1013,34 @@ x_{1}(t_{T}) & x_{2}(t_{T}) & \cdots & x_{S}(t_{T})
 
 \end_inset
 
+
+\change_inserted 880794617 1537385771
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537385829
+
+\series bold
+TODO
+\series default
+: I don't understand this notation.
+ What is 
+\begin_inset Formula $\mathbf{A}$
+\end_inset
+
+ and how is it defined? Rewrite this paragraph such that other people in
+ the lab can understand it / ask around.
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
 Given this matrix, a library 
 \begin_inset Formula $\Theta:\mathbb{R}^{T\times S}\to\mathbb{R}^{T\times S\times R},\;\mathbf{A}\mapsto\begin{pmatrix}\theta_{1}(\mathbf{A}) & \theta_{2}(\mathbf{A}) & \cdots & \theta_{R}(\mathbf{A})\end{pmatrix}$
 \end_inset
@@ -564,7 +1079,13 @@ where
 \end_inset
 
 .
- The goal is to find coefficients 
+ 
+\change_inserted 880794617 1537385861
+
+\end_layout
+
+\begin_layout Standard
+The goal is to find coefficients 
 \begin_inset Formula $\Xi=\begin{pmatrix}\xi_{1} & \xi_{2} & \cdots & \xi_{R}\end{pmatrix}^{T}$
 \end_inset
 
@@ -593,19 +1114,39 @@ literal "true"
 \end_inset
 
  applicable.
- To this end, one can consider the minimization problem to find 
+ To this end, one can consider the 
+\change_inserted 880794617 1537385913
+regularized 
+\change_unchanged
+minimization problem
+\change_inserted 880794617 1537385930
+:
+\change_deleted 880794617 1537385915
+ to find 
 \begin_inset Formula $\hat{\Xi}$
 \end_inset
 
- such that 
+ such that
+\change_unchanged
+ 
 \begin_inset Formula 
 \begin{align}
-\hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}^{2}\right)\quad\text{subject to }\Xi\geq0,\label{method:minimizationproblem}
+\hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}^{2}\right)\quad\text{subject to }\Xi\geq0.\label{method:minimizationproblem}
 \end{align}
 
 \end_inset
 
-where 
+
+\change_deleted 880794617 1537385939
+wh
+\change_inserted 880794617 1537385938
+H
+\change_unchanged
+ere
+\change_inserted 880794617 1537385940
+,
+\change_unchanged
+ 
 \begin_inset Formula $\|\cdot\|_{F}$
 \end_inset
 
@@ -613,7 +1154,11 @@ where
 \begin_inset Formula $\lambda\in[0,1]$
 \end_inset
 
- a hyperparameter that interpolates linearly between LASSO
+ 
+\change_inserted 880794617 1537385949
+is 
+\change_unchanged
+a hyperparameter that interpolates linearly between LASSO
 \begin_inset space ~
 \end_inset
 
@@ -654,7 +1199,13 @@ literal "true"
 \end_inset
 
  sense.
- Minimization problem (
+ 
+\change_inserted 880794617 1537385963
+The m
+\change_deleted 880794617 1537385963
+M
+\change_unchanged
+inimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
@@ -664,17 +1215,95 @@ noprefix "false"
 
 \end_inset
 
-) is therefore an application of the SINDy method and also generalizes a
- bit due to the vector-valued ansatz functions.
+) is therefore a
+\change_inserted 880794617 1537385981
+ generalization
+\change_deleted 880794617 1537385983
+n application
+\change_unchanged
+ of the SINDy method 
+\change_inserted 880794617 1537385992
+to
+\change_deleted 880794617 1537385994
+and also generalizes a bit due
+\change_unchanged
+ to the vector-valued ansatz functions.
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1537386086
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537386189
+Relevance of the next sentence is unclear.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537386185
+- Are you saying you are using it in this limit or is this just a general
+ remark.
+ If general, it should be included in the previous paragraph.
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537386179
+- Also, 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ means Ridge regression, that should be mentioned because that is the familiar
+ term in the ML field.
+ Is this the same like constrained least-squares? 
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
 For 
 \begin_inset Formula $\alpha=0$
 \end_inset
 
  the minimization problem reduces to constrained least-squares (LSQ).
- In order to solve (
+ 
+\change_inserted 880794617 1537386203
+Since only the concentration data 
+\begin_inset Formula $\mathbf{X}$
+\end_inset
+
+ is available but not its temporal derivative, 
+\begin_inset Formula $\dot{\mathbf{X}}$
+\end_inset
+
+ is approximated numerically by second order finite differences with the
+ exception of boundary data.
+ Once the pair 
+\begin_inset Formula $(\mathbf{X},\dot{\mathbf{X}})$
+\end_inset
+
+ is obtained, the problem becomes invariant under temporal reordering.
+ Hence, when presented with multiple trajectories the data matrices 
+\begin_inset Formula $\mathbf{X}_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $\dot{\mathbf{X}}_{i}$
+\end_inset
+
+ can simply be concatenated.
+\change_unchanged
+
+\end_layout
+
+\begin_layout Standard
+In order to solve (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
@@ -709,30 +1338,26 @@ literal "true"
 \end_inset
 
 .
- Since only the concentration data 
-\begin_inset Formula $\mathbf{X}$
+ 
+\change_inserted 880794617 1537386225
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537386245
+Say here where your code related to this paper can be found (readdy-learn
+ github).
+\change_unchanged
+
+\end_layout
+
 \end_inset
 
- is available but not its temporal derivative 
-\begin_inset Formula $\dot{\mathbf{X}}$
-\end_inset
 
-, it is approximated numerically by second order finite differences with
- the exception of boundary data.
- Once the pair 
-\begin_inset Formula $(\mathbf{X},\dot{\mathbf{X}})$
-\end_inset
+\change_unchanged
 
- is obtained, the problem becomes invariant under temporal reordering.
- Hence, when presented with multiple trajectories the data matrices 
-\begin_inset Formula $\mathbf{X}_{i}$
-\end_inset
-
- and 
-\begin_inset Formula $\dot{\mathbf{X}}_{i}$
-\end_inset
-
- can simply be concatenated.
 \end_layout
 
 \begin_layout Section
@@ -747,8 +1372,29 @@ name "sec:results"
 \end_layout
 
 \begin_layout Standard
-To demonstrate the method a gene-regulatory network of chemical reactions
- is estimated from time series of molecule-concentrations.
+
+\change_inserted 880794617 1537386278
+We
+\change_deleted 880794617 1537386286
+To
+\change_unchanged
+ demonstrate the method 
+\change_inserted 880794617 1537386298
+by estimating the reactions of 
+\change_unchanged
+a gene-regulatory network 
+\change_deleted 880794617 1537386304
+of chemical reactions is estimated 
+\change_unchanged
+from time series of 
+\change_deleted 880794617 1537386318
+molecule-
+\change_unchanged
+concentrations
+\change_inserted 880794617 1537386323
+ of the involved molecules
+\change_unchanged
+.
  Let 
 \begin_inset Formula $S:=\{A,B,C\}$
 \end_inset
@@ -806,11 +1452,26 @@ for each of the species
 \end_inset
 
 .
- The regulation reaction models a repression of species 
+ The
+\change_inserted 880794617 1537386406
+se reactions model a 
+\change_deleted 880794617 1537386410
+ regulation reaction models a repression
+\change_inserted 880794617 1537386415
+regulation
+\change_unchanged
+ of species 
 \begin_inset Formula $j$
 \end_inset
 
- by hindering its transcription process.
+ 
+\change_inserted 880794617 1537386484
+by virtue of the fact that the transcription product inhibit transcription
+ processes.
+\change_deleted 880794617 1537386467
+by hindering its transcription process.
+
+\change_unchanged
  In our example proteins of type 
 \begin_inset Formula $\mathrm{A}$
 \end_inset
@@ -835,8 +1496,14 @@ for each of the species
 \begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
- molecules.
- The network of all species and reactions is depicted in Fig.
+ molecules
+\change_inserted 880794617 1537386501
+ (
+\change_deleted 880794617 1537386503
+.
+ The network of all species and reactions is depicted in 
+\change_unchanged
+Fig.
 \begin_inset space ~
 \end_inset
 
@@ -850,9 +1517,30 @@ noprefix "false"
 
 \end_inset
 
-a.
- This serves as reference model to generate time series of concentrations
- under the initial condition described in Tab.
+a
+\change_inserted 880794617 1537386504
+)
+\change_unchanged
+.
+ 
+\change_inserted 880794617 1537386519
+Using this reaction model, 
+\change_deleted 880794617 1537386522
+This serves as reference model to generate 
+\change_unchanged
+time series of concentrations 
+\change_inserted 880794617 1537386526
+are generated using
+\change_deleted 880794617 1537386526
+under
+\change_unchanged
+ the initial condition described in Tab
+\change_inserted 880794617 1537386532
+le
+\change_deleted 880794617 1537386533
+.
+\change_unchanged
+
 \begin_inset space ~
 \end_inset
 
@@ -866,7 +1554,33 @@ noprefix "false"
 
 \end_inset
 
-a.
+a
+\change_inserted 880794617 1537386995
+, which were chosen so that all the reactions in reaction model significantly
+ contribute to the temporal evolution of the system's concentration
+\change_unchanged
+.
+\change_inserted 880794617 1537386966
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537386626
+
+\series bold
+TODO
+\series default
+: Which rates are used? Refer to last table?
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
  The generation uses a discrete time step of 
 \begin_inset Formula $\tau=3\cdot10^{-3}$
 \end_inset
@@ -1419,10 +2133,33 @@ Initial conditions used to generate concentration time series.
 \end_layout
 
 \begin_layout Standard
-These time series of concentrations are then applied to the proposed estimation
- method which is designed to find reaction networks and rate constants from
- experimental data.
- This method uses a library of ansatz functions given in Tab.
+
+\change_inserted 880794617 1537386850
+The proposed estimation method is applied to analyze t
+\change_deleted 880794617 1537386851
+T
+\change_unchanged
+hese time series of concentrations 
+\change_inserted 880794617 1537386864
+in order to recover the underlying
+\change_deleted 880794617 1537386866
+are then applied to the proposed estimation method which is designed to
+ find
+\change_unchanged
+ reaction network
+\change_inserted 880794617 1537386874
+ from data.
+\change_deleted 880794617 1537386877
+s and rate constants from experimental data.
+
+\change_unchanged
+ 
+\change_inserted 880794617 1537386891
+To this end we use the
+\change_deleted 880794617 1537386892
+This method uses a
+\change_unchanged
+ library of ansatz functions given in Tab.
 \begin_inset space ~
 \end_inset
 
@@ -1436,14 +2173,29 @@ noprefix "false"
 
 \end_inset
 
+
+\change_inserted 880794617 1537386922
+, which contains a large number of possible reactions, only few of which
+ are actually part of the model
+\change_unchanged
 .
+
+\change_deleted 880794617 1537386948
  The initial conditions were chosen so that all the processes with positive
  rate constant significantly contribute to the temporal evolution of the
  system's concentration.
+\change_unchanged
+
 \end_layout
 
 \begin_layout Subsection
+
+\change_inserted 880794617 1537395266
+Learning the reaction network in the low-noise limit
+\change_deleted 880794617 1537395269
 The noiseless case
+\change_unchanged
+
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:case-1"
@@ -1454,6 +2206,14 @@ name "sec:case-1"
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1537397619
+We first demonstrate that the true reaction network can be reconstructed
+ when using a finite amount of observation data without additional measurement
+ noise, i.e.
+ the observations are reflecting the true molecule concentrations at any
+ given time point.
+\change_deleted 880794617 1537395934
 In this section noiseless data is generated from integrating the reaction-rate
  equation (
 \begin_inset CommandInset ref
@@ -1495,6 +2255,8 @@ noprefix "false"
 \end_inset
 
 b.
+
+\change_unchanged
  The minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -1505,16 +2267,151 @@ noprefix "false"
 
 \end_inset
 
-) is solved with respect to this data.
+) is solved 
+\change_inserted 880794617 1537395929
+using the concentration time series shown in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+b.
+\change_deleted 880794617 1537395927
+with respect to this data.
+
+\change_unchanged
  When setting the hyperparameter 
 \begin_inset Formula $\alpha=0$
 \end_inset
 
  one obtains linear least-squares regression with a constraint on the non-negati
 vity of the estimated reaction rates.
+\change_inserted 880794617 1537395952
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537395983
+see above: 
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537395987
+- Why? This is just ridge regression, why does this induce non-negativity?
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537396003
+- So did you actually set 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+, or what do you want to say here?
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1537396062
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537396086
+
+\series bold
+Say clearly what you did.
+ I think you want to say (but I'm not sure)
+\series default
+:
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537397085
+We first set the hyperparameter 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ in the minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), which results in Ridge regression without a sparsity constraint.
+ In this case we estimate a reaction network that can reproduce the observations
+ almost exactly (
+\series bold
+plot this in Figure
+\series default
+).
+ However, the result is mechanistically wrong as sparsity pattern does not
+ match the reaction network used to generate the data.
+ On one hand many spurious reactions are estimated that were not in the
+ true reaction scheme and would lead to wrong conclusions about the mechanism,
+ such as 
+\begin_inset Formula $\mathrm{A}+\mathrm{A}\rightharpoonup\mathrm{A}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathrm{A}+\mathrm{C}\rightharpoonup\mathrm{C}$
+\end_inset
+
+.
+ More dramatically, the reaction responsible for the decay of 
+\begin_inset Formula $\mathrm{A}$
+\end_inset
+
+ particles is completely ignored (Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case-1-sparsity-pattern"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ 
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
 When applying LSQ regression, one can observe that the sparsity pattern
  does not match the generating reaction network and the reaction responsible
  for the decay of 
@@ -1536,7 +2433,27 @@ noprefix "false"
 \end_inset
 
 ).
- For a suitable choice of hyperparameters 
+ 
+\change_inserted 880794617 1537396200
+
+\end_layout
+
+\begin_layout Standard
+
+\change_inserted 880794617 1537396820
+Next, we sought sparse solutions by using 
+\begin_inset Formula $\alpha>0$
+\end_inset
+
+ and additionally eliminating reactions with rate constants smaller than
+ a cutoff value 
+\begin_inset Formula $\kappa$
+\end_inset
+
+.
+ 
+\change_unchanged
+For a suitable choice of hyperparameters 
 \begin_inset Formula $\alpha\approx1.91\cdot10^{-7}$
 \end_inset
 
@@ -1544,11 +2461,52 @@ noprefix "false"
 \begin_inset Formula $\lambda=1$
 \end_inset
 
-, and a cutoff 
+, and 
+\change_deleted 880794617 1537396835
+a cutoff 
+\change_unchanged
+
 \begin_inset Formula $\kappa=0.22$
 \end_inset
 
- a sparse solution can be obtained and also the decay reaction can be recovered.
+
+\change_inserted 880794617 1537396837
+,
+\change_unchanged
+ a sparse solution 
+\change_inserted 880794617 1537396839
+is
+\change_deleted 880794617 1537396842
+can be
+\change_unchanged
+ obtained 
+\change_inserted 880794617 1537396861
+that finds the correct reaction scheme 
+\change_unchanged
+and also 
+\change_inserted 880794617 1537396863
+recovers 
+\change_unchanged
+the decay reaction
+\change_inserted 880794617 1537396874
+ (Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case-1-sparsity-pattern"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+
+\change_deleted 880794617 1537396895
+ can be recovered.
  The cutoff 
 \begin_inset Formula $\kappa$
 \end_inset
@@ -1582,11 +2540,19 @@ noprefix "false"
 
  in green.
  
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
-The value of the cutoff can be determined by comparing the magnitude of
- estimated rates and finding a gap, see Fig.
+The value of the cutoff 
+\change_inserted 880794617 1537396915
+was
+\change_deleted 880794617 1537396916
+can be
+\change_unchanged
+ determined by comparing the magnitude of estimated rates and finding a
+ gap, see Fig.
 \begin_inset space ~
 \end_inset
 
@@ -1719,6 +2685,8 @@ noprefix "false"
 \end_layout
 
 \begin_layout Standard
+
+\change_deleted 880794617 1537397606
 Even though only finite amounts of data were used, the regularized minimization
  was able to find the underlying model.
  On the other hand, using LSQ lead to spurious reactions and a model which
@@ -1740,10 +2708,20 @@ Even though only finite amounts of data were used, the regularized minimization
 \end_inset
 
  but yield a denser model.
+\change_unchanged
+
 \end_layout
 
 \begin_layout Subsection
-Data with stochastic noise
+
+\change_inserted 880794617 1537399347
+Learning the reaction network from 
+\change_deleted 880794617 1537399351
+D
+\change_inserted 880794617 1537399351
+d
+\change_unchanged
+ata with stochastic noise
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:case-2"
@@ -1754,7 +2732,19 @@ name "sec:case-2"
 \end_layout
 
 \begin_layout Standard
-Contrary to Sec.
+
+\change_inserted 880794617 1537397627
+In c
+\change_deleted 880794617 1537397627
+C
+\change_unchanged
+ontra
+\change_inserted 880794617 1537397629
+st 
+\change_deleted 880794617 1537397630
+ry 
+\change_unchanged
+to Sec.
 \begin_inset space ~
 \end_inset
 
@@ -1768,11 +2758,50 @@ noprefix "false"
 
 \end_inset
 
-, the data used in this section for estimating a model is subject to noise.
- Such noise can stem from an experimental measurement or arises due to the
- stochastic nature of the process.
- In gene regulatory networks this is typically observed, when only few copy
- numbers of 
+, 
+\change_inserted 880794617 1537397638
+we now employ
+\change_deleted 880794617 1537397639
+the
+\change_unchanged
+ data 
+\change_inserted 880794617 1537397649
+that includes measurement noise.
+\change_deleted 880794617 1537397655
+used in this section for estimating a model is subject to noise.
+
+\change_unchanged
+ Such noise can 
+\change_inserted 880794617 1537397661
+originate
+\change_deleted 880794617 1537397662
+stem
+\change_unchanged
+ from an 
+\change_inserted 880794617 1537397717
+uncertainties in the experimental setup or from shot noise in single- or
+ few-molecule measurements.
+\change_deleted 880794617 1537397719
+experimental measurement or arises due to the stochastic nature of the process.
+
+\change_unchanged
+ In gene regulatory networks 
+\change_inserted 880794617 1537397735
+such noise
+\change_deleted 880794617 1537397743
+this
+\change_unchanged
+ is 
+\change_deleted 880794617 1537397744
+typically
+\change_inserted 880794617 1537397745
+commonly
+\change_unchanged
+ observed
+\change_deleted 880794617 1537397747
+,
+\change_unchanged
+ when only few copy numbers of 
 \begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
@@ -1789,7 +2818,13 @@ literal "false"
 \end_inset
 
 .
- Thus, the system of Sec.
+ 
+\change_inserted 880794617 1537397915
+In order to simulate noise from few copies of molecules,
+\change_deleted 880794617 1537397916
+Thus,
+\change_unchanged
+ the system of Sec.
 \begin_inset space ~
 \end_inset
 
@@ -1835,15 +2870,29 @@ literal "false"
  Therefore, the initial condition's concentrations are interpreted in terms
  of hundreds of particles.
  Each realization is then transformed back to a time series of concentrations.
-\end_layout
 
-\begin_layout Standard
+\change_inserted 880794617 1537398378
+ We define the noise level as
+\change_deleted 880794617 1537398353
 Data is prepared for different noise levels.
- Here, a noise level is an effective quantity given by the mean-squared
- deviation of the concentration time series from the integrated reaction-rate
- equations.
- Different levels of noise are achieved by averaging multiple realizations
- of the time series obtained by the Gillespie SSA.
+ Here, a noise level is an effective quantity given by 
+\change_unchanged
+the mean-squared deviation of the concentration time series from the integrated
+ reaction-rate equations.
+ 
+\change_inserted 880794617 1537398360
+Data with different noise
+\change_deleted 880794617 1537398362
+Different
+\change_unchanged
+ levels 
+\change_inserted 880794617 1537398368
+are prepared 
+\change_deleted 880794617 1537398371
+of noise are achieved 
+\change_unchanged
+by averaging multiple realizations of the time series obtained by the Gillespie
+ SSA.
 \end_layout
 
 \begin_layout Standard
@@ -1896,12 +2945,36 @@ noprefix "false"
 \end_inset
 
 b).
- In either case, the regularized method with a suitable hyperparameter pair
- 
+ In 
+\change_inserted 880794617 1537398412
+both cases,
+\change_deleted 880794617 1537398414
+either case,
+\change_unchanged
+ the regularized method with a suitable hyperparameter pair 
 \begin_inset Formula $(\alpha,\lambda)$
 \end_inset
 
  performs better than LSQ.
+\change_inserted 880794617 1537398420
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537398437
+see comments regarding LSQ/Ridge above.
+ Check all LSQ mentions in the paper for correctness.
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
@@ -1940,6 +3013,25 @@ name "fig:case2-convergence"
 
 \end_inset
 
+
+\change_inserted 880794617 1537398455
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537398514
+Don't rely in the caption on having read the paper.
+ If you use symbols say in one word what they mean, or avoid them.
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
 Convergence of the estimation error when estimating the system described
  in Sec.
 \begin_inset space ~
@@ -2006,7 +3098,34 @@ noprefix "false"
 \begin_inset Formula $L_{1}$
 \end_inset
 
- difference between the generating reaction rates 
+ difference
+\change_inserted 880794617 1537398532
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537398548
+use 
+\begin_inset Quotes eld
+\end_inset
+
+mean absolute error
+\begin_inset Quotes erd
+\end_inset
+
+.
+ That is something non-mathematicians will understand too.
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+ between the generating reaction rates 
 \begin_inset Formula $\xi$
 \end_inset
 
@@ -2037,13 +3156,47 @@ The hyperparameters
 \end_inset
 
 -fold cross validation.
- The first fold was discarded, as it contains the initial equilibration
- phase as validation set, i.e., the information density about the relevant
- processes is the highest.
+ 
+\change_inserted 880794617 1537399212
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537399312
+
+\series bold
+Oh-oh
+\series default
+.
+ The next sentence makes no sense.
+ The idea behind cross-validation is that the data of the 
+\begin_inset Formula $k$
+\end_inset
+
+ folds must come from the same distribution.
+ You shouldn't use cross-validation on the time-dependent relaxation trajectory.
+ Here it would make sense to shuffle the time axis before defining the folds.
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+The first fold was discarded, as it contains the initial equilibration phase
+ as validation set, i.e., the information density about the relevant processes
+ is the highest.
 \end_layout
 
 \begin_layout Subsection
-Multiple initial conditions
+
+\change_inserted 880794617 1537399498
+Learning the reaction network from m
+\change_deleted 880794617 1537399499
+M
+\change_unchanged
+ultiple initial conditions
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:case-3"
@@ -2054,7 +3207,20 @@ name "sec:case-3"
 \end_layout
 
 \begin_layout Standard
-This section extends the situation of Sec.
+
+\change_inserted 880794617 1537399622
+Preparing the experiment that generates the data in different initial conditions
+ can help identifying the true reaction mechanisms as a more diverse dataset
+ makes it easier to confirm or exclude the participation of specific reactions.
+ 
+\change_unchanged
+This section extends the 
+\change_inserted 880794617 1537399632
+analysis
+\change_deleted 880794617 1537399633
+situation
+\change_unchanged
+ of Sec.
 \begin_inset space ~
 \end_inset
 
@@ -2069,8 +3235,13 @@ noprefix "false"
 \end_inset
 
  to two initial conditions, where the first initial condition is identical
- to the initial condition used in the previous sections and the second initial
- condition is given in Tab.
+ to the 
+\change_inserted 880794617 1537399644
+one used previously
+\change_deleted 880794617 1537399646
+initial condition used in the previous sections
+\change_unchanged
+ and the second initial condition is given in Tab.
 \begin_inset space ~
 \end_inset
 
@@ -2085,7 +3256,15 @@ noprefix "false"
 \end_inset
 
 b.
- The corresponding time series are depicted in Fig.
+
+\change_deleted 880794617 1537399549
+ 
+\change_inserted 880794617 1537399541
+ 
+\end_layout
+
+\begin_layout Standard
+The corresponding time series are depicted in Fig.
 \begin_inset space ~
 \end_inset
 
@@ -2100,8 +3279,13 @@ noprefix "false"
 \end_inset
 
 a.
- The gray graph corresponds to an exemplary integration by the Gillespie
- SSA.
+ The gray graph corresponds to a
+\change_inserted 880794617 1537399668
+ sample trajectory generated 
+\change_deleted 880794617 1537399670
+n exemplary integration 
+\change_unchanged
+by the Gillespie SSA.
  For both initial conditions the same time step of 
 \begin_inset Formula $\tau=3\cdot10^{-3}$
 \end_inset
@@ -2124,6 +3308,10 @@ a.
 \end_inset
 
 ,
+\change_inserted 880794617 1537399520
+ 
+\change_unchanged
+
 \begin_inset Formula $\dot{\mathbf{X}}_{2}$
 \end_inset
 
@@ -2136,7 +3324,7 @@ a.
 \end_inset
 
 analogously for 
-\begin_inset Formula $\dot{\boldsymbol{X}}$
+\begin_inset Formula $\dot{\mathbf{X}}$
 \end_inset
 
 .
@@ -2241,7 +3429,31 @@ name "fig:case3-convergence"
 
 \end_inset
 
-Extended concentration time series used in Sec.
+
+\change_inserted 880794617 1537399764
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537399783
+The first sentence should describe what the entire figure is about.
+ a/b describe the individual panels.
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+E
+\change_inserted 880794617 1537399814
+stimation of reaction schemes from gene-regulation data starting from two
+ different initial conditions.
+\change_deleted 880794617 1537399820
+xtended concentration time series used in Sec.
 \begin_inset space ~
 \end_inset
 
@@ -2258,6 +3470,8 @@ noprefix "false"
  as well as convergence of the number of spurious reactions and estimation
  error when using two concatenated concentration time series with different
  initial conditions.
+
+\change_unchanged
  The minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2277,8 +3491,18 @@ noprefix "false"
 \begin_inset Formula $10$
 \end_inset
 
- times on different Gillespie SSA generated realizations, giving rise to
- mean and standard deviation (solid lines and shaded areas, respectively).
+ times on different 
+\change_inserted 880794617 1537399850
+sets of observation data generated by 
+\change_unchanged
+Gillespie SSA
+\change_deleted 880794617 1537399856
+ generated realizations,
+\change_inserted 880794617 1537399856
+,
+\change_unchanged
+ giving rise to mean and standard deviation (solid lines and shaded areas,
+ respectively).
  
 \series bold
 (a)
@@ -2340,8 +3564,45 @@ b) prescribes positive initial concentrations for
 \end_inset
 
  species.
- The gray graphs are exemplary realizations of integration using the Gillespie
- SSA.
+ The gray graphs are 
+\change_inserted 880794617 1537399879
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1537399913
+common mistake: exemplary means 
+\begin_inset Quotes eld
+\end_inset
+
+vorbildlich
+\begin_inset Quotes erd
+\end_inset
+
+, not 
+\begin_inset Quotes eld
+\end_inset
+
+z.B.
+\begin_inset Quotes erd
+\end_inset
+
+
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_deleted 880794617 1537399872
+exemplary
+\change_inserted 880794617 1537399873
+sample
+\change_unchanged
+ realizations of integration using the Gillespie SSA.
  
 \series bold
 (b)
@@ -2428,7 +3689,13 @@ noprefix "false"
 \end_inset
 
 ).
- We have applied this method on data generated from a gene regulation network
+ 
+\change_inserted 880794617 1537400092
+Mathematically this has been achieved by permitting vector-valued basis
+ functions and obtaining a tensor linear regression problem.
+ 
+\change_unchanged
+We have applied this method on data generated from a gene regulation network
  and could successfully recover the underlying model.
 \end_layout
 
@@ -2450,10 +3717,35 @@ noprefix "false"
 \end_inset
 
 .
- One apparent limitation of the method is that it only works if the data
- stems from the equilibration phase, otherwise the dynamics cannot be recovered.
- Concentration fluctuations that are present in the equilibrium phase are
+ One apparent limitation 
+\change_inserted 880794617 1537400130
+is that
+\change_deleted 880794617 1537400131
+of
+\change_unchanged
+ the method 
+\change_inserted 880794617 1537400135
+can only be applied 
+\change_deleted 880794617 1537400139
+is that it only works 
+\change_unchanged
+if the data stems from the equilibration phase
+\change_inserted 880794617 1537400180
+, as the concentration-based approach has derivatives equal zero in the
+ equilibrium, which precludes the reaction dynamics to be recovered.
+\change_deleted 880794617 1537400182
+, otherwise the dynamics cannot be recovered.
+
+\change_unchanged
+ 
+\change_inserted 880794617 1537400218
+In future work, we will consider the identification of reaction schemes
+ from instantaneous fluctuations of particle numbers in equilibrium.
+\change_deleted 880794617 1537400219
+Concentration fluctuations that are present in the equilibrium phase are
  not part of the ansatz model.
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
