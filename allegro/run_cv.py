@@ -300,6 +300,29 @@ def concatenate_two_traj_files(traj1="./gillespie_trajs_init_1.h5", traj2="./gil
                         i_out_group.create_dataset("dcounts_dt", data=dcounts_dt)
 
 
+# do this for "./gillespie_trajs_init_1.h5" and "./gillespie_trajs_conced_1_3_zipped.h5"
+def shuffle_trajs(traj_file_path="./gillespie_trajs_init_1.h5",
+                     realisations=[1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000],
+                     number_of_iids=10):
+    with h5.File(traj_file_path, "r+") as f:
+        for r in realisations:
+            #r_group = f.create_group(str(r))
+            for i in range(number_of_iids):
+                #i_group = r_group.create_group(str(i))
+
+                c1 = f[str(r)][str(i)]["counts"][:]
+                dc_dt1 = f[str(r)][str(i)]["dcounts_dt"][:]
+
+                h1 = f[str(r)][str(i)]["counts"]
+                h2 = f[str(r)][str(i)]["dcounts_dt"]
+
+                indices = np.arange(len(c1))
+                np.random.shuffle(indices)
+
+                h1[:] = c1[indices]
+                h2[:] = dc_dt1[indices]
+
+
 def get_traj_from_file(filename, n_gillespie_realisations, iid):
     with h5.File(filename, "r") as f:
         counts = f[str(n_gillespie_realisations)][str(iid)]["counts"][:]
