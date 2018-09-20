@@ -1,26 +1,134 @@
+@article{rudy2017data,
+	author = {Rudy, Samuel H and Brunton, Steven L and Proctor, Joshua L and Kutz, J Nathan},
+	journal = {Science Advances},
+	number = {4},
+	pages = {e1602614},
+	publisher = {American Association for the Advancement of Science},
+	title = {Data-driven discovery of partial differential equations},
+	volume = {3},
+	year = {2017}
+}
+
+@article{mangan2016inferring,
+	author = {Mangan, Niall M and Brunton, Steven L and Proctor, Joshua L and Kutz, J Nathan},
+	journal = {IEEE Transactions on Molecular, Biological and Multi-Scale Communications},
+	number = {1},
+	pages = {52--63},
+	publisher = {IEEE},
+	title = {Inferring biological networks by sparse identification of nonlinear dynamics},
+	volume = {2},
+	year = {2016}
+}
+
+@article{brunton2016sparse,
+	author = {Brunton, Steven L and Proctor, Joshua L and Kutz, J Nathan},
+	journal = {arXiv preprint arXiv:1605.06682},
+	title = {Sparse identification of nonlinear dynamics with control (SINDYc)},
+	year = {2016}
+}
+
+@article{manohar2017environment,
+	author = {Manohar, Krithika and Brunton, Steven L and Kutz, J Nathan},
+	journal = {Journal of Fluids and Structures},
+	pages = {162--180},
+	publisher = {Elsevier},
+	title = {Environment identification in flight using sparse approximation of wing strain},
+	volume = {70},
+	year = {2017}
+}
+
+@article{dam2017sparse,
+	author = {Dam, Magnus and Br{\o}ns, Morten and {Juul Rasmussen}, Jens and Naulin, Volker and Hesthaven, Jan S},
+	journal = {Physics of Plasmas},
+	number = {2},
+	pages = {022310},
+	publisher = {AIP Publishing},
+	title = {Sparse identification of a predator-prey system from simulation data of a convection model},
+	volume = {24},
+	year = {2017}
+}
+
+@article{quade2018sparse,
+	author = {Quade, Markus and Abel, Markus and {Nathan Kutz}, J and Brunton, Steven L},
+	journal = {Chaos: An Interdisciplinary Journal of Nonlinear Science},
+	number = {6},
+	pages = {063116},
+	publisher = {AIP Publishing},
+	title = {Sparse identification of nonlinear dynamics for rapid model recovery},
+	volume = {28},
+	year = {2018}
+}
+
+@article{pantazis2017unified,
+	author = {Pantazis, Yannis and Tsamardinos, Ioannis},
+	journal = {arXiv preprint arXiv:1710.00718},
+	title = {A unified approach for sparse dynamical system inference from temporal measurements},
+	year = {2017}
+}
+
+@article{boninsegna2018sparse,
+	author = {Boninsegna, Lorenzo and N{\"u}ske, Feliks and Clementi, Cecilia},
+	journal = {The Journal of Chemical Physics},
+	number = {24},
+	pages = {241723},
+	publisher = {AIP Publishing},
+	title = {Sparse learning of stochastic dynamical equations},
+	volume = {148},
+	year = {2018}
+}
+
+@article{zhang2018convergence,
+	author = {Zhang, Linan and Schaeffer, Hayden},
+	journal = {arXiv preprint arXiv:1805.06445},
+	title = {On the Convergence of the SINDy Algorithm},
+	year = {2018}
+}
+
+@article{gillespie1977exact,
+	author = {Gillespie, Daniel T},
+	journal = {The journal of physical chemistry},
+	number = {25},
+	pages = {2340--2361},
+	publisher = {ACS Publications},
+	title = {Exact stochastic simulation of coupled chemical reactions},
+	volume = {81},
+	year = {1977}
+}
+
+@article{gillespie1976general,
+	author = {Gillespie, Daniel T},
+	journal = {Journal of computational physics},
+	number = {4},
+	pages = {403--434},
+	publisher = {Elsevier},
+	title = {A general method for numerically simulating the stochastic time evolution of coupled chemical reactions},
+	volume = {22},
+	year = {1976}
+}
+
 @article{Brunton2015,
-abstract = {The ability to discover physical laws and governing equations from data is one of humankind's greatest intellectual achievements. A quantitative understanding of dynamic constraints and balances in nature has facilitated rapid development of knowledge and enabled advanced technological achievements, including aircraft, combustion engines, satellites, and electrical power. In this work, we combine sparsity-promoting techniques and machine learning with nonlinear dynamical systems to discover governing physical equations from measurement data. The only assumption about the structure of the model is that there are only a few important terms that govern the dynamics, so that the equations are sparse in the space of possible functions; this assumption holds for many physical systems. In particular, we use sparse regression to determine the fewest terms in the dynamic governing equations required to accurately represent the data. The resulting models are parsimonious, balancing model complexity with descriptive ability while avoiding overfitting. We demonstrate the algorithm on a wide range of problems, from simple canonical systems, including linear and nonlinear oscillators and the chaotic Lorenz system, to the fluid vortex shedding behind an obstacle. The fluid example illustrates the ability of this method to discover the underlying dynamics of a system that took experts in the community nearly 30 years to resolve. We also show that this method generalizes to parameterized, time-varying, or externally forced systems.},
-archivePrefix = {arXiv},
-arxivId = {1509.03580},
-author = {Brunton, Steven L and Proctor, Joshua L and Kutz, J Nathan},
-doi = {10.1073/pnas.1517384113},
-eprint = {1509.03580},
-issn = {0027-8424},
-journal = {PNAS},
-keywords = {compressed sensing,dynamical systems,sparse regression,system identification},
-number = {609},
-pages = {1--26},
-pmid = {27035946},
-title = {{Discovering governing equations from data by sparse identification of nonlinear dynamical systems}},
-url = {http://arxiv.org/abs/1509.03580},
-volume = {1},
-year = {2015}
+	abstract = {The ability to discover physical laws and governing equations from data is one of humankind's greatest intellectual achievements. A quantitative understanding of dynamic constraints and balances in nature has facilitated rapid development of knowledge and enabled advanced technological achievements, including aircraft, combustion engines, satellites, and electrical power. In this work, we combine sparsity-promoting techniques and machine learning with nonlinear dynamical systems to discover governing physical equations from measurement data. The only assumption about the structure of the model is that there are only a few important terms that govern the dynamics, so that the equations are sparse in the space of possible functions; this assumption holds for many physical systems. In particular, we use sparse regression to determine the fewest terms in the dynamic governing equations required to accurately represent the data. The resulting models are parsimonious, balancing model complexity with descriptive ability while avoiding overfitting. We demonstrate the algorithm on a wide range of problems, from simple canonical systems, including linear and nonlinear oscillators and the chaotic Lorenz system, to the fluid vortex shedding behind an obstacle. The fluid example illustrates the ability of this method to discover the underlying dynamics of a system that took experts in the community nearly 30 years to resolve. We also show that this method generalizes to parameterized, time-varying, or externally forced systems.},
+	archiveprefix = {arXiv},
+	arxivid = {1509.03580},
+	author = {Brunton, Steven L and Proctor, Joshua L and Kutz, J Nathan},
+	doi = {10.1073/pnas.1517384113},
+	eprint = {1509.03580},
+	issn = {0027-8424},
+	journal = {PNAS},
+	keywords = {compressed sensing, dynamical systems, sparse regression, system identification},
+	number = {609},
+	pages = {1--26},
+	pmid = {27035946},
+	title = {{Discovering governing equations from data by sparse identification of nonlinear dynamical systems}},
+	url = {http://arxiv.org/abs/1509.03580},
+	volume = {1},
+	year = {2015}
 }
 
 @misc{Tibshirani1996,
 	abstract = {Document: Details (1994) Robert Tibshirani CiteSeer.IST - Copyright Penn State and NEC},
-	archivePrefix = {arXiv},
-	arxivId = {1369–7412/11/73273},
+	archiveprefix = {arXiv},
+	arxivid = {1369--7412/11/73273},
 	author = {Tibshirani, Robert},
 	booktitle = {Journal of the Royal Statistical Society B},
 	doi = {10.2307/2346178},
@@ -30,86 +138,375 @@ year = {2015}
 	number = {1},
 	pages = {267--288},
 	pmid = {16272381},
-	primaryClass = {1369–7412},
+	primaryclass = {1369--7412},
 	title = {{Regression Selection and Shrinkage via the Lasso}},
 	url = {https://statweb.stanford.edu/{~}tibs/lasso/lasso.pdf http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.35.7574},
 	volume = {58},
 	year = {1996}
 }
+
 @book{Hastie2009,
-	author="Hastie, Trevor
-	and Tibshirani, Robert
-	and Friedman, Jerome",
-	title="The Elements of Statistical Learning: Data Mining, Inference, and Prediction",
-	year="2009",
-	publisher="Springer New York",
-	address="New York, NY",
-	isbn="978-0-387-84858-7",
-	doi="10.1007/978-0-387-84858-7_2",
-	url="https://doi.org/10.1007/978-0-387-84858-7_2"
+	address = {New York, NY},
+	author = {Hastie, Trevor and Tibshirani, Robert and Friedman, Jerome},
+	doi = {10.1007/978-0-387-84858-7_2},
+	isbn = {978-0-387-84858-7},
+	publisher = {Springer New York},
+	title = {The Elements of Statistical Learning: Data Mining, Inference, and Prediction},
+	url = {https://doi.org/10.1007/978-0-387-84858-7_2},
+	year = {2009}
 }
-@Misc{SciPy,
-	author =    {Eric Jones and Travis Oliphant and Pearu Peterson and others},
-	title =     {{SciPy}: Open source scientific tools for {Python}},
-	year =      {2001--},
-	url = "http://www.scipy.org/",
-	note = {[Online; accessed October 27, 2017]}
+
+@misc{SciPy,
+	author = {Jones, Eric and Oliphant, Travis and Peterson, Pearu and others},
+	note = {[Online; accessed October 27, 2017]},
+	title = {{SciPy}: Open source scientific tools for {Python}},
+	url = {http://www.scipy.org/},
+	year = {2001--}
 }
+
 @article{Kraft1988,
-	title={A software package for sequential quadratic programming},
-	author={Kraft, Dieter},
-	journal={Technical Report DFVLR-FB 88-28, Institut für Dynamik der Flugsysteme, Oberpfaffenhofen},
-	year={1988}
+	author = {Kraft, Dieter},
+	journal = {Technical Report DFVLR-FB 88-28, Institut f{\"u}r Dynamik der Flugsysteme, Oberpfaffenhofen},
+	title = {A software package for sequential quadratic programming},
+	year = {1988}
 }
-@article{Gillespie1976,
-	archivePrefix = {arXiv},
-	arxivId = {arXiv:1011.6217v1},
-	author = {Gillespie, Daniel T},
-	doi = {10.1016/0021-9991(76)90041-3},
-	eprint = {arXiv:1011.6217v1},
-	isbn = {0021-9991},
-	issn = {10902716},
-	journal = {Journal of Computational Physics},
-	mendeley-groups = {reaction learning},
-	number = {4},
-	pages = {403--434},
-	pmid = {20387305},
-	title = {{A general method for numerically simulating the stochastic time evolution of coupled chemical reactions}},
-	volume = {22},
-	year = {1976}
-}
+
 @article{Zou2005,
-abstract = {We propose the elastic net, a new regularization and variable selection method. Real world data and a simulation study show that the elastic net often outperforms the lasso, while enjoying a similar sparsity of representation. In addition, the elastic net encourages a grouping effect, where strongly correlated predictors tend to be in or out of the model together. The elastic net is particularly useful when the number of predictors (p) is much bigger than the number of observations (n). By contrast, the lasso is not a very satisfactory variable selection method in the p≫n case. An algorithm called LARS-EN is proposed for computing elastic net regularization paths efficiently, much like algorithm LARS does for the lasso.},
-author = {Zou, Hui and Hastie, Trevor},
-doi = {10.1111/j.1467-9868.2005.00503.x},
-file = {:home/mho/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Zou, Hastie - 2005 - Regularization and variable selection via the elastic net.pdf:pdf},
-isbn = {1369-7412},
-issn = {13697412},
-journal = {Journal of the Royal Statistical Society},
-keywords = {grouping effect,lars algorithm,lasso,p,penalization},
-number = {2},
-pages = {301--320},
-pmid = {20713001},
-title = {{Regularization and variable selection via the elastic-net}},
-url = {https://web.stanford.edu/{~}hastie/Papers/B67.2 (2005) 301-320 Zou {\&} Hastie.pdf},
-volume = {67},
-year = {2005}
+	abstract = {We propose the elastic net, a new regularization and variable selection method. Real world data and a simulation study show that the elastic net often outperforms the lasso, while enjoying a similar sparsity of representation. In addition, the elastic net encourages a grouping effect, where strongly correlated predictors tend to be in or out of the model together. The elastic net is particularly useful when the number of predictors (p) is much bigger than the number of observations (n). By contrast, the lasso is not a very satisfactory variable selection method in the p≫n case. An algorithm called LARS-EN is proposed for computing elastic net regularization paths efficiently, much like algorithm LARS does for the lasso.},
+	author = {Zou, Hui and Hastie, Trevor},
+	doi = {10.1111/j.1467-9868.2005.00503.x},
+	file = {/home/mho/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Zou, Hastie - 2005 - Regularization and variable selection via the elastic net.pdf},
+	isbn = {1369-7412},
+	issn = {13697412},
+	journal = {Journal of the Royal Statistical Society},
+	keywords = {grouping effect, lars algorithm, lasso, p, penalization},
+	number = {2},
+	pages = {301--320},
+	pmid = {20713001},
+	title = {{Regularization and variable selection via the elastic-net}},
+	url = {https://web.stanford.edu/{~}hastie/Papers/B67.2 (2005) 301-320 Zou {\&} Hastie.pdf},
+	volume = {67},
+	year = {2005}
 }
+
 @article{Hoerl1,
-  added-at = {2009-01-29T03:39:09.000+0100},
-  author = {Hoerl, A. E. and Kennard, R. W.},
-  biburl = {https://www.bibsonomy.org/bibtex/2257711fd5e6222fce40b8fbcb66a906a/swpark81},
-  interhash = {6468748d5b4b1f5d02107b4c131e9ea6},
-  intrahash = {257711fd5e6222fce40b8fbcb66a906a},
-  journal = {Technometrics},
-  keywords = {ridge-regg},
-  pages = {55--67},
-  timestamp = {2009-01-29T03:40:48.000+0100},
-  title = {Ridge Regression: Biased
-        Estimation for Nonorthogonal Problems},
-  volume = 12,
-  year = 1970
+	added-at = {2009-01-29T03:39:09.000+0100},
+	author = {Hoerl, A. E. and Kennard, R. W.},
+	biburl = {https://www.bibsonomy.org/bibtex/2257711fd5e6222fce40b8fbcb66a906a/swpark81},
+	interhash = {6468748d5b4b1f5d02107b4c131e9ea6},
+	intrahash = {257711fd5e6222fce40b8fbcb66a906a},
+	journal = {Technometrics},
+	keywords = {ridge-regg},
+	pages = {55--67},
+	timestamp = {2009-01-29T03:40:48.000+0100},
+	title = {Ridge Regression: Biased Estimation for Nonorthogonal Problems},
+	volume = 12,
+	year = 1970
 }
 
+@article{Szederkenyi2011,
+	author = {Szederk{\'e}nyi, G{\'a}bor and Banga, Julio R. and Alonso, Antonio A.},
+	doi = {10.1186/1752-0509-5-177},
+	isbn = {1752-0509},
+	issn = {1752-0509},
+	journal = {BMC Systems Biology},
+	number = {1},
+	pages = {177},
+	pmid = {22034917},
+	title = {{Inference of complex biological networks: distinguishability issues and optimization-based solutions}},
+	url = {http://bmcsystbiol.biomedcentral.com/articles/10.1186/1752-0509-5-177},
+	volume = {5},
+	year = {2011}
+}
 
+@article{Friedman2000,
+	author = {Friedman, Nir and Linial, Michal and Nachman, Iftach and Pe'er, Dana},
+	doi = {10.1089/106652700750050961},
+	issn = {1066-5277},
+	journal = {Journal of Computational Biology},
+	keywords = {bayesian methods, gene expression, microarrays},
+	month = {aug},
+	number = {3-4},
+	pages = {601--620},
+	title = {{Using Bayesian Networks to Analyze Expression Data}},
+	url = {http://www.liebertpub.com/doi/10.1089/106652700750050961},
+	volume = {7},
+	year = {2000}
+}
+
+@inproceedings{Pan2012,
+	author = {Pan, Wei and Yuan, Ye and Goncalves, Jorge and Stan, Guy-bart},
+	booktitle = {2012 IEEE 51st IEEE Conference on Decision and Control (CDC)},
+	doi = {10.1109/CDC.2012.6426216},
+	isbn = {978-1-4673-2066-5},
+	issn = {01912216},
+	localfile = {~/Dropbox/SINDy/13 - Reconstruction of Arbitrary Biochemical Reaction Networks: A Compressive Sensing Approach.pdf},
+	month = {dec},
+	pages = {2334--2339},
+	publisher = {IEEE},
+	title = {{Reconstruction of arbitrary biochemical reaction networks: A compressive sensing approach}},
+	url = {http://ieeexplore.ieee.org/document/6426216/},
+	year = {2012}
+}
+
+@article{Rogers2005,
+	author = {Rogers, Simon and Girolami, Mark},
+	doi = {10.1093/bioinformatics/bti487},
+	isbn = {1367-4803 (Linking)},
+	issn = {1367-4803},
+	journal = {Bioinformatics},
+	month = {jul},
+	number = {14},
+	pages = {3131--3137},
+	pmid = {15879452},
+	title = {{A Bayesian regression approach to the inference of regulatory networks from gene expression data}},
+	url = {https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/bti487},
+	volume = {21},
+	year = {2005}
+}
+
+@article{Thattai2001a,
+	author = {Thattai, Mukund and van Oudenaarden, A.},
+	doi = {10.1073/pnas.151588598},
+	isbn = {0027-8424 (Print) 0027-8424 (Linking)},
+	issn = {0027-8424},
+	journal = {Proceedings of the National Academy of Sciences},
+	number = {15},
+	pages = {8614--8619},
+	pmid = {11438714},
+	title = {{Intrinsic noise in gene regulatory networks}},
+	url = {http://www.pnas.org/cgi/doi/10.1073/pnas.151588598},
+	volume = {98},
+	year = {2001}
+}
+
+@article{Golding2005,
+	author = {Golding, Ido and Paulsson, Johan and Zawilski, Scott M. and Cox, Edward C.},
+	doi = {10.1016/j.cell.2005.09.031},
+	isbn = {0092-8674},
+	issn = {00928674},
+	journal = {Cell},
+	number = {6},
+	pages = {1025--1036},
+	pmid = {16360033},
+	title = {{Real-time kinetics of gene activity in individual bacteria}},
+	volume = {123},
+	year = {2005}
+}
+
+@article{Berg1978,
+	author = {Berg, O G},
+	journal = {J. Theor. Biol.},
+	keywords = {cell division, cell-to-cell variability, heterogeneity, microbial population},
+	number = {4},
+	pages = {587--603},
+	title = {{A model for the statistical fluctuations of proteins numbers in a microbial population}},
+	volume = {71},
+	year = {1978}
+}
+
+@article{Elowitz2002,
+	author = {Elowitz, M B},
+	doi = {10.1126/science.1070919},
+	isbn = {0036-8075},
+	issn = {00368075},
+	journal = {Science},
+	month = {aug},
+	number = {5584},
+	pages = {1183--1186},
+	pmid = {12183631},
+	title = {{Stochastic Gene Expression in a Single Cell}},
+	url = {http://www.sciencemag.org/cgi/doi/10.1126/science.1070919},
+	volume = {297},
+	year = {2002}
+}
+
+@article{Tian2007a,
+	author = {Tian, Tianhai and Xu, Songlin and Gao, Junbin and Burrage, Kevin},
+	doi = {10.1093/bioinformatics/btl552},
+	isbn = {1367-4811 (Electronic)\n1367-4803 (Linking)},
+	issn = {13674803},
+	journal = {Bioinformatics},
+	localfile = {~/Dropbox/SINDy/12 - Simulated maximum likelihood method for estimating kinetic.pdf},
+	number = {1},
+	pages = {84--91},
+	pmid = {17068087},
+	title = {{Simulated maximum likelihood method for estimating kinetic rates in gene expression}},
+	volume = {23},
+	year = {2007}
+}
+
+@article{Abramovitch2004,
+	author = {Abramovitch, Rinat and Tavor, Einat and Jacob-Hirsch, Jasmine and Zeira, Evelyne and Amariglio, Ninette and Pappo, Orit and Rechavi, Gideon and Galun, Eithan and Honigman, Alik},
+	doi = {10.1158/0008-5472.CAN-03-2089},
+	issn = {0008-5472},
+	journal = {Cancer Research},
+	month = {feb},
+	number = {4},
+	pages = {1338--1346},
+	pmid = {14973073},
+	title = {{A Pivotal Role of Cyclic AMP-Responsive Element Binding Protein in Tumor Progression}},
+	url = {http://cancerres.aacrjournals.org/cgi/doi/10.1158/0008-5472.CAN-03-2089 http://cancerres.aacrjournals.org/lookup/doi/10.1158/0008-5472.CAN-03-2089},
+	volume = {64},
+	year = {2004}
+}
+
+@article{Lewis1996,
+	author = {Lewis, Mitchell and Chang, Geoffrey and Horton, Nancy C. and Kercher, Michele A. and Pace, Helen C. and Schumacher, Maria A. and Brennan, Richard G. and Lu, Ponzy},
+	doi = {10.1126/science.271.5253.1247},
+	isbn = {0036-8075 (Print)},
+	issn = {0036-8075},
+	journal = {Science},
+	month = {mar},
+	number = {5253},
+	pages = {1247--1254},
+	pmid = {8638105},
+	title = {{Crystal Structure of the Lactose Operon Repressor and Its Complexes with DNA and Inducer}},
+	url = {http://www.sciencemag.org/cgi/doi/10.1126/science.271.5253.1247},
+	volume = {271},
+	year = {1996}
+}
+
+@article{Yildirim2003,
+	author = {Yildirim, Necmettin and Mackey, Michael C.},
+	doi = {10.1016/S0006-3495(03)70013-7},
+	isbn = {0006-3495 (Print)\r0006-3495 (Linking)},
+	issn = {00063495},
+	journal = {Biophysical Journal},
+	month = {may},
+	number = {5},
+	pages = {2841--2851},
+	pmid = {12719218},
+	publisher = {Elsevier},
+	title = {{Feedback Regulation in the Lactose Operon: A Mathematical Modeling Study and Comparison with Experimental Data}},
+	url = {http://dx.doi.org/10.1016/S0006-3495(03)70013-7 http://linkinghub.elsevier.com/retrieve/pii/S0006349503700137},
+	volume = {84},
+	year = {2003}
+}
+
+@article{Kuhlman2007,
+	archiveprefix = {arXiv},
+	arxivid = {q-bio.MN/0703056},
+	author = {Kuhlman, T. and Zhang, Z. and Saier, M. H. and Hwa, T.},
+	doi = {10.1073/pnas.0606717104},
+	eprint = {0703056},
+	isbn = {0027-8424 (Print)\n0027-8424 (Linking)},
+	issn = {0027-8424},
+	journal = {Proceedings of the National Academy of Sciences},
+	month = {apr},
+	number = {14},
+	pages = {6043--6048},
+	pmid = {17376875},
+	primaryclass = {q-bio.MN},
+	title = {{Combinatorial transcriptional control of the lactose operon of Escherichia coli}},
+	url = {http://www.pnas.org/cgi/doi/10.1073/pnas.0606717104},
+	volume = {104},
+	year = {2007}
+}
+
+@article{Gama-Castro2016,
+	author = {Gama-Castro, Socorro and Salgado, Heladia and Santos-Zavaleta, Alberto and Ledezma-Tejeida, Daniela and Mu{\~n}iz-Rascado, Luis and Garc\'{\i}a-Sotelo, Jair Santiago and Alquicira-Hern{\'a}ndez, Kevin and Mart\'{\i}nez-Flores, Irma and Pannier, Lucia and Castro-Mondrag{\'o}n, Jaime Abraham and Medina-Rivera, Alejandra and Solano-Lira, Hilda and Bonavides-Mart\'{\i}nez, C{\'e}sar and P{\'e}rez-Rueda, Ernesto and Alquicira-Hern{\'a}ndez, Shirley and Porr{\'o}n-Sotelo, Liliana and L{\'o}pez-Fuentes, Alejandra and Hern{\'a}ndez-Koutoucheva, Anastasia and Moral-Ch{\'a}vez, V\'{\i}ctor Del and Rinaldi, Fabio and Collado-Vides, Julio},
+	doi = {10.1093/nar/gkv1156},
+	isbn = {10.1093/nar/gkv1156},
+	issn = {0305-1048},
+	journal = {Nucleic Acids Research},
+	month = {jan},
+	number = {D1},
+	pages = {D133--D143},
+	pmid = {26527724},
+	title = {{RegulonDB version 9.0: high-level integration of gene regulation, coexpression, motif clustering and beyond}},
+	url = {https://academic.oup.com/nar/article-lookup/doi/10.1093/nar/gkv1156},
+	volume = {44},
+	year = {2016}
+}
+
+@article{Margolin2006,
+	archiveprefix = {arXiv},
+	arxivid = {q-bio/0410037},
+	author = {Margolin, Adam A. and Nemenman, Ilya and Basso, Katia and Wiggins, Chris and Stolovitzky, Gustavo and Favera, Riccardo and Califano, Andrea},
+	doi = {10.1186/1471-2105-7-S1-S7},
+	eprint = {0410037},
+	isbn = {1471-2105 (Electronic)},
+	issn = {14712105},
+	journal = {BMC Bioinformatics},
+	localfile = {/home/mho/Dropbox/SINDy/11 - ARCANE.pdf},
+	number = {Suppl 1},
+	pages = {S7},
+	pmid = {16723010},
+	primaryclass = {q-bio},
+	title = {{ARACNE: An Algorithm for the Reconstruction of Gene Regulatory Networks in a Mammalian Cellular Context}},
+	url = {http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-7-S1-S7},
+	volume = {7},
+	year = {2006}
+}
+
+@article{Shen-Orr2002,
+	author = {Shen-Orr, Shai S. and Milo, Ron and Mangan, Shmoolik and Alon, Uri},
+	doi = {10.1038/ng881},
+	isbn = {1061-4036 (Print)\r1061-4036 (Linking)},
+	issn = {1061-4036},
+	journal = {Nature Genetics},
+	month = {may},
+	number = {1},
+	pages = {64--68},
+	pmid = {11967538},
+	title = {{Network motifs in the transcriptional regulation network of Escherichia coli}},
+	url = {http://www.nature.com/articles/ng881},
+	volume = {31},
+	year = {2002}
+}
+
+@article{Newman2003,
+	archiveprefix = {arXiv},
+	arxivid = {cond-mat/0303516},
+	author = {Newman, Mark E J},
+	doi = {10.1137/S003614450342480},
+	eprint = {0303516},
+	isbn = {00361445},
+	issn = {0036-1445},
+	journal = {SIAM Review},
+	keywords = {05c75, 05c90, 94c15, ams subject classifications, complex systems, computer networks, graph theory, graphs, networks, percolation theory, pii, random, s0036144503424804, social networks},
+	month = {jan},
+	number = {2},
+	pages = {167--256},
+	pmid = {24174898},
+	primaryclass = {cond-mat},
+	title = {{The Structure and Function of Complex Networks}},
+	url = {http://epubs.siam.org/doi/10.1137/S003614450342480},
+	volume = {45},
+	year = {2003}
+}
+
+@article{Barabasi2004,
+	archiveprefix = {arXiv},
+	arxivid = {NIHMS150003},
+	author = {Barab{\'a}si, Albert-L{\'a}szl{\'o} and Oltvai, Zolt{\'a}n N.},
+	doi = {10.1038/nrg1272},
+	eprint = {NIHMS150003},
+	isbn = {1471-0056 (Print) 1471-0056 (Linking)},
+	issn = {1471-0056},
+	journal = {Nature Reviews Genetics},
+	month = {feb},
+	number = {2},
+	pages = {101--113},
+	pmid = {14735121},
+	title = {{Network biology: understanding the cell's functional organization}},
+	url = {http://www.nature.com/articles/nrg1272},
+	volume = {5},
+	year = {2004}
+}
+
+@article{Lee2002,
+	author = {Lee, T. I.},
+	doi = {10.1126/science.1075090},
+	issn = {00368075},
+	journal = {Science},
+	month = {oct},
+	number = {5594},
+	pages = {799--804},
+	title = {{Transcriptional Regulatory Networks in Saccharomyces cerevisiae}},
+	url = {# http://www.sciencemag.org/cgi/doi/10.1126/science.1075090},
+	volume = {298},
+	year = {2002}
+}
 
