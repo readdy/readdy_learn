@@ -78,6 +78,7 @@
 \html_css_as_file 0
 \html_be_strict false
 \author 92240754 "Christoph Froehner"
+\author 193499241 "mho"
 \author 880794617 "Frank Noe"
 \end_header
 
@@ -1067,6 +1068,26 @@ literal "true"
 \end_inset
 
 .
+
+\change_inserted 193499241 1537521514
+ Code related to this paper can be found under 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537521512
+
+https://github.com/readdy/readdy_learn
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+.
+
+\change_unchanged
  
 \begin_inset Note Note
 status open
@@ -1882,6 +1903,8 @@ noprefix "false"
 \end_inset
 
 b.
+
+\change_deleted 193499241 1537529285
  When setting the hyperparameter 
 \begin_inset Formula $\alpha=0$
 \end_inset
@@ -1903,6 +1926,14 @@ see above:
 
 \change_inserted 880794617 1537395987
 - Why? This is just ridge regression, why does this induce non-negativity?
+\change_inserted 193499241 1537529172
+ non-negativity is induced by the constraint 
+\begin_inset Formula $\Xi\geq0$
+\end_inset
+
+
+\change_inserted 880794617 1537395987
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -1913,6 +1944,13 @@ see above:
 \end_inset
 
 , or what do you want to say here?
+\change_inserted 193499241 1537529214
+ yes exactly, 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ means that the regularizing terms are zero and there is just the positivity
+ constraint left
 \change_unchanged
 
 \end_layout
@@ -1926,7 +1964,7 @@ see above:
 
 \begin_layout Standard
 
-\change_inserted 880794617 1537396062
+\change_inserted 880794617 1537396200
 \begin_inset Note Note
 status open
 
@@ -2005,10 +2043,82 @@ noprefix "false"
 \end_inset
 
 
+\change_inserted 193499241 1537529262
+
+\end_layout
+
+\begin_layout Standard
+We first set the hyperparameter 
+\begin_inset Formula $\alpha=0$
+\end_inset
+
+ in the minimization problem (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "method:minimizationproblem"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), which results in 
+\change_inserted 193499241 1537529344
+constrained least-squares
+\change_deleted 193499241 1537529333
+Ridge
 \change_unchanged
-When applying LSQ regression, one can observe that the sparsity pattern
- does not match the generating reaction network and the reaction responsible
- for the decay of 
+ regression without 
+\change_deleted 193499241 1537529362
+a sparsity constraint
+\change_inserted 193499241 1537529366
+any of the regularization terms
+\change_unchanged
+.
+ In this case we estimate a reaction network that can reproduce the observations
+ almost exactly (
+\change_inserted 193499241 1537529661
+
+\series bold
+Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case-1-lsq"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\change_deleted 193499241 1537529658
+plot this in Figure
+\change_unchanged
+
+\series default
+).
+ However, the result is mechanistically wrong as 
+\change_inserted 193499241 1537529385
+the 
+\change_unchanged
+sparsity pattern does not match the reaction network used to generate the
+ data.
+ On one hand many spurious reactions are estimated that were not in the
+ true reaction scheme and would lead to wrong conclusions about the mechanism,
+ such as 
+\begin_inset Formula $\mathrm{A}+\mathrm{A}\rightharpoonup\mathrm{A}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathrm{A}+\mathrm{C}\rightharpoonup\mathrm{C}$
+\end_inset
+
+.
+ More dramatically, the reaction responsible for the decay of 
 \begin_inset Formula $\mathrm{A}$
 \end_inset
 
@@ -2027,159 +2137,11 @@ noprefix "false"
 \end_inset
 
 ).
+
+\change_deleted 193499241 1537529407
  
-\change_inserted 880794617 1537396200
+\change_inserted 193499241 1537529517
 
-\end_layout
-
-\begin_layout Standard
-
-\change_inserted 880794617 1537396820
-Next, we sought sparse solutions by using 
-\begin_inset Formula $\alpha>0$
-\end_inset
-
- and additionally eliminating reactions with rate constants smaller than
- a cutoff value 
-\begin_inset Formula $\kappa$
-\end_inset
-
-.
- 
-\change_unchanged
-For a suitable choice of hyperparameters 
-\begin_inset Formula $\alpha\approx1.91\cdot10^{-7}$
-\end_inset
-
-, 
-\begin_inset Formula $\lambda=1$
-\end_inset
-
-, and 
-\change_deleted 880794617 1537396835
-a cutoff 
-\change_unchanged
-
-\begin_inset Formula $\kappa=0.22$
-\end_inset
-
-
-\change_inserted 880794617 1537396837
-,
-\change_unchanged
- a sparse solution 
-\change_inserted 880794617 1537396839
-is
-\change_deleted 880794617 1537396842
-can be
-\change_unchanged
- obtained 
-\change_inserted 880794617 1537396861
-that finds the correct reaction scheme 
-\change_unchanged
-and also 
-\change_inserted 880794617 1537396863
-recovers 
-\change_unchanged
-the decay reaction
-\change_inserted 880794617 1537396874
- (Fig.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:case-1-sparsity-pattern"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-).
-
-\change_deleted 880794617 1537396895
- can be recovered.
- The cutoff 
-\begin_inset Formula $\kappa$
-\end_inset
-
- is applied so that for all reactions with an estimated rate 
-\begin_inset Formula $\hat{\xi}<\kappa$
-\end_inset
-
- a rate of 
-\begin_inset Formula $\hat{\xi}=0$
-\end_inset
-
- is assigned.
- A circle with size corresponding to a rate of 
-\begin_inset Formula $\kappa$
-\end_inset
-
- is depicted in Fig.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:case-1-sparsity-pattern"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- in green.
- 
-\change_unchanged
-
-\end_layout
-
-\begin_layout Standard
-The value of the cutoff 
-\change_inserted 880794617 1537396915
-was
-\change_deleted 880794617 1537396916
-can be
-\change_unchanged
- determined by comparing the magnitude of estimated rates and finding a
- gap, see Fig.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:reaction-rates-sorted"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-.
- The hyperparameter pair 
-\begin_inset Formula $(\alpha,\lambda)$
-\end_inset
-
- was obtained by a grid search and evaluating the difference 
-\begin_inset Formula $\|\hat{\Xi}_{\alpha,\lambda}-\Xi\|_{1}$
-\end_inset
-
-, where 
-\begin_inset Formula $\hat{\Xi}_{\alpha,\lambda}$
-\end_inset
-
- is the estimated model under a particular hyperparameter choice and 
-\begin_inset Formula $\Xi$
-\end_inset
-
- is the ground truth.
- If the ground truth is unknown, a hyperparameter pair can be estimated
- by utilizing cross-validation as in the following sections.
 \end_layout
 
 \begin_layout Standard
@@ -2276,46 +2238,186 @@ noprefix "false"
 \end_inset
 
 
+\change_inserted 193499241 1537529560
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537529626
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537529573
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures_tex/case1_lsq_trajectory.pdf
+	width 50col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537529601
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:case-1-lsq"
+
+\end_inset
+
+ 
+\series bold
+TODO
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
 
-\change_deleted 880794617 1537397606
-Even though only finite amounts of data were used, the regularized minimization
- was able to find the underlying model.
- On the other hand, using LSQ lead to spurious reactions and a model which
- ignores the decay of 
+\change_deleted 193499241 1537529321
+When applying LSQ regression, one can observe that the sparsity pattern
+ does not match the generating reaction network and the reaction responsible
+ for the decay of 
 \begin_inset Formula $\mathrm{A}$
 \end_inset
 
- particles.
- Instead, multiple other reactions (especially 
-\begin_inset Formula $\mathrm{A}+\mathrm{A}\rightharpoonup\mathrm{A}$
+ particles is completely ignored (Fig.
+\begin_inset space ~
 \end_inset
 
- and 
-\begin_inset Formula $\mathrm{A}+\mathrm{C}\rightharpoonup\mathrm{C}$
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case-1-sparsity-pattern"
+plural "false"
+caps "false"
+noprefix "false"
+
 \end_inset
 
-) were identified which effectively also remove 
-\begin_inset Formula $\mathrm{A}$
+).
+ 
+\change_inserted 880794617 1537396200
+
+\end_layout
+
+\begin_layout Standard
+Next, we sought sparse solutions by using 
+\begin_inset Formula $\alpha>0$
 \end_inset
 
- but yield a denser model.
-\change_unchanged
+ and additionally eliminating reactions with rate constants smaller than
+ a cutoff value 
+\begin_inset Formula $\kappa$
+\end_inset
+
+.
+ For a suitable choice of hyperparameters 
+\begin_inset Formula $\alpha\approx1.91\cdot10^{-7}$
+\end_inset
+
+, 
+\begin_inset Formula $\lambda=1$
+\end_inset
+
+, and 
+\begin_inset Formula $\kappa=0.22$
+\end_inset
+
+, a sparse solution is obtained that finds the correct reaction scheme and
+ also recovers the decay reaction (Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:case-1-sparsity-pattern"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+The value of the cutoff was determined by comparing the magnitude of estimated
+ rates and finding a gap, see Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:reaction-rates-sorted"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The hyperparameter pair 
+\begin_inset Formula $(\alpha,\lambda)$
+\end_inset
+
+ was obtained by a grid search and evaluating the difference 
+\begin_inset Formula $\|\hat{\Xi}_{\alpha,\lambda}-\Xi\|_{1}$
+\end_inset
+
+, where 
+\begin_inset Formula $\hat{\Xi}_{\alpha,\lambda}$
+\end_inset
+
+ is the estimated model under a particular hyperparameter choice and 
+\begin_inset Formula $\Xi$
+\end_inset
+
+ is the ground truth.
+ If the ground truth is unknown, a hyperparameter pair can be estimated
+ by utilizing cross-validation as in the following sections.
+\end_layout
+
+\begin_layout Standard
 
 \end_layout
 
 \begin_layout Subsection
-
-\change_inserted 880794617 1537399347
-Learning the reaction network from 
-\change_deleted 880794617 1537399351
-D
-\change_inserted 880794617 1537399351
-d
-\change_unchanged
-ata with stochastic noise
+Learning the reaction network from data with stochastic noise
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:case-2"
