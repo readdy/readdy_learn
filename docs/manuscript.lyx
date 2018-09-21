@@ -2428,19 +2428,7 @@ name "sec:case-2"
 \end_layout
 
 \begin_layout Standard
-
-\change_inserted 880794617 1537397627
-In c
-\change_deleted 880794617 1537397627
-C
-\change_unchanged
-ontra
-\change_inserted 880794617 1537397629
-st 
-\change_deleted 880794617 1537397630
-ry 
-\change_unchanged
-to Sec.
+In contrast to Sec.
 \begin_inset space ~
 \end_inset
 
@@ -2454,50 +2442,11 @@ noprefix "false"
 
 \end_inset
 
-, 
-\change_inserted 880794617 1537397638
-we now employ
-\change_deleted 880794617 1537397639
-the
-\change_unchanged
- data 
-\change_inserted 880794617 1537397649
-that includes measurement noise.
-\change_deleted 880794617 1537397655
-used in this section for estimating a model is subject to noise.
-
-\change_unchanged
- Such noise can 
-\change_inserted 880794617 1537397661
-originate
-\change_deleted 880794617 1537397662
-stem
-\change_unchanged
- from an 
-\change_inserted 880794617 1537397717
-uncertainties in the experimental setup or from shot noise in single- or
- few-molecule measurements.
-\change_deleted 880794617 1537397719
-experimental measurement or arises due to the stochastic nature of the process.
-
-\change_unchanged
- In gene regulatory networks 
-\change_inserted 880794617 1537397735
-such noise
-\change_deleted 880794617 1537397743
-this
-\change_unchanged
- is 
-\change_deleted 880794617 1537397744
-typically
-\change_inserted 880794617 1537397745
-commonly
-\change_unchanged
- observed
-\change_deleted 880794617 1537397747
-,
-\change_unchanged
- when only few copy numbers of 
+, we now employ data that includes measurement noise.
+ Such noise can originate from an uncertainties in the experimental setup
+ or from shot noise in single- or few-molecule measurements.
+ In gene regulatory networks such noise is commonly observed when only few
+ copy numbers of 
 \begin_inset Formula $\mathrm{mRNA}$
 \end_inset
 
@@ -2514,13 +2463,8 @@ literal "false"
 \end_inset
 
 .
- 
-\change_inserted 880794617 1537397915
-In order to simulate noise from few copies of molecules,
-\change_deleted 880794617 1537397916
-Thus,
-\change_unchanged
- the system of Sec.
+ In order to simulate noise from few copies of molecules, the system of
+ Sec.
 \begin_inset space ~
 \end_inset
 
@@ -2566,29 +2510,14 @@ literal "false"
  Therefore, the initial condition's concentrations are interpreted in terms
  of hundreds of particles.
  Each realization is then transformed back to a time series of concentrations.
-
-\change_inserted 880794617 1537398378
  We define the noise level as
-\change_deleted 880794617 1537398353
-Data is prepared for different noise levels.
- Here, a noise level is an effective quantity given by 
+\change_inserted 193499241 1537533392
+ 
 \change_unchanged
 the mean-squared deviation of the concentration time series from the integrated
  reaction-rate equations.
- 
-\change_inserted 880794617 1537398360
-Data with different noise
-\change_deleted 880794617 1537398362
-Different
-\change_unchanged
- levels 
-\change_inserted 880794617 1537398368
-are prepared 
-\change_deleted 880794617 1537398371
-of noise are achieved 
-\change_unchanged
-by averaging multiple realizations of the time series obtained by the Gillespie
- SSA.
+ Data with different noise levels are prepared by averaging multiple realization
+s of the time series obtained by the Gillespie SSA.
 \end_layout
 
 \begin_layout Standard
@@ -2641,13 +2570,8 @@ noprefix "false"
 \end_inset
 
 b).
- In 
-\change_inserted 880794617 1537398412
-both cases,
-\change_deleted 880794617 1537398414
-either case,
-\change_unchanged
- the regularized method with a suitable hyperparameter pair 
+ In both cases, the regularized method with a suitable hyperparameter pair
+ 
 \begin_inset Formula $(\alpha,\lambda)$
 \end_inset
 
@@ -2710,24 +2634,16 @@ name "fig:case2-convergence"
 \end_inset
 
 
-\change_inserted 880794617 1537398455
-
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537398514
 Don't rely in the caption on having read the paper.
  If you use symbols say in one word what they mean, or avoid them.
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
 Convergence of the estimation error when estimating the system described
  in Sec.
 \begin_inset space ~
@@ -2754,15 +2670,24 @@ noprefix "false"
 
 \end_inset
 
-) for 
+) 
+\change_deleted 193499241 1537533698
+for 
 \begin_inset Formula $\alpha=0$
 \end_inset
 
- (LSQ) and a suitable pair 
+ (LSQ)
+\change_inserted 193499241 1537533724
+ with and without regularization in blue and orange, respectively.
+
+\change_deleted 193499241 1537533715
+ and a suitable pair 
 \begin_inset Formula $(\alpha,\lambda)$
 \end_inset
 
- (regularized).
+ (regularized)
+\change_unchanged
+.
  The procedure was independently repeated 10 times with different realizations
  giving rise to the mean and standard deviation depicted by solid lines
  and shaded areas, respectively.
@@ -2770,8 +2695,15 @@ noprefix "false"
 \series bold
 (a)
 \series default
-: The number of spuriously detected reactions up to the cutoff value introduced
- in Sec.
+: The number of 
+\change_deleted 193499241 1537533579
+spuriously 
+\change_unchanged
+detected
+\change_inserted 193499241 1537533583
+ spurious
+\change_unchanged
+ reactions up to the cutoff value introduced in Sec.
 \begin_inset space ~
 \end_inset
 
@@ -2791,18 +2723,20 @@ noprefix "false"
 (b)
 \series default
 : The estimation error given by the 
+\change_inserted 193499241 1537533592
+mean absolute error
+\change_deleted 193499241 1537533634
+
 \begin_inset Formula $L_{1}$
 \end_inset
 
  difference
-\change_inserted 880794617 1537398532
+\change_unchanged
 
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537398548
 use 
 \begin_inset Quotes eld
 \end_inset
@@ -2813,14 +2747,10 @@ mean absolute error
 
 .
  That is something non-mathematicians will understand too.
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
  between the generating reaction rates 
 \begin_inset Formula $\xi$
 \end_inset
@@ -2853,14 +2783,10 @@ The hyperparameters
 
 -fold cross validation.
  
-\change_inserted 880794617 1537399212
-
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537399312
 
 \series bold
 Oh-oh
@@ -2874,25 +2800,23 @@ Oh-oh
  folds must come from the same distribution.
  You shouldn't use cross-validation on the time-dependent relaxation trajectory.
  Here it would make sense to shuffle the time axis before defining the folds.
+
+\change_inserted 193499241 1537533802
+ You are completely right, we are re-evaluating our results with a shuffled
+ trajectory and without discarding the first fold.
+\change_unchanged
+
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
 The first fold was discarded, as it contains the initial equilibration phase
  as validation set, i.e., the information density about the relevant processes
  is the highest.
 \end_layout
 
 \begin_layout Subsection
-
-\change_inserted 880794617 1537399498
-Learning the reaction network from m
-\change_deleted 880794617 1537399499
-M
-\change_unchanged
-ultiple initial conditions
+Learning the reaction network from multiple initial conditions
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:case-3"
@@ -2903,20 +2827,10 @@ name "sec:case-3"
 \end_layout
 
 \begin_layout Standard
-
-\change_inserted 880794617 1537399622
 Preparing the experiment that generates the data in different initial conditions
  can help identifying the true reaction mechanisms as a more diverse dataset
  makes it easier to confirm or exclude the participation of specific reactions.
- 
-\change_unchanged
-This section extends the 
-\change_inserted 880794617 1537399632
-analysis
-\change_deleted 880794617 1537399633
-situation
-\change_unchanged
- of Sec.
+ This section extends the analysis of Sec.
 \begin_inset space ~
 \end_inset
 
@@ -2931,13 +2845,8 @@ noprefix "false"
 \end_inset
 
  to two initial conditions, where the first initial condition is identical
- to the 
-\change_inserted 880794617 1537399644
-one used previously
-\change_deleted 880794617 1537399646
-initial condition used in the previous sections
-\change_unchanged
- and the second initial condition is given in Tab.
+ to the one used previously and the second initial condition is given in
+ Tab.
 \begin_inset space ~
 \end_inset
 
@@ -2952,10 +2861,6 @@ noprefix "false"
 \end_inset
 
 b.
-
-\change_deleted 880794617 1537399549
- 
-\change_inserted 880794617 1537399541
  
 \end_layout
 
@@ -2975,13 +2880,8 @@ noprefix "false"
 \end_inset
 
 a.
- The gray graph corresponds to a
-\change_inserted 880794617 1537399668
- sample trajectory generated 
-\change_deleted 880794617 1537399670
-n exemplary integration 
-\change_unchanged
-by the Gillespie SSA.
+ The gray graph corresponds to a sample trajectory generated by the Gillespie
+ SSA.
  For both initial conditions the same time step of 
 \begin_inset Formula $\tau=3\cdot10^{-3}$
 \end_inset
@@ -3003,11 +2903,7 @@ by the Gillespie SSA.
 \begin_inset Formula $\dot{\mathbf{X}}_{1}$
 \end_inset
 
-,
-\change_inserted 880794617 1537399520
- 
-\change_unchanged
-
+, 
 \begin_inset Formula $\dot{\mathbf{X}}_{2}$
 \end_inset
 
@@ -3024,6 +2920,24 @@ analogously for
 \end_inset
 
 .
+\change_inserted 193499241 1537533877
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537533896
+This is obsolete when shuffling the trajectory
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
@@ -3126,48 +3040,18 @@ name "fig:case3-convergence"
 \end_inset
 
 
-\change_inserted 880794617 1537399764
-
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537399783
 The first sentence should describe what the entire figure is about.
  a/b describe the individual panels.
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
-E
-\change_inserted 880794617 1537399814
-stimation of reaction schemes from gene-regulation data starting from two
+Estimation of reaction schemes from gene-regulation data starting from two
  different initial conditions.
-\change_deleted 880794617 1537399820
-xtended concentration time series used in Sec.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:case-3"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- as well as convergence of the number of spurious reactions and estimation
- error when using two concatenated concentration time series with different
- initial conditions.
-
-\change_unchanged
  The minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -3187,16 +3071,7 @@ noprefix "false"
 \begin_inset Formula $10$
 \end_inset
 
- times on different 
-\change_inserted 880794617 1537399850
-sets of observation data generated by 
-\change_unchanged
-Gillespie SSA
-\change_deleted 880794617 1537399856
- generated realizations,
-\change_inserted 880794617 1537399856
-,
-\change_unchanged
+ times on different sets of observation data generated by Gillespie SSA,
  giving rise to mean and standard deviation (solid lines and shaded areas,
  respectively).
  
@@ -3261,14 +3136,10 @@ b) prescribes positive initial concentrations for
 
  species.
  The gray graphs are 
-\change_inserted 880794617 1537399879
-
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537399913
 common mistake: exemplary means 
 \begin_inset Quotes eld
 \end_inset
@@ -3286,19 +3157,11 @@ z.B.
 \end_inset
 
 
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_deleted 880794617 1537399872
-exemplary
-\change_inserted 880794617 1537399873
-sample
-\change_unchanged
- realizations of integration using the Gillespie SSA.
+sample realizations of integration using the Gillespie SSA.
  
 \series bold
 (b)
@@ -3364,6 +3227,24 @@ noprefix "false"
 \end_inset
 
 , the initial equilibration phase for both initial conditions.
+\change_inserted 193499241 1537534079
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537534086
+This needs to be updated (shuffling)
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
 \end_layout
 
 \begin_layout Section
@@ -3385,13 +3266,9 @@ noprefix "false"
 \end_inset
 
 ).
- 
-\change_inserted 880794617 1537400092
-Mathematically this has been achieved by permitting vector-valued basis
+ Mathematically this has been achieved by permitting vector-valued basis
  functions and obtaining a tensor linear regression problem.
- 
-\change_unchanged
-We have applied this method on data generated from a gene regulation network
+ We have applied this method on data generated from a gene regulation network
  and could successfully recover the underlying model.
 \end_layout
 
@@ -3413,35 +3290,12 @@ noprefix "false"
 \end_inset
 
 .
- One apparent limitation 
-\change_inserted 880794617 1537400130
-is that
-\change_deleted 880794617 1537400131
-of
-\change_unchanged
- the method 
-\change_inserted 880794617 1537400135
-can only be applied 
-\change_deleted 880794617 1537400139
-is that it only works 
-\change_unchanged
-if the data stems from the equilibration phase
-\change_inserted 880794617 1537400180
-, as the concentration-based approach has derivatives equal zero in the
- equilibrium, which precludes the reaction dynamics to be recovered.
-\change_deleted 880794617 1537400182
-, otherwise the dynamics cannot be recovered.
-
-\change_unchanged
- 
-\change_inserted 880794617 1537400218
-In future work, we will consider the identification of reaction schemes
+ One apparent limitation is that the method can only be applied if the data
+ stems from the equilibration phase, as the concentration-based approach
+ has derivatives equal zero in the equilibrium, which precludes the reaction
+ dynamics to be recovered.
+ In future work, we will consider the identification of reaction schemes
  from instantaneous fluctuations of particle numbers in equilibrium.
-\change_deleted 880794617 1537400219
-Concentration fluctuations that are present in the equilibrium phase are
- not part of the ansatz model.
-\change_unchanged
-
 \end_layout
 
 \begin_layout Standard
