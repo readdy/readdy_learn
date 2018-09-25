@@ -111,14 +111,10 @@ TODOs
 \end_layout
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537400477
 - Intro: Schreibt 1-2 Sätze zur Relevanz des Identifizierenz von Reaktionen
  + Parametern für komplexe Simulationen wie iPRD + gebt ein paar passende
  Zitate dazu (z.B.
- Euer Readdy paper :)
-\change_inserted 92240754 1537455664
- 
+ Euer Readdy paper :) 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "hoffmann2018readdy,frohner2018reversible"
@@ -135,6 +131,8 @@ literal "false"
 - In Fig.
  5 ist ein lustiger vertikaler Strich links.
  Sieht aus wie gescannt :)
+\change_inserted 193499241 1537881359
+ vermutlich ein Problem mit der Schriftart in den Plots, ist geändert
 \change_inserted 92240754 1537457418
 
 \end_layout
@@ -324,7 +322,11 @@ onal modifications for a single protein molecule.
 \begin_inset Quotes eld
 \end_inset
 
-which reactions are occuring in a given cell
+which reactions are occu
+\change_inserted 193499241 1537882176
+r
+\change_unchanged
+ring in a given cell
 \begin_inset Quotes erd
 \end_inset
 
@@ -344,6 +346,46 @@ minimal set
 .
  This formulation calls for a machine learning method that can infer the
  reaction network underlying the observation data.
+\change_inserted 193499241 1537882566
+
+\end_layout
+
+\begin_layout Standard
+
+\change_inserted 193499241 1537884808
+Knowledge about the reaction network can be applied to parameterize other
+ numerical methods to further investigate the processes at hand.
+ Such methods include particle-based approaches derived from the chemical
+ master equation
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "gillespie1977exact,winkelmann2016spatiotemporal,winkelmann2017hybrid,isaacson2009reaction"
+literal "false"
+
+\end_inset
+
+, as well as highly detailed but parameter-rich methods such as interacting-part
+icle reaction
+\begin_inset space ~
+\end_inset
+
+dynamics
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hoffmann2018readdy,frohner2018reversible,donev2018efficient"
+literal "false"
+
+\end_inset
+
+ capable of fully resolving molecule positions in space and time.
 \end_layout
 
 \begin_layout Standard
@@ -372,7 +414,11 @@ literal "false"
 
 \end_inset
 
- that takes the stochasticity of observed rectant time series into account.
+ that takes the stochasticity of observed re
+\change_inserted 193499241 1537882158
+a
+\change_unchanged
+ctant time series into account.
 \end_layout
 
 \begin_layout Standard
@@ -1095,6 +1141,11 @@ status open
 \begin_layout Plain Layout
 Say here where your code related to this paper can be found (readdy-learn
  github).
+
+\change_inserted 193499241 1537885093
+ we will clean up the repository prior to submission
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -1226,7 +1277,35 @@ noprefix "false"
 
 a).
  Using this reaction model, time series of concentrations are generated
- using the initial condition described in Table
+ using
+\change_inserted 193499241 1537885207
+ the rates given in Tab
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:reaction-library"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\change_unchanged
+ 
+\change_inserted 193499241 1537885218
+under 
+\change_unchanged
+the initial condition described in 
+\change_deleted 193499241 1537885176
+Table
+\change_inserted 193499241 1537885199
+Tab
+\change_unchanged
+
 \begin_inset space ~
 \end_inset
 
@@ -1259,6 +1338,10 @@ status open
 TODO
 \series default
 : Which rates are used? Refer to last table?
+\change_inserted 193499241 1537885311
+ Table in appendix, could also be moved into the last table
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -1370,7 +1453,25 @@ noprefix "false"
 
  to protein, and red arrows denote the regulatory network.
  
+\change_inserted 193499241 1537885608
+
 \series bold
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1537885629
+Remove this
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
 (b)
 \series default
 : Concentration time series generated from the reaction network shown in
