@@ -1,6 +1,6 @@
 text.usetex: True
 text.latex.unicode: True
-text.latex.preamble: \usepackage[T1]{fontenc},\usepackage{mathptmx},\usepackage{amsmath},\usepackage{amssymb},\usepackage{amsfonts},\usepackage{microtype}
+text.latex.preamble: \usepackage[T1]{fontenc},\usepackage{amsmath},\usepackage{amssymb},\usepackage{amsfonts},\usepackage{microtype}
 
 # if using sans also use these: \usepackage[cm]{sfmath},\renewcommand*\familydefault{\sfdefault}
 
