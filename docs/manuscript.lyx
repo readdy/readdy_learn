@@ -141,6 +141,15 @@ literal "false"
 
 \change_inserted 92240754 1537457430
 - repo aufraeumen, link in den text
+\change_inserted 193499241 1538033546
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1538033561
+- perhaps we should change LSQ -> cLSQ so that there is an emphasis on the
+ constraint
 \change_inserted 880794617 1537400431
 
 \end_layout
@@ -1342,8 +1351,8 @@ status open
 TODO
 \series default
 : Which rates are used? Refer to last table?
-\change_inserted 193499241 1538032776
- Table in appendix, could also be moved into Table
+\change_inserted 193499241 1538033584
+ Table in appendix, could maybe also be moved into Table
 \begin_inset space ~
 \end_inset
 
@@ -1474,26 +1483,10 @@ Each circle depicts a species, each arrow corresponds to one reaction.
 \end_inset
 
  to protein, and red arrows denote the regulatory network.
+
+\change_deleted 193499241 1538033065
  
-\change_inserted 193499241 1537885608
-
 \series bold
-
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-
-\change_inserted 193499241 1537885629
-Remove this
-\change_unchanged
-
-\end_layout
-
-\end_inset
-
-
-\change_unchanged
 (b)
 \series default
 : Concentration time series generated from the reaction network shown in
@@ -1526,6 +1519,8 @@ noprefix "false"
 
 a).
  This initial condition is used in the subsequent sections for further analysis.
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -1947,6 +1942,25 @@ name "tab:Initial-conditions"
 \end_inset
 
 Initial conditions used to generate concentration time series.
+
+\change_inserted 193499241 1538033627
+ Reaction rates can be found in Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:reaction-library"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -2200,9 +2214,7 @@ any of the regularization terms
 .
  In this case we estimate a reaction network that can reproduce the observations
  almost exactly (
-\change_inserted 193499241 1537529661
-
-\series bold
+\change_inserted 193499241 1538033518
 Fig.
 \begin_inset space ~
 \end_inset
@@ -2219,6 +2231,8 @@ noprefix "false"
 
 
 \change_deleted 193499241 1537529658
+
+\series bold
 plot this in Figure
 \change_unchanged
 
@@ -2230,8 +2244,12 @@ the
 \change_unchanged
 sparsity pattern does not match the reaction network used to generate the
  data.
- On one hand many spurious reactions are estimated that were not in the
- true reaction scheme and would lead to wrong conclusions about the mechanism,
+ On
+\change_inserted 193499241 1538033373
+ the
+\change_unchanged
+ one hand many spurious reactions are estimated that were not in the true
+ reaction scheme and would lead to wrong conclusions about the mechanism,
  such as 
 \begin_inset Formula $\mathrm{A}+\mathrm{A}\rightharpoonup\mathrm{A}$
 \end_inset
@@ -2387,7 +2405,7 @@ centering
 
 
 \begin_inset Graphics
-	filename figures_tex/case1_lsq_trajectory.pdf
+	filename figures_tex/trajectories_lsq.pdf
 	width 50col%
 
 \end_inset
@@ -2397,16 +2415,70 @@ centering
 
 \begin_layout Plain Layout
 
-\change_inserted 193499241 1537529601
+\change_inserted 193499241 1538033524
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:case-1-lsq"
 
 \end_inset
 
+ Concentration time series generated from the reaction network shown in
+ Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ The initial condition prescribes positive concentration values only for
  
-\series bold
-TODO
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ protein and 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ species (Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a).
+ This initial condition is used in the subsequent sections for further analysis.
+ Gray dots depict concentration time series yielded from the LSQ rates estimated
+ in Sec
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \change_unchanged
 
 \end_layout
@@ -2900,7 +2972,11 @@ The hyperparameters
 \begin_inset Formula $(\alpha,\lambda)$
 \end_inset
 
- are obtained by performing a 
+ are obtained by
+\change_inserted 193499241 1538033651
+ shuffling the data and
+\change_unchanged
+ performing a 
 \begin_inset Formula $10$
 \end_inset
 
@@ -2933,9 +3009,13 @@ Oh-oh
 
 \end_inset
 
+
+\change_deleted 193499241 1538033656
 The first fold was discarded, as it contains the initial equilibration phase
  as validation set, i.e., the information density about the relevant processes
  is the highest.
+\change_unchanged
+
 \end_layout
 
 \begin_layout Subsection
@@ -3030,7 +3110,11 @@ a.
 \begin_inset Formula $\dot{\mathbf{X}}_{2}$
 \end_inset
 
- have been obtained, the frames are concatenated and reordered so that 
+ have been obtained, the frames are concatenated
+\change_deleted 193499241 1538033674
+ and reordered
+\change_unchanged
+ so that 
 \begin_inset Formula 
 \[
 \mathbf{X}=\begin{pmatrix}\boldsymbol{x}_{1}(t_{1}) & \boldsymbol{x}_{2}(t_{1}) & \cdots & \boldsymbol{x}_{1}(t_{667}) & \boldsymbol{x}_{2}(t_{667})\end{pmatrix},
@@ -3050,8 +3134,8 @@ status open
 
 \begin_layout Plain Layout
 
-\change_inserted 193499241 1537533896
-This is obsolete when shuffling the trajectory
+\change_inserted 193499241 1538033702
+the ordering is arbitrary
 \change_unchanged
 
 \end_layout
@@ -3173,8 +3257,23 @@ The first sentence should describe what the entire figure is about.
 
 \end_inset
 
-Estimation of reaction schemes from gene-regulation data starting from two
- different initial conditions.
+
+\change_inserted 193499241 1538033769
+Convergence of 
+\change_deleted 193499241 1538033770
+E
+\change_inserted 193499241 1538033770
+e
+\change_unchanged
+stimation of reaction schemes from 
+\change_inserted 193499241 1538033781
+noisy 
+\change_unchanged
+gene-regulation data starting from two different initial conditions
+\change_inserted 193499241 1538033799
+ under decreasing levels of noise
+\change_unchanged
+.
  The minimization problem (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -3326,11 +3425,20 @@ The hyperparameters
 \begin_inset Formula $(\alpha,\lambda)$
 \end_inset
 
- are obtained by performing a 
+ are obtained by
+\change_inserted 193499241 1538033846
+ shuffling the data and
+\change_unchanged
+ performing a 
 \begin_inset Formula $20$
 \end_inset
 
--fold cross validation and discarding the first fold.
+-fold cross validation
+\change_inserted 193499241 1538033863
+.
+
+\change_deleted 193499241 1538033860
+ and discarding the first fold.
  Due to the reordering of the frames in 
 \begin_inset Formula $\mathbf{X}$
 \end_inset
@@ -3350,22 +3458,6 @@ noprefix "false"
 \end_inset
 
 , the initial equilibration phase for both initial conditions.
-\change_inserted 193499241 1537534079
-
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-
-\change_inserted 193499241 1537534086
-This needs to be updated (shuffling)
-\change_unchanged
-
-\end_layout
-
-\end_inset
-
-
 \change_unchanged
 
 \end_layout
@@ -6493,7 +6585,13 @@ Full set of ansatz reactions
 \begin_inset Formula $\Theta$
 \end_inset
 
- used in Sec.
+ used in Sec
+\change_inserted 193499241 1538033504
+.
+\change_deleted 193499241 1538033502
+.
+\change_unchanged
+
 \begin_inset space ~
 \end_inset
 
