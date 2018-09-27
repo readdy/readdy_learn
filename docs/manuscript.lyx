@@ -159,6 +159,35 @@ literal "false"
 
 \end_layout
 
+\begin_layout Abstract
+
+\change_inserted 193499241 1538057111
+Identifying reaction networks helps to understand many molecular systems,
+ in particular processes in biological cells.
+ Often researchers are presented with noisy measurements describing the
+ temporal evolution of amounts of certain reactants without actually knowing
+ the underlying rules.
+ Inferring these rules is a task that can be solved using machine learning
+ techniques.
+ One particular class of methods suitable for this kind of problem is regression
+, e.g., linear least-squares.
+ While least-squares can yield reaction networks that describe the observations
+ well, they can be hard to interpret due to a lack of sparsity.
+ One regression method that leads to parsimonious solutions is SINDy, with
+ which net concentration flow between reactants can be identified.
+ Here we extend SINDy to vector valued ansatz functions, each describing
+ a particular reaction process.
+ We thus are not only able to identify net flow but also the specific underlying
+ reaction network parameterized by a set of chemical reactions and associated
+ rate constants.
+ We find that the proposed method is able to handle noisy data more robustly
+ than inference by means of least-squares.
+ Identifying sparse reaction networks helps to avoid overfitting and also
+ provides interpretability for the estimated model.
+ Additionally knowing the rate constants can be used to parameterize more
+ complex models.
+\end_layout
+
 \begin_layout Section
 Introduction
 \end_layout
@@ -574,14 +603,34 @@ Our extension of the original SINDy method mostly involves estimating parameters
  In the context of learning reaction networks this means that we look for
  specific reactions and their rate constants that might have lead to the
  observations instead of net flux across species.
- We demonstrate the algorithm on a gene regulatory system in three different
- scenarios of measurement: When there is no noise in the data we can find,
- given sufficient amounts data, all relevant processes of the ground truth.
+ We demonstrate the algorithm on a gene regulatory 
+\change_deleted 193499241 1538052199
+system
+\change_inserted 193499241 1538052205
+network
+\change_unchanged
+ in three different scenarios of measurement: When there is no noise in
+ the data we can find, given sufficient amounts 
+\change_inserted 193499241 1538052217
+of 
+\change_unchanged
+data, all relevant processes of the ground truth.
  If there is noise in the data we converge to the correct reaction network
  and rates with decreasing levels of noise.
- The last scenario generalizes the method to two realizations with different
- initial conditions, also converging to the correct model with decreasing
- levels of noise.
+ The 
+\change_deleted 193499241 1538052243
+last
+\change_inserted 193499241 1538052243
+final
+\change_unchanged
+ scenario generalizes the method to two 
+\change_deleted 193499241 1538052260
+realizations
+\change_inserted 193499241 1538052261
+measurements
+\change_unchanged
+ with different initial conditions, also converging to the correct model
+ with decreasing levels of noise.
 \end_layout
 
 \begin_layout Section
@@ -2054,14 +2103,10 @@ vity of the estimated reaction rates.
 status open
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537395983
 see above: 
 \end_layout
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537395987
 - Why? This is just ridge regression, why does this induce non-negativity?
 \change_inserted 193499241 1537529172
  non-negativity is induced by the constraint 
@@ -2074,8 +2119,6 @@ see above:
 \end_layout
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537396003
 - So did you actually set 
 \begin_inset Formula $\alpha=0$
 \end_inset
@@ -2101,13 +2144,11 @@ see above:
 
 \begin_layout Standard
 
-\change_inserted 880794617 1537396200
+\change_deleted 193499241 1538057430
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537396086
 
 \series bold
 Say clearly what you did.
@@ -2117,8 +2158,6 @@ Say clearly what you did.
 \end_layout
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537397085
 We first set the hyperparameter 
 \begin_inset Formula $\alpha=0$
 \end_inset
@@ -2173,18 +2212,12 @@ noprefix "false"
 
 ).
  
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
 
-\change_inserted 193499241 1537529262
-
-\end_layout
-
-\begin_layout Standard
+\change_unchanged
 We first set the hyperparameter 
 \begin_inset Formula $\alpha=0$
 \end_inset
@@ -2286,6 +2319,118 @@ noprefix "false"
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 193499241 1538051018
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1538051018
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1538051018
+
+
+\backslash
+centering
+\end_layout
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename figures_tex/trajectories_lsq.pdf
+	width 50col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\change_inserted 193499241 1538051598
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:case-1-lsq"
+
+\end_inset
+
+Concentration time series generated from integrating the reaction network
+ shown in Fig.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:network"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a.
+ The initial condition prescribes positive concentration values only for
+ 
+\begin_inset Formula $\mathrm{B}$
+\end_inset
+
+ protein and 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
+\end_inset
+
+ species (Tab.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+a).
+ This initial condition is used in the subsequent sections for further analysis.
+ Gray dots depict concentration time series yielded from the LSQ rates estimated
+ in Sec
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
+
 \begin_inset Float figure
 wide false
 sideways false
@@ -2380,122 +2525,6 @@ noprefix "false"
 
 
 \change_inserted 193499241 1537529560
-
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-
-\change_inserted 193499241 1537529626
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-\change_inserted 193499241 1537529573
-
-
-\backslash
-centering
-\end_layout
-
-\end_inset
-
-
-\begin_inset Graphics
-	filename figures_tex/trajectories_lsq.pdf
-	width 50col%
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-
-\change_inserted 193499241 1538033524
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:case-1-lsq"
-
-\end_inset
-
- Concentration time series generated from the reaction network shown in
- Fig.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:network"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-a.
- The initial condition prescribes positive concentration values only for
- 
-\begin_inset Formula $\mathrm{B}$
-\end_inset
-
- protein and 
-\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
-\end_inset
-
- species (Tab.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "tab:Initial-conditions"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-a).
- This initial condition is used in the subsequent sections for further analysis.
- Gray dots depict concentration time series yielded from the LSQ rates estimated
- in Sec
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:case-1"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-.
-\change_unchanged
-
-\end_layout
-
-\end_inset
-
-
-\change_unchanged
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-
 
 \end_layout
 
@@ -2638,8 +2667,12 @@ noprefix "false"
 \end_inset
 
 , we now employ data that includes measurement noise.
- Such noise can originate from an uncertainties in the experimental setup
- or from shot noise in single- or few-molecule measurements.
+ Such noise can originate from 
+\change_deleted 193499241 1538051051
+an 
+\change_unchanged
+uncertainties in the experimental setup or from shot noise in single- or
+ few-molecule measurements.
  In gene regulatory networks such noise is commonly observed when only few
  copy numbers of 
 \begin_inset Formula $\mathrm{mRNA}$
@@ -2702,8 +2735,14 @@ literal "false"
 .
  In the limit of many particles and realizations, the Gillespie SSA converges
  to the integrated reaction-rate equations subject to the law of mass action.
- Therefore, the initial condition's concentrations are interpreted in terms
- of hundreds of particles.
+ 
+\change_deleted 193499241 1538051197
+Therefore
+\change_inserted 193499241 1538051210
+As our model is based on exactly these dynamics
+\change_unchanged
+, the initial condition's concentrations are interpreted in terms of hundreds
+ of particles.
  Each realization is then transformed back to a time series of concentrations.
  We define the noise level as
 \change_inserted 193499241 1537533392
@@ -2771,24 +2810,16 @@ b).
 \end_inset
 
  performs better than LSQ.
-\change_inserted 880794617 1537398420
-
 \begin_inset Note Note
 status open
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1537398437
 see comments regarding LSQ/Ridge above.
  Check all LSQ mentions in the paper for correctness.
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
 
 \end_layout
 
@@ -2883,9 +2914,18 @@ for
  (regularized)
 \change_unchanged
 .
- The procedure was independently repeated 10 times with different realizations
- giving rise to the mean and standard deviation depicted by solid lines
- and shaded areas, respectively.
+ The procedure was independently repeated 
+\change_inserted 193499241 1538051466
+
+\begin_inset Formula $10$
+\end_inset
+
+
+\change_deleted 193499241 1538051468
+10
+\change_unchanged
+ times with different realizations giving rise to the mean and standard
+ deviation depicted by solid lines and shaded areas, respectively.
  
 \series bold
 (a)
@@ -3177,7 +3217,7 @@ noprefix "false"
 \end_inset
 
 b) and a smaller 
-\begin_inset Formula $\mathrm{L}_{1}$
+\begin_inset Formula $L_{1}$
 \end_inset
 
  distance to the ground truth (Fig.
@@ -3265,7 +3305,11 @@ E
 \change_inserted 193499241 1538033770
 e
 \change_unchanged
-stimation of reaction schemes from 
+stimation
+\change_inserted 193499241 1538051406
+ error
+\change_unchanged
+ of reaction schemes from 
 \change_inserted 193499241 1538033781
 noisy 
 \change_unchanged
@@ -3300,8 +3344,18 @@ noprefix "false"
 \series bold
 (a)
 \series default
-: Concentration time series corresponding to the initial conditions.
- The first initial condition is identical to what was used in Sec.
+: Concentration time series corresponding to the initial conditions
+\change_inserted 193499241 1538051652
+, generated by integrating the reaction-rate equations
+\change_unchanged
+.
+ The first initial condition is identical to 
+\change_deleted 193499241 1538051527
+what was
+\change_inserted 193499241 1538051528
+the one
+\change_unchanged
+ used in Sec.
 \begin_inset space ~
 \end_inset
 
@@ -3357,33 +3411,8 @@ b) prescribes positive initial concentrations for
 \end_inset
 
  species.
- The gray graphs are 
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-common mistake: exemplary means 
-\begin_inset Quotes eld
-\end_inset
-
-vorbildlich
-\begin_inset Quotes erd
-\end_inset
-
-, not 
-\begin_inset Quotes eld
-\end_inset
-
-z.B.
-\begin_inset Quotes erd
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-sample realizations of integration using the Gillespie SSA.
+ The gray graphs are sample realizations of integration using the Gillespie
+ SSA.
  
 \series bold
 (b)
@@ -3485,35 +3514,13 @@ noprefix "false"
  functions and obtaining a tensor linear regression problem.
  We have applied this method on data generated from a gene regulation network
  and could successfully recover the underlying model.
+\change_inserted 193499241 1538051924
+
 \end_layout
 
 \begin_layout Standard
-Potentially, this method could be used to identify reaction networks from
- time series measurements even if the initial conditions are not always
- exactly identical, as was demonstrated in Sec.
-\begin_inset space ~
-\end_inset
 
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:case-3"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-.
- One apparent limitation is that the method can only be applied if the data
- stems from the equilibration phase, as the concentration-based approach
- has derivatives equal zero in the equilibrium, which precludes the reaction
- dynamics to be recovered.
- In future work, we will consider the identification of reaction schemes
- from instantaneous fluctuations of particle numbers in equilibrium.
-\end_layout
-
-\begin_layout Standard
+\change_inserted 193499241 1538051925
 The studies of Sec.
 \begin_inset space ~
 \end_inset
@@ -3545,6 +3552,72 @@ noprefix "false"
  have shown that the applied regularization terms can mitigate noise up
  to a certain degree compared to the unregularized method, so that identificatio
 n of the reaction network is more robust and closer to the ground truth.
+\change_unchanged
+
+\end_layout
+
+\begin_layout Standard
+Potentially, this method could be used to identify reaction networks from
+ time series measurements even if the initial conditions are not always
+ exactly identical, as was demonstrated in Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ One apparent limitation is that the method can only be applied if the data
+ stems from the equilibration phase, as the concentration-based approach
+ has derivatives equal zero in the equilibrium, which precludes the reaction
+ dynamics to be recovered.
+ In future work, we will consider the identification of reaction schemes
+ from instantaneous fluctuations of particle numbers in equilibrium.
+\end_layout
+
+\begin_layout Standard
+
+\change_deleted 193499241 1538051921
+The studies of Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:case-3"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ have shown that the applied regularization terms can mitigate noise up
+ to a certain degree compared to the unregularized method, so that identificatio
+n of the reaction network is more robust and closer to the ground truth.
+\change_unchanged
+
 \end_layout
 
 \begin_layout Standard
@@ -4746,11 +4819,19 @@ self regulation of
 \begin_inset Text
 
 \begin_layout Plain Layout
-cyclic regulation of 
-\begin_inset Formula $\mathrm{A}$
+
+\change_deleted 193499241 1538052047
+cyclic 
+\change_unchanged
+regulation of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
 \end_inset
 
+
+\change_deleted 193499241 1538052068
  proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -4809,11 +4890,19 @@ cyclic regulation of
 \begin_inset Text
 
 \begin_layout Plain Layout
-cyclic regulation of 
-\begin_inset Formula $\mathrm{B}$
+
+\change_deleted 193499241 1538052050
+cyclic 
+\change_unchanged
+regulation of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
 \end_inset
 
+
+\change_deleted 193499241 1538052067
  proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -4872,11 +4961,19 @@ cyclic regulation of
 \begin_inset Text
 
 \begin_layout Plain Layout
-cyclic regulation of 
-\begin_inset Formula $\mathrm{C}$
+
+\change_deleted 193499241 1538052073
+cyclic 
+\change_unchanged
+regulation of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
+
+\change_deleted 193499241 1538052074
  proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -4935,11 +5032,19 @@ cyclic regulation of
 \begin_inset Text
 
 \begin_layout Plain Layout
-cyclic regulation of 
-\begin_inset Formula $\mathrm{A}$
+
+\change_deleted 193499241 1538052086
+cyclic 
+\change_unchanged
+regulation of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{C}}$
 \end_inset
 
+
+\change_deleted 193499241 1538052084
  proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -4998,11 +5103,19 @@ cyclic regulation of
 \begin_inset Text
 
 \begin_layout Plain Layout
-cyclic regulation of 
-\begin_inset Formula $\mathrm{C}$
+
+\change_deleted 193499241 1538052094
+cyclic 
+\change_unchanged
+regulation of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{B}}$
 \end_inset
 
+
+\change_deleted 193499241 1538052095
  proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -5061,11 +5174,19 @@ cyclic regulation of
 \begin_inset Text
 
 \begin_layout Plain Layout
-cyclic regulation of 
-\begin_inset Formula $\mathrm{B}$
+
+\change_deleted 193499241 1538052101
+cyclic 
+\change_unchanged
+regulation of 
+\begin_inset Formula $\mathrm{mRNA}_{\mathrm{A}}$
 \end_inset
 
+
+\change_deleted 193499241 1538052103
  proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -5735,7 +5856,11 @@ artificial fusion
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial fusion between proteins
+artificial fusion
+\change_deleted 193499241 1538052136
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -5794,7 +5919,11 @@ artificial fusion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial fusion between proteins
+artificial fusion
+\change_deleted 193499241 1538052137
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -5853,7 +5982,11 @@ artificial fusion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial fusion between proteins
+artificial fusion
+\change_deleted 193499241 1538052139
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -5912,7 +6045,11 @@ artificial fusion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial fusion between proteins
+artificial fusion
+\change_deleted 193499241 1538052140
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -5971,7 +6108,11 @@ artificial fusion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial fusion between proteins
+artificial fusion
+\change_deleted 193499241 1538052142
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6030,7 +6171,11 @@ artificial fusion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial fusion between proteins
+artificial fusion
+\change_deleted 193499241 1538052144
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6089,7 +6234,11 @@ artificial fusion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial conversion between proteins
+artificial conversion
+\change_deleted 193499241 1538052146
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6148,7 +6297,11 @@ artificial conversion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial conversion between proteins
+artificial conversion
+\change_deleted 193499241 1538052148
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6207,7 +6360,11 @@ artificial conversion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial conversion between proteins
+artificial conversion
+\change_deleted 193499241 1538052149
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6266,7 +6423,11 @@ artificial conversion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial conversion between proteins
+artificial conversion
+\change_deleted 193499241 1538052151
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6325,7 +6486,11 @@ artificial conversion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial conversion between proteins
+artificial conversion
+\change_deleted 193499241 1538052153
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6384,7 +6549,11 @@ artificial conversion between proteins
 \begin_inset Text
 
 \begin_layout Plain Layout
-artificial conversion between proteins
+artificial conversion
+\change_deleted 193499241 1538052154
+ between proteins
+\change_unchanged
+
 \end_layout
 
 \end_inset
@@ -6606,6 +6775,15 @@ noprefix "false"
 \end_inset
 
 .
+
+\change_inserted 193499241 1538051983
+ The ground truth is given by the rate constants 
+\begin_inset Formula $k_{i}$
+\end_inset
+
+.
+\change_unchanged
+
 \end_layout
 
 \end_inset
