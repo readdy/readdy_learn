@@ -1275,7 +1275,11 @@ noprefix "false"
 
 \end_inset
 
-a).
+
+\change_deleted 193499241 1538032814
+a
+\change_unchanged
+).
  Using this reaction model, time series of concentrations are generated
  using
 \change_inserted 193499241 1537885207
@@ -1338,8 +1342,22 @@ status open
 TODO
 \series default
 : Which rates are used? Refer to last table?
-\change_inserted 193499241 1537885311
- Table in appendix, could also be moved into the last table
+\change_inserted 193499241 1538032776
+ Table in appendix, could also be moved into Table
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Initial-conditions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
 \change_unchanged
 
 \end_layout
@@ -1435,10 +1453,14 @@ noprefix "false"
 
 .
  
+\change_deleted 193499241 1538032803
+
 \series bold
 (a)
 \series default
-: Each circle depicts a species, each arrow corresponds to one reaction.
+: 
+\change_unchanged
+Each circle depicts a species, each arrow corresponds to one reaction.
  Blue arrows denote transcription from 
 \begin_inset Formula $\mathrm{DNA}$
 \end_inset
