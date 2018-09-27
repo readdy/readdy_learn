@@ -6,7 +6,16 @@
 \origin unavailable
 \textclass scrartcl
 \begin_preamble
+\usepackage{siunitx}
+\usepackage{authblk}
 
+\newcommand*\samethanks[1][\value{footnote}]{\footnotemark[#1]}
+
+\author[1]{Moritz Hoffmann\thanks{Equal contributions}}
+\author[1]{Christoph Fröhner\samethanks}
+\author[1]{Frank Noé\thanks{Corresponding author}}
+\affil[1]{Freie Universität Berlin, Fachbereich Mathematik und Informatik,\newline Arnimallee 6, 14195 Berlin, Germany}
+\affil[ ]{\textit{\{ moritz.hoffmann,christoph.froehner,frank.noe \}@fu-berlin.de}}
 \end_preamble
 \options abstracton,titlepage
 \use_default_options false
