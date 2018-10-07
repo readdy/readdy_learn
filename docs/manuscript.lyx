@@ -706,10 +706,41 @@ Our extension of the original SINDy method mostly involves estimating parameters
 \end_layout
 
 \begin_layout Section
+
+\change_inserted 880794617 1538922601
+Reactive SINDy: 
+\change_unchanged
 Sparse learning of reaction kinetics
 \end_layout
 
 \begin_layout Standard
+
+\change_inserted 880794617 1538922617
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\change_inserted 880794617 1538922650
+Check the paper where it makes sense to just say 
+\begin_inset Quotes eld
+\end_inset
+
+reactive sindy
+\begin_inset Quotes erd
+\end_inset
+
+ to be brief.
+ I'm also Ok with other terms, but this is the best I could spontaneously
+ come up with.
+\change_unchanged
+
+\end_layout
+
+\end_inset
+
+
+\change_unchanged
 We are observing the concentrations of 
 \begin_inset Formula $S$
 \end_inset
