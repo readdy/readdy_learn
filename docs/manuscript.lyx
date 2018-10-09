@@ -94,11 +94,7 @@
 \begin_body
 
 \begin_layout Title
-
-\change_inserted 880794617 1538913208
-Reactive SINDy: 
-\change_unchanged
-Discovering governing reactions from concentration data
+Reactive SINDy: Discovering governing reactions from concentration data
 \end_layout
 
 \begin_layout Standard
@@ -173,72 +169,33 @@ literal "false"
 \end_layout
 
 \begin_layout Abstract
-
-\change_inserted 880794617 1538913610
 The inner workings of a biological cell or a chemical reaction can be rationaliz
 ed by the network of reactions, whose structure reveals the most important
  functional mechanisms.
- For complex systems, these reaction networks are not known a priori can
- cannot be efficiently computed with 
+ For complex systems, these reaction networks are not known a priori 
+\change_deleted 193499241 1539086037
+can 
+\change_inserted 193499241 1539086048
+and 
+\change_unchanged
+cannot be efficiently computed with 
 \emph on
 ab initio
 \emph default
  methods, therefore an important approach goal is to estimate effective
  reaction networks from observations, such as time series of the main species.
- 
-\change_deleted 880794617 1538913618
-Identifying reaction networks helps to understand many molecular systems,
- in particular processes in biological cells.
- Often researchers are presented with noisy measurements describing the
- temporal evolution of amounts of certain reactants without actually knowing
- the underlying rules.
- Inferring these rules is a task that can be solved using machine learning
- techniques.
- One particular class of methods suitable for this kind of problem is regression
-, e.g., linear least-squares.
- 
-\change_inserted 880794617 1538912616
-Reaction networks estimated with
-\change_deleted 880794617 1538912592
-While
+ Reaction networks estimated with standard machine learning techniques such
+ as least-squares regression may fit the observations, but will typically
+ contain spurious reactions.
+ Here we extend the 
+\change_deleted 193499241 1539086083
+stochastic
+\change_inserted 193499241 1539086084
+sparse
 \change_unchanged
- 
-\change_inserted 880794617 1538913622
-standard machine learning techniques such as 
-\change_unchanged
-least-squares 
-\change_inserted 880794617 1538912469
-regression 
-\change_deleted 880794617 1538912621
-can yield reaction networks that describe the observations well, they 
-\change_inserted 880794617 1538912655
-may fit the observations, but will typically contain spurious reactions.
-\change_deleted 880794617 1538912657
-can be hard to interpret due to a lack of sparsity.
-
-\change_unchanged
- 
-\change_deleted 880794617 1538912767
-One regression method that leads to parsimonious solutions is SINDy, with
- which net concentration flow between reactants can be identified.
- 
-\change_unchanged
-Here we extend 
-\change_inserted 880794617 1538912777
-the stochastic identification of nonlinear dynamics (
-\change_unchanged
-SINDy
-\change_inserted 880794617 1538912780
-) method
-\change_unchanged
- to vector
-\change_inserted 880794617 1538912806
--
-\change_unchanged
-valued ansatz functions, each describing a particular reaction process.
- 
-\change_inserted 880794617 1538913287
-The resulting sparse tensor regression method 
+ identification of nonlinear dynamics (SINDy) method to vector-valued ansatz
+ functions, each describing a particular reaction process.
+ The resulting sparse tensor regression method 
 \begin_inset Quotes eld
 \end_inset
 
@@ -249,18 +206,6 @@ reactive SINDy
  is able to estimate a parsimonious reaction network.
  We illustrate that a gene regulation network can be correctly estimated
  from observed time series.
-\change_deleted 880794617 1538913295
-We thus are not only able to identify net flow but also the specific underlying
- reaction network parameterized by a set of chemical reactions and associated
- rate constants.
- We find that the proposed method is able to handle noisy data more robustly
- than inference by means of least-squares.
- Identifying sparse reaction networks helps to avoid overfitting and also
- provides interpretability for the estimated model.
- Additionally knowing the rate constants can be used to parameterize more
- complex models.
-\change_unchanged
-
 \end_layout
 
 \begin_layout Section
@@ -399,45 +344,52 @@ literal "false"
 \end_layout
 
 \begin_layout Standard
-
-\change_inserted 880794617 1538921257
 The traditional approach to determine a reaction network is to propose the
  structure of the network based on chemical insight and subsequently fit
- the parameters given available data [
+ the parameters given available data
+\change_deleted 193499241 1539086325
+ [
 \series bold
 cite Schöneberg BJ14
 \series default
-].
- To decyper 
-\change_deleted 880794617 1538921257
-In 
-\change_unchanged
-complex reaction environments such as biological cells, 
-\change_inserted 880794617 1538921374
-it would be desirable to have a data-driven approach that can answer the
- question which reactions are underlying a given observation, e.g., the time
- series of a set of reactants.
- However, in sufficiently complex reaction environments 
-\change_unchanged
-the number of reactive species and possible reactions is practically unlimited
- – as an illustration, consider vast amount of possible isomerizations and
- posttranslational modifications for a single protein molecule.
- Therefore, the 
-\change_inserted 880794617 1538921569
-more specific formulation is
-\change_deleted 880794617 1538921571
-question 
-\begin_inset Quotes eld
+]
+\change_inserted 193499241 1539086326
+
+\begin_inset space ~
 \end_inset
 
-which reactions are occurring in a given cell
-\begin_inset Quotes erd
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "schoneberg2014explicit"
+literal "false"
+
 \end_inset
 
- is not useful.
- A more useful formulation is
+
 \change_unchanged
- 
+.
+ To dec
+\change_inserted 193499241 1539086348
+i
+\change_deleted 193499241 1539086348
+y
+\change_unchanged
+p
+\change_inserted 193499241 1539086346
+h
+\change_unchanged
+er complex reaction environments such as biological cells, it would be desirable
+ to have a data-driven approach that can answer the question which reactions
+ are underlying a given observation, e.g., the time series of a set of reactants.
+ However, in sufficiently complex reaction environments the number of reactive
+ species and possible reactions is practically unlimited – as an illustration,
+ consider vast amount of possible isomerizations and post
+\change_inserted 193499241 1539086376
+-
+\change_unchanged
+translational modifications for a single protein molecule.
+ Therefore, the more specific formulation is 
 \begin_inset Quotes eld
 \end_inset
 
@@ -470,11 +422,8 @@ literal "false"
 
 \end_inset
 
-, as well as highly detailed but parameter-rich methods such as 
-\change_inserted 880794617 1538913980
-particle-based or 
-\change_unchanged
-interacting-particle reaction
+, as well as highly detailed but parameter-rich methods such as particle-based
+ or interacting-particle reaction
 \begin_inset space ~
 \end_inset
 
@@ -485,53 +434,57 @@ dynamics
 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "hoffmann2018readdy,frohner2018reversible,donev2018efficient"
+key "schoneberg2013readdy,hoffmann2018readdy,frohner2018reversible,donev2018efficient,Andrews2017,van2005green,van2005simulating"
 literal "false"
 
 \end_inset
 
 
-\change_inserted 880794617 1538914147
-
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1538914165
 The first citation should always be the original one.
  For iPRD that's the ReaDDy1 paper.
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
 
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1538914170
 add citations: GFRD,Smoldyn
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
+ capable of fully resolving molecule positions in space and time – see
+\change_deleted 193499241 1539086766
+ 
+\change_inserted 193499241 1539086766
 
-\change_unchanged
- capable of fully resolving molecule positions in space and time
-\change_inserted 880794617 1538914060
- – see [
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "schoneberg2014simulation,Andrews2018"
+literal "false"
+
+\end_inset
+
+
+\change_deleted 193499241 1539086770
+[
 \series bold
 Schöneberg et al + Steve Andrews review
 \series default
-] for recent reviews
+]
 \change_unchanged
-.
+ for recent reviews.
 \end_layout
 
 \begin_layout Standard
@@ -706,22 +659,14 @@ Our extension of the original SINDy method mostly involves estimating parameters
 \end_layout
 
 \begin_layout Section
-
-\change_inserted 880794617 1538922601
-Reactive SINDy: 
-\change_unchanged
-Sparse learning of reaction kinetics
+Reactive SINDy: Sparse learning of reaction kinetics
 \end_layout
 
 \begin_layout Standard
-
-\change_inserted 880794617 1538922617
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1538922650
 Check the paper where it makes sense to just say 
 \begin_inset Quotes eld
 \end_inset
@@ -733,14 +678,10 @@ reactive sindy
  to be brief.
  I'm also Ok with other terms, but this is the best I could spontaneously
  come up with.
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
 We are observing the concentrations of 
 \begin_inset Formula $S$
 \end_inset
@@ -929,28 +870,20 @@ noprefix "false"
 
 .
  We represent these data as a matrix 
-\change_inserted 880794617 1538913930
-
 \begin_inset Note Note
-status open
+status collapsed
 
 \begin_layout Plain Layout
-
-\change_inserted 880794617 1538913946
 Think about transposing 
 \begin_inset Formula $\mathbf{X}$
 \end_inset
 
 .
  Does this make the notation simpler?
-\change_unchanged
-
 \end_layout
 
 \end_inset
 
-
-\change_unchanged
 
 \begin_inset Formula 
 \begin{align}
@@ -972,9 +905,9 @@ Given this matrix, a library
  
 \begin_inset Formula 
 \begin{align}
-\theta_{r}(\mathbf{X})=\begin{pmatrix}\textbf{y}_{r}(\mathbf{X}_{1*})^{T}\\
+\theta_{r}(\mathbf{X})=\begin{pmatrix}\textbf{y}_{r}(\mathbf{X}_{1*})^{\top}\\
 \vdots\\
-\textbf{y}_{r}(\mathbf{X}_{T*})^{T}
+\textbf{y}_{r}(\mathbf{X}_{T*})^{\top}
 \end{pmatrix}\in\mathbb{R}^{T\times S},\quad r=1,\ldots,R,\label{method:the-reactions}
 \end{align}
 
@@ -1003,7 +936,7 @@ where
 
 \begin_layout Standard
 The goal is to find coefficients 
-\begin_inset Formula $\Xi=\begin{pmatrix}\xi_{1} & \xi_{2} & \cdots & \xi_{R}\end{pmatrix}^{T}$
+\begin_inset Formula $\Xi=\begin{pmatrix}\xi_{1} & \xi_{2} & \cdots & \xi_{R}\end{pmatrix}^{\top}$
 \end_inset
 
 , so that 
@@ -1031,7 +964,11 @@ literal "true"
 \end_inset
 
  applicable.
- To this end, one can consider the regularized minimization problem: 
+ To this end, one can consider the regularized minimization problem
+\change_inserted 193499241 1539087341
+ (reactive SINDy)
+\change_unchanged
+: 
 \begin_inset Formula 
 \begin{align}
 \hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}^{2}\right)\quad\text{subject to }\Xi\geq0.\label{method:minimizationproblem}
@@ -1092,22 +1029,19 @@ literal "true"
 \begin_inset Formula $\alpha=0$
 \end_inset
 
- the minimization problem reduces to
-\change_inserted 92240754 1537457202
- 
-\change_inserted 880794617 1538911767
-standard
-\change_unchanged
- least-squares (LSQ)
-\change_inserted 880794617 1538911774
- with the constraint 
+ the minimization problem reduces to standard least-squares (LSQ) with the
+ constraint 
 \begin_inset Formula $\Xi\geq0$
 \end_inset
 
-
-\change_unchanged
 .
- The minimization problem (
+ 
+\change_deleted 193499241 1539087360
+The minimization problem
+\change_inserted 193499241 1539087362
+Reactive SINDy
+\change_unchanged
+ (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
@@ -2390,7 +2324,13 @@ s of the time series obtained by the Gillespie SSA.
 
 \begin_layout Standard
 It can be observed that decreasing levels of noise lead to fewer spurious
- reactions when applying the minimization problem (
+ reactions when applying 
+\change_deleted 193499241 1539088604
+the minimization problem
+\change_inserted 193499241 1539088606
+reactive SINDy
+\change_unchanged
+ (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:minimizationproblem"
@@ -2508,7 +2448,12 @@ noprefix "false"
 
 \end_inset
 
- with varying levels of noise by application of the minimization problem
+ with varying levels of noise by application of 
+\change_deleted 193499241 1539088643
+the minimization problem
+\change_inserted 193499241 1539088645
+reactive SINDy
+\change_unchanged
  (
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -2519,7 +2464,11 @@ noprefix "false"
 
 \end_inset
 
-) with and without regularization in blue and orange, respectively..
+) with and without regularization in blue and orange, respectively.
+\change_deleted 193499241 1539088653
+.
+
+\change_unchanged
  The procedure was independently repeated 
 \begin_inset Formula $10$
 \end_inset
@@ -2951,10 +2900,21 @@ Conclusion
 \end_layout
 
 \begin_layout Standard
-In this work we have extended the SINDy method to not only parsimoniously
- detect potentially nonlinear terms in a dynamical system from noisy data,
- but also yield, in this case, a sparse set of rates with respect to generating
- reactions (
+In this work we have extended the SINDy method to
+\change_inserted 193499241 1539088729
+ reactive SINDy,
+\change_unchanged
+ not only parsimoniously detect
+\change_inserted 193499241 1539088745
+ing
+\change_unchanged
+ potentially nonlinear terms in a dynamical system from noisy data, but
+ also yield
+\change_inserted 193499241 1539088748
+ing
+\change_unchanged
+, in this case, a sparse set of rates with respect to generating reactions
+ (
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "method:the-reactions"
@@ -6084,21 +6044,7 @@ noprefix "false"
 \end_inset
 
 .
- The 
-\change_inserted 880794617 1538911908
-given rate constants define the 
-\change_unchanged
-ground truth 
-\change_inserted 880794617 1538911902
-reaction model.
-\change_deleted 880794617 1538911902
-is given by the rate constants 
-\begin_inset Formula $k_{i}$
-\end_inset
-
-.
-\change_unchanged
-
+ The given rate constants define the ground truth reaction model.
 \end_layout
 
 \end_inset
