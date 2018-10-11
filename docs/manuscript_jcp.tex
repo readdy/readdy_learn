@@ -1,15 +1,24 @@
 %% LyX 2.3.1 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[abstracton,titlepage]{scrartcl}
+\documentclass[english,osajnl,jcp,preprint,groupedaddress,noshowpacs,showkeys,longbibliography,noeprint,nofootinbib,bibtex,ruled,vlined,english,natural,table,usenames,dvipsnames,a4paper]{revtex4-1}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{geometry}
-\geometry{verbose}
+\setcounter{secnumdepth}{3}
+\usepackage{color}
+\usepackage{babel}
+\usepackage{array}
 \usepackage{booktabs}
 \usepackage{mathtools}
-\usepackage{url}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[unicode=true,
+bookmarks=false,
+breaklinks=false,pdfborder={0 0 1},backref=section,colorlinks=true]
+{hyperref}
+%\hypersetup{%
+%	linkcolor=BrickRed,urlcolor=blue!50!black,citecolor=blue!50!black}
 
 \makeatletter
 
@@ -19,23 +28,54 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 \usepackage{siunitx}
-\usepackage{authblk}
 
 \newcommand*\samethanks[1][\value{footnote}]{\footnotemark[#1]}
 
-\author[1]{Moritz Hoffmann\thanks{Equal contributions}}
-\author[1]{Christoph Fröhner\samethanks}
-\author[1]{Frank Noé\thanks{Corresponding author}}
-\affil[1]{Freie Universität Berlin, Fachbereich Mathematik und Informatik,\newline Arnimallee 6, 14195 Berlin, Germany}
-\affil[ ]{\textit{\{ moritz.hoffmann,christoph.froehner,frank.noe \}@fu-berlin.de}}
+%\author[1]{Moritz Hoffmann\thanks{Equal contributions}}
+%\author[1]{Christoph Fröhner\samethanks}
+%\author[1]{Frank Noé\thanks{Corresponding author}}
+%\affil[1]{Freie Universität Berlin, Fachbereich Mathematik und Informatik,\newline Arnimallee 6, 14195 Berlin, Germany}
+%\affil[ ]{\textit{\{ moritz.hoffmann,christoph.froehner,frank.noe \}@fu-berlin.de}}
+
+
+\newlength{\singlecolumnwidth}
+\newlength{\doublecolumnwidth}
+\singlecolumnwidth=3.37in
+\doublecolumnwidth=6.69in
 
 \makeatother
 
+\linespread{0.956}
+
 \begin{document}
+	
+	\author{Moritz Hoffmann}
+	\email{moritz.hoffmann@fu-berlin.de}
+	\thanks{Equal contributions}
+	\affiliation{
+		Freie Universität Berlin, Fachbereich Mathematik und Informatik,
+		Arnimallee 6, 14195 Berlin, Germany
+	}
+	
+	\author{Christoph Fröhner}
+	\email{christoph.froehner@fu-berlin.de}
+	\thanks{Equal contributions}
+	\affiliation{
+		Freie Universität Berlin, Fachbereich Mathematik und Informatik,
+		Arnimallee 6, 14195 Berlin, Germany
+	}
+	
+	\author{Frank Noé}
+	\email{frank.noe@fu-berlin.de}
+	\thanks{Corresponding author}
+	\affiliation{
+		Freie Universität Berlin, Fachbereich Mathematik und Informatik,
+		Arnimallee 6, 14195 Berlin, Germany
+	}
+	
+	
 \title{Reactive SINDy: Discovering governing reactions from concentration
 data}
-
-\maketitle
 
 \begin{abstract}
 The inner workings of a biological cell or a chemical reaction can
@@ -54,6 +94,8 @@ SINDy'' is able to estimate a parsimonious reaction network. We illustrate
 that a gene regulation network can be correctly estimated from observed
 time series.
 \end{abstract}
+
+\maketitle
 
 \section{Introduction}
 
@@ -284,7 +326,7 @@ with a discrete time step of $\tau=3\cdot10^{-3}$ yielding $667$
 frames which amounts to a cumulative time of roughly $T=2$.
 
 \begin{figure}
-\centering \includegraphics[width=0.5\columnwidth]{figures_tex/scheme}
+\centering \includegraphics[width=\singlecolumnwidth]{figures_tex/scheme}
 \caption{\label{fig:network}The regulation network example described in Sec.~\ref{sec:results}.
 Each circle depicts a species, each arrow corresponds to one reaction.
 Blue arrows denote transcription from $\mathrm{DNA}$ to $\mathrm{mRNA}$,
@@ -331,7 +373,7 @@ More dramatically, the reaction responsible for the decay of $\mathrm{A}$
 particles is completely ignored (Fig.~\ref{fig:case-1-sparsity-pattern}).
 
 \begin{figure}
-\centering\includegraphics[width=0.5\columnwidth]{figures_tex/trajectories_lsq}\caption{\label{fig:case-1-lsq}Concentration time series generated from integrating
+\centering\includegraphics[width=\singlecolumnwidth]{figures_tex/trajectories_lsq}\caption{\label{fig:case-1-lsq}Concentration time series generated from integrating
 the reaction network shown in Fig.~\ref{fig:network}a. The initial
 condition prescribes positive concentration values only for $\mathrm{B}$
 protein and $\mathrm{mRNA}_{\mathrm{A}}$ species (Tab.~\ref{tab:Initial-conditions}a).
@@ -340,7 +382,7 @@ analysis. Gray dots depict concentration time series yielded from
 the LSQ rates estimated in Sec~\ref{sec:case-1}.}
 \end{figure}
 \begin{figure}
-\centering \includegraphics[width=0.9\linewidth]{figures_tex/sparsity_pattern}
+\centering \includegraphics[width=0.82\doublecolumnwidth]{figures_tex/sparsity_pattern}
 \caption{\label{fig:case-1-sparsity-pattern}Estimated reaction rates in the
 system described in Sec.~\ref{sec:case-1}. The y and x axes contain
 reaction educts and products, respectively. A circle at position $(i,j)$
@@ -404,7 +446,7 @@ In both cases, the regularized method with a suitable hyperparameter
 pair $(\alpha,\lambda)$ performs better than LSQ.
 
 \begin{figure}
-\centering \includegraphics[width=0.5\columnwidth]{figures_tex/case2}
+\centering \includegraphics[width=\singlecolumnwidth]{figures_tex/case2}
 \caption{\label{fig:case2-convergence}Convergence of the estimation error
 when estimating the system described in Sec.~\ref{sec:case-1} with
 varying levels of noise by application of reactive SINDy (\ref{method:minimizationproblem})
@@ -456,7 +498,7 @@ data. At noise levels of smaller than roughly $10^{-6}$ the model
 can reliably be recovered when using the regularized method.
 
 \begin{figure}
-\centering \includegraphics[width=0.5\columnwidth]{figures_tex/case3}
+\centering \includegraphics[width=\singlecolumnwidth]{figures_tex/case3}
 \caption{\label{fig:case3-convergence}Convergence of estimation error of reaction
 schemes from noisy gene-regulation data starting from two different
 initial conditions under decreasing levels of noise. The minimization
@@ -504,20 +546,31 @@ the reaction dynamics to be recovered. In future work, we will consider
 the identification of reaction schemes from instantaneous fluctuations
 of particle numbers in equilibrium.
 
-\newpage{}  \bibliographystyle{abbrv}
-\bibliography{bibliography}
- \newpage{}
+\section*{Acknowledgments}
+
+The authors are grateful to the Center for Theoretical Biological
+Physics (CTBP, supported by NSF PHY-1427654) at Rice University for
+hosting their sabbatical visit, during which part of this work was
+performed. 
+
+We gratefully acknowledge funding from Deutsche Forschungsgemeinschaft
+(SFB 958 / Project A04, TRR 186 / Project A12, SFB 1114 / Project
+C03), Einstein Foundation Berlin (ECMath Project CH17) and European
+Research Council (ERC CoG 772230 ``ScaleCell''). We are grateful
+for inspiring discussions with Simon Olsson, Mohsen
+Sadeghi, Felix Höfling and Christof Schütte.
 
 \section{Appendix\label{sec:appendix}}
 \begin{figure}[h!]
 
-\centering\includegraphics[width=0.5\columnwidth]{figures_tex/case1_cutoff}\caption{\label{fig:reaction-rates-sorted}Reaction rates sorted by their magnitude
+\centering\includegraphics[width=\singlecolumnwidth]{figures_tex/case1_cutoff}\caption{\label{fig:reaction-rates-sorted}Reaction rates sorted by their magnitude
 to determine the cutoff $\kappa=0.22$ of Sec.~\ref{sec:case-1}.
 The rates were estimated using the regularized minimization problem.}
 
 \end{figure}
 \begin{table}[h!]
 \centering %
+\resizebox{.8\textwidth}{!}{%
 \begin{tabular}{rclcc}
 \toprule 
 \multicolumn{3}{c}{Reaction} & rate  & description \tabularnewline
@@ -569,9 +622,16 @@ $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{mRNA}_{\mathrm{C}}$  & $\rightharpoonup$  & 
 $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{mRNA}_{\mathrm{B}}$  & $\rightharpoonup$  & $\mathrm{mRNA}_{\mathrm{C}}$  & $k_{42}=0$  & artificial fusion\tabularnewline
 $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{C}$  & $k_{43}=0$  & artificial fusion\tabularnewline
 \bottomrule
-\end{tabular}\caption{\label{tab:reaction-library}Full set of ansatz reactions $\Theta$
+\end{tabular}}\caption{\label{tab:reaction-library}Full set of ansatz reactions $\Theta$
 used in Sec.~\ref{sec:results}. The given rate constants define
 the ground truth reaction model.}
 \end{table}
+
+\linespread{1.5}
+
+\clearpage
+\newpage{}  \bibliographystyle{abbrv}
+\bibliography{bibliography}
+\newpage{}
 
 \end{document}
