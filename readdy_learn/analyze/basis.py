@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class ConversionReaction(object):
     def __init__(self, type1, type2, n_species):
         self.type1 = type1
@@ -33,7 +34,30 @@ class FusionReaction(object):
         delta = concentration[:, self.type_from1] * concentration[:, self.type_from2]
         result[:, self.type_from1] += -delta
         result[:, self.type_from2] += -delta
-        result[:, self.type_to] += delta
+        if self.type_to is not None:
+            result[:, self.type_to] += delta
+        return result.squeeze()
+
+
+class DoubleConversion(object):
+    def __init__(self, species_from, species_to, n_species):
+        assert isinstance(species_from, (list, tuple)) and len(species_from) == 2
+        assert isinstance(species_to, (list, tuple)) and len(species_to) == 2
+        self.species_from = species_from
+        self.species_to = species_to
+        self.n_species = n_species
+
+    def __call__(self, concentration):
+        if len(concentration.shape) == 1:
+            concentration = np.expand_dims(concentration, axis=0)
+            result = np.zeros((1, self.n_species))
+        else:
+            result = np.zeros((concentration.shape[0], self.n_species))
+        delta = concentration[:, self.species_from[0]] * concentration[:, self.species_from[1]]
+        result[:, self.species_from[0]] += -delta
+        result[:, self.species_from[1]] += -delta
+        result[:, self.species_to[0]] += delta
+        result[:, self.species_to[1]] += delta
         return result.squeeze()
 
 
@@ -114,6 +138,9 @@ class BasisFunctionConfiguration(object):
     def add_fission(self, type_from, type_to1, type_to2):
         self._basis_functions.append(FissionReaction(type_from, type_to1, type_to2, self._n_species))
         return self
+
+    def add_double_conversion(self, types_from, types_to):
+        self._basis_functions.append(DoubleConversion(types_from, types_to, self._n_species))
 
     def add_intercept(self, type):
         self._basis_functions.append(Intercept(type, self._n_species))
