@@ -3,19 +3,22 @@ import pynumtools.kmc as _kmc
 
 import readdy_learn.analyze.basis as _basis
 
+FRICTION_PREY = .1
+FRICTION_PREDATOR = .1
+
 RATES = _np.array([
-    1.,  # X + X -> 0
-    1.,  # Y + Y -> 0
-    1.,  # X -> X + X
+    FRICTION_PREY,  # X + X -> 0
+    FRICTION_PREDATOR,  # Y + Y -> 0
+    10.,  # X -> X + X
     1.,  # X + Y -> Y + Y
     1.,  # Y -> 0
 ])
 
 SPECIES_NAMES = ["X", "Y"]
 INITIAL_STATES = _np.array([
-    [10, 3],
+    [3, 3],
 ])
-TIMESTEP = 1e-3
+TIMESTEP = 1e-2
 
 
 def bfc():
@@ -61,14 +64,14 @@ def generate_lma(initial_state: int, target_time: float):
 
     dcounts_dt = derivative(times, counts)
 
-    return counts, dcounts_dt
+    return times, counts, dcounts_dt
 
 
 def generate_kmc(initial_state: int, target_time: float, n_realizations: int, njobs: int):
     import readdy_learn.analyze.generate as generate
     sys = _kmc.ReactionDiffusionSystem(diffusivity=len(SPECIES_NAMES) * [[[0.]]],
                                        n_species=len(SPECIES_NAMES), n_boxes=1,
-                                       init_state=INITIAL_STATES[initial_state],
+                                       init_state=[INITIAL_STATES[initial_state]],
                                        species_names=SPECIES_NAMES)
     sys.add_fusion("X", "X", None, _np.array([RATES[0]]))
     sys.add_fusion("Y", "Y", None, _np.array([RATES[1]]))
@@ -90,14 +93,14 @@ def generate_kmc(initial_state: int, target_time: float, n_realizations: int, nj
 
     dcounts_dt = derivative(times, counts)
 
-    return counts, dcounts_dt
+    return times, counts, dcounts_dt
 
 
 def solve(counts, dcounts_dt, alpha, l1_ratio):
     import readdy_learn.analyze.estimator as rlas
     import readdy_learn.analyze.tools as tools
 
-    tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
+    tolerances_to_try = _np.logspace(-16, -1, num=16)
 
     if isinstance(counts, (list, tuple)):
         assert isinstance(dcounts_dt, (list, tuple))
@@ -116,7 +119,7 @@ def solve(counts, dcounts_dt, alpha, l1_ratio):
                                                    maxiter=30000, method='SLSQP', verbose=True, approx_jac=False,
                                                    options={'ftol': tol}, rescale=False,
                                                    init_xi=_np.zeros_like(RATES),
-                                                   constrained=True)
+                                                   constrained=False)
 
         estimator.fit(None)
         if estimator.success_:
