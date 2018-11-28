@@ -1,15 +1,24 @@
 %% LyX 2.3.1 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[abstracton,titlepage]{scrartcl}
+\documentclass[english,osajnl,jcp,reprint,groupedaddress,noshowpacs,showkeys,longbibliography,noeprint,nofootinbib,bibtex,ruled,vlined,english,natural,table,usenames,dvipsnames,a4paper]{revtex4-1}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{geometry}
-\geometry{verbose}
+\setcounter{secnumdepth}{3}
+\usepackage{color}
+\usepackage{babel}
+\usepackage{array}
 \usepackage{booktabs}
 \usepackage{mathtools}
-\usepackage{url}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[unicode=true,
+bookmarks=false,
+breaklinks=false,pdfborder={0 0 1},backref=section,colorlinks=true]
+{hyperref}
+%\hypersetup{%
+%	linkcolor=BrickRed,urlcolor=blue!50!black,citecolor=blue!50!black}
 
 \makeatletter
 
@@ -19,23 +28,58 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 \usepackage{siunitx}
-\usepackage{authblk}
 
 \newcommand*\samethanks[1][\value{footnote}]{\footnotemark[#1]}
 
-\author[1]{Moritz Hoffmann\thanks{Equal contributions}}
-\author[1]{Christoph Fröhner\samethanks}
-\author[1]{Frank Noé\thanks{Corresponding author}}
-\affil[1]{Freie Universität Berlin, Fachbereich Mathematik und Informatik,\newline Arnimallee 6, 14195 Berlin, Germany}
-\affil[ ]{\textit{\{ moritz.hoffmann,christoph.froehner,frank.noe \}@fu-berlin.de}}
+%\author[1]{Moritz Hoffmann\thanks{Equal contributions}}
+%\author[1]{Christoph Fröhner\samethanks}
+%\author[1]{Frank Noé\thanks{Corresponding author}}
+%\affil[1]{Freie Universität Berlin, Fachbereich Mathematik und Informatik,\newline Arnimallee 6, 14195 Berlin, Germany}
+%\affil[ ]{\textit{\{ moritz.hoffmann,christoph.froehner,frank.noe \}@fu-berlin.de}}
+
+
+\newlength{\singlecolumnwidth}
+\newlength{\doublecolumnwidth}
+\singlecolumnwidth=3.37in
+\doublecolumnwidth=6.69in
 
 \makeatother
 
+\linespread{0.956}
+
+\newif\ifthisispreprint
+% \thisispreprinttrue
+\thisispreprintfalse
+
 \begin{document}
+	
+	\author{Moritz Hoffmann}
+	\email{moritz.hoffmann@fu-berlin.de}
+	\thanks{Equal contributions}
+	\affiliation{
+		Freie Universität Berlin, Fachbereich Mathematik und Informatik,
+		Arnimallee 6, 14195 Berlin, Germany
+	}
+	
+	\author{Christoph Fröhner}
+	\email{christoph.froehner@fu-berlin.de}
+	\thanks{Equal contributions}
+	\affiliation{
+		Freie Universität Berlin, Fachbereich Mathematik und Informatik,
+		Arnimallee 6, 14195 Berlin, Germany
+	}
+	
+	\author{Frank Noé}
+	\email{frank.noe@fu-berlin.de}
+	\thanks{Corresponding author}
+	\affiliation{
+		Freie Universität Berlin, Fachbereich Mathematik und Informatik,
+		Arnimallee 6, 14195 Berlin, Germany
+	}
+	
+	
 \title{Reactive SINDy: Discovering governing reactions from concentration
 data}
-
-\maketitle
 
 \begin{abstract}
 The inner workings of a biological cell or a chemical reaction can
@@ -54,6 +98,8 @@ SINDy'' is able to estimate a parsimonious reaction network. We illustrate
 that a gene regulation network can be correctly estimated from observed
 time series.
 \end{abstract}
+
+\maketitle
 
 \section{Introduction}
 
@@ -226,7 +272,8 @@ makes regression tools such as elastic net regularization~\cite{Zou2005}
 applicable. To this end, one can consider the regularized minimization
 problem (reactive SINDy): 
 \begin{align}
-\hat{\Xi}=\underset{\Xi}{\arg\min}\left(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2}+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}^{2}\right)\quad\text{subject to }\Xi\geq0.\label{method:minimizationproblem}
+\hat{\Xi}&=\underset{\Xi}{\arg\min}\Bigg(\frac{1}{2T}\left\Vert \dot{\textbf{X}}-\Theta(\textbf{X})\Xi\right\Vert _{F}^{2} \label{method:minimizationproblem} \\
+&\quad+\alpha\lambda\|\Xi\|_{1}+\alpha(1-\lambda)\|\Xi\|_{2}^{2}\Bigg)\quad\text{subject to }\Xi\geq0.\nonumber
 \end{align}
 Here, $\|\cdot\|_{F}$ denotes the Frobenius norm, $\lambda\in[0,1]$
 is a hyperparameter that interpolates linearly between LASSO~\cite{Tibshirani1996,Hastie2009}
@@ -266,7 +313,7 @@ constant. The network contains reactions of the following form~\cite{Thattai2001
 \mathrm{mRNA}_{i} & \rightharpoonup\mathrm{mRNA}_{i}+i &  & \text{(translation)},\\
 \mathrm{mRNA}_{i} & \rightharpoonup\emptyset &  & \text{(decay of mRNA)},\\
 i & \rightharpoonup\emptyset &  & \text{(decay of protein)},\\
-i+\mathrm{mRNA}_{j} & \rightharpoonup i &  & \text{(regulation of protein }j\in S\text{),}
+i+\mathrm{mRNA}_{j} & \rightharpoonup i &  & \text{(regulation of }j\in S\text{),}
 \end{align*}
 for each of the species $i\in S$. These reactions model a regulation
 of species $j$ by virtue of the fact that the transcription product
@@ -283,8 +330,8 @@ concentrations. The generation samples the integrated equations equidistantly
 with a discrete time step of $\tau=3\cdot10^{-3}$ yielding $667$
 frames which amounts to a cumulative time of roughly $T=2$.
 
-\begin{figure}
-\centering \includegraphics[width=0.5\columnwidth]{figures_tex/scheme}
+\begin{figure}[h!]
+\centering \includegraphics[width=\singlecolumnwidth]{figures_jcp/1.pdf}
 \caption{\label{fig:network}The regulation network example described in Sec.~\ref{sec:results}.
 Each circle depicts a species, each arrow corresponds to one reaction.
 Blue arrows denote transcription from $\mathrm{DNA}$ to $\mathrm{mRNA}$,
@@ -293,12 +340,23 @@ and red arrows denote the regulatory network.}
 \end{figure}
 \begin{table}
 \centering%
+\ifthisispreprint
+% ignore
+\else
+\resizebox{.95\columnwidth}{!}{%
+\fi
 \begin{tabular}{cccccccccc}
  & $\mathrm{DNA}_{\mathrm{A}}$ & $\mathrm{mRNA}_{\mathrm{A}}$ & $\mathrm{A}$ & $\mathrm{DNA}_{\mathrm{B}}$ & $\mathrm{mRNA}_{\mathrm{B}}$ & $\mathrm{B}$ & $\mathrm{DNA}_{\mathrm{C}}$ & $\mathrm{mRNA}_{\mathrm{C}}$ & $\mathrm{C}$\tabularnewline
 \midrule
 \textbf{(a)} & $1$ & $2$ & $0$ & $1$ & $0$ & $3$ & $1$ & $0$ & $0$\tabularnewline
 \textbf{(b)} & $1$ & $1.5$ & $0$ & $1$ & $0$ & $2$ & $1$ & $0$ & $1$\tabularnewline
-\end{tabular}\caption{\label{tab:Initial-conditions}Initial conditions used to generate
+\end{tabular}
+\ifthisispreprint
+% ignore
+\else
+}
+\fi
+\caption{\label{tab:Initial-conditions}Initial conditions \textbf{(a)} and \textbf{(b)} used to generate
 concentration time series. Reaction rates can be found in Tab.~\ref{tab:reaction-library}.}
 \end{table}
 The proposed estimation method is applied to analyze these time series
@@ -329,9 +387,8 @@ scheme and would lead to wrong conclusions about the mechanism, such
 as $\mathrm{A}+\mathrm{A}\rightharpoonup\mathrm{A}$ and $\mathrm{A}+\mathrm{C}\rightharpoonup\mathrm{C}$.
 More dramatically, the reaction responsible for the decay of $\mathrm{A}$
 particles is completely ignored (Fig.~\ref{fig:case-1-sparsity-pattern}).
-
 \begin{figure}
-\centering\includegraphics[width=0.5\columnwidth]{figures_tex/trajectories_lsq}\caption{\label{fig:case-1-lsq}Concentration time series generated from integrating
+\centering\includegraphics[width=\singlecolumnwidth]{figures_jcp/2.pdf}\caption{\label{fig:case-1-lsq}Concentration time series generated from integrating
 the reaction network shown in Fig.~\ref{fig:network}a. The initial
 condition prescribes positive concentration values only for $\mathrm{B}$
 protein and $\mathrm{mRNA}_{\mathrm{A}}$ species (Tab.~\ref{tab:Initial-conditions}a).
@@ -339,8 +396,15 @@ This initial condition is used in the subsequent sections for further
 analysis. Gray dots depict concentration time series yielded from
 the LSQ rates estimated in Sec~\ref{sec:case-1}.}
 \end{figure}
+
+\ifthisispreprint
+% ignore
+\else
+\onecolumngrid
+\fi
+
 \begin{figure}
-\centering \includegraphics[width=0.9\linewidth]{figures_tex/sparsity_pattern}
+\centering \includegraphics[width=0.82\doublecolumnwidth]{figures_jcp/3.pdf}
 \caption{\label{fig:case-1-sparsity-pattern}Estimated reaction rates in the
 system described in Sec.~\ref{sec:case-1}. The y and x axes contain
 reaction educts and products, respectively. A circle at position $(i,j)$
@@ -356,6 +420,12 @@ under which a sparse solution with the correct processes can be recovered.
 If a certain rate was estimated in both cases, two wedges instead
 of one circle are displayed.}
 \end{figure}
+\ifthisispreprint
+% ignore
+\else
+\twocolumngrid
+\fi
+
 Next, we sought sparse solutions by using $\alpha>0$ and additionally
 eliminating reactions with rate constants smaller than a cutoff value
 $\kappa$. For a suitable choice of hyperparameters $\alpha\approx1.91\cdot10^{-7}$,
@@ -404,7 +474,7 @@ In both cases, the regularized method with a suitable hyperparameter
 pair $(\alpha,\lambda)$ performs better than LSQ.
 
 \begin{figure}
-\centering \includegraphics[width=0.5\columnwidth]{figures_tex/case2}
+\centering \includegraphics[width=\singlecolumnwidth]{figures_jcp/4.pdf}
 \caption{\label{fig:case2-convergence}Convergence of the estimation error
 when estimating the system described in Sec.~\ref{sec:case-1} with
 varying levels of noise by application of reactive SINDy (\ref{method:minimizationproblem})
@@ -456,7 +526,7 @@ data. At noise levels of smaller than roughly $10^{-6}$ the model
 can reliably be recovered when using the regularized method.
 
 \begin{figure}
-\centering \includegraphics[width=0.5\columnwidth]{figures_tex/case3}
+\centering \includegraphics[width=\singlecolumnwidth]{figures_jcp/5.pdf}
 \caption{\label{fig:case3-convergence}Convergence of estimation error of reaction
 schemes from noisy gene-regulation data starting from two different
 initial conditions under decreasing levels of noise. The minimization
@@ -504,20 +574,38 @@ the reaction dynamics to be recovered. In future work, we will consider
 the identification of reaction schemes from instantaneous fluctuations
 of particle numbers in equilibrium.
 
-\newpage{}  \bibliographystyle{abbrv}
-\bibliography{bibliography}
- \newpage{}
+\section*{Acknowledgments}
+
+The authors are grateful to the Center for Theoretical Biological
+Physics (CTBP, supported by NSF PHY-1427654) at Rice University for
+hosting their sabbatical visit, during which part of this work was
+performed. 
+
+We gratefully acknowledge funding from Deutsche Forschungsgemeinschaft
+(SFB 958 / Project A04, TRR 186 / Project A12, SFB 1114 / Project
+C03), Einstein Foundation Berlin (ECMath Project CH17) and European
+Research Council (ERC CoG 772230 ``ScaleCell''). We are grateful
+for inspiring discussions with Simon Olsson, Mohsen
+Sadeghi, Felix Höfling and Christof Schütte.
 
 \section{Appendix\label{sec:appendix}}
 \begin{figure}[h!]
 
-\centering\includegraphics[width=0.5\columnwidth]{figures_tex/case1_cutoff}\caption{\label{fig:reaction-rates-sorted}Reaction rates sorted by their magnitude
+\centering\includegraphics[width=\singlecolumnwidth]{figures_jcp/6.pdf}\caption{\label{fig:reaction-rates-sorted}Reaction rates sorted by their magnitude
 to determine the cutoff $\kappa=0.22$ of Sec.~\ref{sec:case-1}.
 The rates were estimated using the regularized minimization problem.}
 
 \end{figure}
+
+\ifthisispreprint
+% ignore
+\else
+\onecolumngrid
+\fi
+
 \begin{table}[h!]
 \centering %
+%\resizebox{.9\textwidth}{!}{%
 \begin{tabular}{rclcc}
 \toprule 
 \multicolumn{3}{c}{Reaction} & rate  & description \tabularnewline
@@ -573,5 +661,18 @@ $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{C}$  & 
 used in Sec.~\ref{sec:results}. The given rate constants define
 the ground truth reaction model.}
 \end{table}
+
+\ifthisispreprint
+% ignore
+\else
+\twocolumngrid
+\fi
+
+\linespread{1.45}
+
+\clearpage
+\newpage{}  \bibliographystyle{abbrv}
+\bibliography{bibliography}
+\newpage{}
 
 \end{document}

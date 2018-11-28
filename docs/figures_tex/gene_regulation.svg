@@ -9,12 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="77.463326mm"
-   height="60.75388mm"
-   viewBox="0 0 77.463326 60.75388"
+   width="312.39978"
+   height="249.62096"
+   viewBox="0 0 82.655774 66.045547"
    version="1.1"
    id="svg25892"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.2 2405546, 2018-03-11"
    sodipodi:docname="gene_regulation.svg">
   <defs
      id="defs25886">
@@ -635,21 +635,22 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="430.43355"
-     inkscape:cy="218.28788"
+     inkscape:zoom="1.979899"
+     inkscape:cx="274.87461"
+     inkscape:cy="48.472671"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1596"
+     inkscape:window-width="1920"
      inkscape:window-height="1136"
-     inkscape:window-x="0"
+     inkscape:window-x="1920"
      inkscape:window-y="27"
-     inkscape:window-maximized="0"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0" />
+     inkscape:window-maximized="1"
+     fit-margin-top="10"
+     fit-margin-left="10"
+     fit-margin-right="10"
+     fit-margin-bottom="10"
+     units="px" />
   <metadata
      id="metadata25889">
     <rdf:RDF>
@@ -666,7 +667,7 @@
      inkscape:label="Ebene 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-33.486487,-36.92236)">
+     transform="translate(-30.840653,-34.276526)">
     <path
        style="fill:none;fill-rule:evenodd;stroke:#d2534f;stroke-width:0.52916676;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4569-1)"
        d="m 44.64705,90.83343 v 3.207234 h 12.96257 v -31.67144 h 5.47903"
