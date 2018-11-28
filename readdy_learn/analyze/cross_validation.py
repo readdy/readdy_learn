@@ -56,10 +56,10 @@ class CrossValidation(object):
     def _solve(self, traj, alpha, l1_ratio, tol=1e-16):
         initial_value = _np.zeros((self._bfc.n_basis_functions,), dtype=_np.float64)
         estimator = _estimator.ReaDDyElasticNetEstimator(traj, self._bfc, alpha=alpha, l1_ratio=l1_ratio,
-                                                         maxiter=30000, method='SLSQP', verbose=False, approx_jac=False,
+                                                         maxiter=5000, method='SLSQP', verbose=False, approx_jac=False,
                                                          options={'ftol': tol}, rescale=False,
                                                          init_xi=initial_value,
-                                                         constrained=True)
+                                                         constrained=False)
 
         estimator.fit(None)
         if estimator.success_:
@@ -71,8 +71,8 @@ class CrossValidation(object):
     def _score(self, traj, rates):
         initial_value = _np.zeros((self._bfc.n_basis_functions,), dtype=_np.float64)
         estimator = _estimator.ReaDDyElasticNetEstimator(traj, self._bfc, alpha=0, l1_ratio=0,
-                                                         maxiter=30000, method='SLSQP', verbose=False, approx_jac=False,
-                                                         options={'ftol': 1e-12}, rescale=False,
+                                                         maxiter=5000, method='SLSQP', verbose=False, approx_jac=False,
+                                                         options={'ftol': 1e-13}, rescale=False,
                                                          init_xi=initial_value,
                                                          constrained=True)
         estimator.coefficients_ = rates
@@ -98,10 +98,11 @@ class CrossValidation(object):
             assert test_traj.n_time_steps == len(test)
             assert train_traj.dcounts_dt.shape[0] == len(train)
             assert test_traj.dcounts_dt.shape[0] == len(test)
-            tolerances_to_try = [1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
+            tolerances_to_try = [1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8]
 
             rates = None
             for tol in tolerances_to_try:
+                print(f"Solving for tolerance {tol}")
                 try:
                     rates = self._solve(train_traj, alpha, l1_ratio, tol=tol)
                     break

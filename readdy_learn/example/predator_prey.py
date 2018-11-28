@@ -6,19 +6,23 @@ import readdy_learn.analyze.basis as _basis
 FRICTION_PREY = .1
 FRICTION_PREDATOR = .1
 
+BETA = 200.
+
+INITIAL_STATES = _np.array([
+    [1500, 1500],
+])
+
 RATES = _np.array([
-    FRICTION_PREY,  # X + X -> 0
-    FRICTION_PREDATOR,  # Y + Y -> 0
-    10.,  # X -> X + X
-    1.,  # X + Y -> Y + Y
-    1.,  # Y -> 0
+    10.,  # X + X -> 0
+    10.,  # Y + Y -> 0
+    1000 * BETA,  # X -> X + X
+    BETA,  # X + Y -> Y + Y
+    1000 * BETA,  # Y -> 0
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  # bogus
 ])
 
 SPECIES_NAMES = ["X", "Y"]
-INITIAL_STATES = _np.array([
-    [3, 3],
-])
-TIMESTEP = 1e-2
+TIMESTEP = 2e-7
 
 
 def bfc():
@@ -29,6 +33,18 @@ def bfc():
     result.add_fission(0, 0, 0)
     result.add_double_conversion([0, 1], [1, 1])
     result.add_decay(1)
+
+    result.add_double_conversion([0, 1], [0, 0])
+    result.add_decay(0)
+    result.add_fusion(1, 1, 1)
+    result.add_fission(1, 1, 1)
+    result.add_fusion(0, 0, 0)
+    result.add_fusion(0, 1, 0)
+    result.add_fusion(0, 1, 1)
+    result.add_fission(0, 0, 1)
+    result.add_conversion(0, 1)
+    result.add_conversion(1, 0)
+    result.add_fission(0, 1, 1)
 
     return result
 
