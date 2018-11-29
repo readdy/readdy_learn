@@ -13,19 +13,19 @@ conversions_ops = [
     lambda result: result.add_double_conversion((2, 7), (2, 8)),
     lambda result: result.add_double_conversion((3, 7), (3, 8)),
     lambda result: result.add_double_conversion((4, 7), (4, 8)),
-    #lambda result: result.add_double_conversion((5, 7), (5, 8)),  # wrong kinese partners
+    # lambda result: result.add_double_conversion((5, 7), (5, 8)),  # wrong kinese partners
     lambda result: result.add_double_conversion((3, 5), (3, 6)),  # wrong kinese partners
-    #lambda result: result.add_double_conversion((1, 4), (1, 3)),
-    #lambda result: result.add_double_conversion((1, 6), (1, 5)),
-    #lambda result: result.add_double_conversion((1, 8), (1, 7)),
+    # lambda result: result.add_double_conversion((1, 4), (1, 3)),
+    # lambda result: result.add_double_conversion((1, 6), (1, 5)),
+    # lambda result: result.add_double_conversion((1, 8), (1, 7)),
     # lambda result: result.add_double_conversion((2, 4), (2, 3)),  # backward deactivation
     # lambda result: result.add_double_conversion((2, 6), (2, 5)),  # backward deactivation
     # lambda result: result.add_double_conversion((2, 8), (2, 7)),  # backward deactivation
-    #lambda result: result.add_double_conversion((3, 6), (3, 5)),
-    #lambda result: result.add_double_conversion((3, 8), (3, 7)),
+    # lambda result: result.add_double_conversion((3, 6), (3, 5)),
+    # lambda result: result.add_double_conversion((3, 8), (3, 7)),
     # lambda result: result.add_double_conversion((4, 6), (4, 5)),  # backward deactivation
     # lambda result: result.add_double_conversion((4, 8), (4, 7)),  # backward deactivation
-    #lambda result: result.add_double_conversion((5, 8), (5, 7)),
+    # lambda result: result.add_double_conversion((5, 8), (5, 7)),
     # lambda result: result.add_double_conversion((6, 8), (6, 7)),  # backward deactivation
 ]
 
@@ -175,6 +175,32 @@ def solve(counts, dcounts_dt, alpha, l1_ratio):
         raise ValueError('*_*: {}, {}'.format(estimator.result_.status, estimator.result_.message))
     else:
         raise ValueError('-_-')
+
+
+def solve_grid(counts, dcounts_dt, alphas, l1_ratios, njobs=1):
+    import itertools
+    import pathos.multiprocessing as multiprocessing
+    from readdy_learn.analyze.progress import Progress
+
+    alphas = _np.atleast_1d(_np.array(alphas).squeeze())
+    lambdas = _np.atleast_1d(_np.array(l1_ratios).squeeze())
+    params = itertools.product(alphas, lambdas)
+    params = [(counts, dcounts_dt, p[0], p[1]) for p in params]
+
+    progress = Progress(len(params), label="validation", nstages=1)
+
+    def worker(args):
+        c, dc, a, l = args
+        return a, l, solve(c, dc, a, l)
+
+    result = []
+    with multiprocessing.Pool(processes=njobs) as p:
+        for idx, res in enumerate(p.imap_unordered(worker, params, 1)):
+            result.append(res)
+            progress.increase()
+    progress.finish()
+
+    return result
 
 
 def cv(counts, dcounts_dt, alphas=(1.,), l1_ratios=(1.,), n_splits=5, njobs=1):

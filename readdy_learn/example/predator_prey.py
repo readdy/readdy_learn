@@ -146,6 +146,32 @@ def solve(counts, dcounts_dt, alpha, l1_ratio):
         raise ValueError('-_-')
 
 
+def solve_grid(counts, dcounts_dt, alphas, l1_ratios, njobs=1):
+    import itertools
+    import pathos.multiprocessing as multiprocessing
+    from readdy_learn.analyze.progress import Progress
+
+    alphas = _np.atleast_1d(_np.array(alphas).squeeze())
+    lambdas = _np.atleast_1d(_np.array(l1_ratios).squeeze())
+    params = itertools.product(alphas, lambdas)
+    params = [(counts, dcounts_dt, p[0], p[1]) for p in params]
+
+    progress = Progress(len(params), label="validation", nstages=1)
+
+    def worker(args):
+        c, dc, a, l = args
+        return a, l, solve(c, dc, a, l)
+
+    result = []
+    with multiprocessing.Pool(processes=njobs) as p:
+        for idx, res in enumerate(p.imap_unordered(worker, params, 1)):
+            result.append(res)
+            progress.increase()
+    progress.finish()
+
+    return result
+
+
 def cv(counts, dcounts_dt, alphas=(1.,), l1_ratios=(1.,), n_splits=5, njobs=1):
     import readdy_learn.analyze.tools as tools
     import readdy_learn.analyze.cross_validation as cross_validation
