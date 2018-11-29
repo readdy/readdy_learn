@@ -1,11 +1,10 @@
-from random import shuffle
-
 import numpy as _np
 import pynumtools.kmc as _kmc
+import itertools
 
 import readdy_learn.analyze.basis as _basis
 
-conversions_ops = [
+ALL_BOGUS_CONVERSION_OPS = [
     lambda result: result.add_double_conversion((1, 3), (1, 4)),
     lambda result: result.add_double_conversion((1, 5), (1, 6)),
     lambda result: result.add_double_conversion((1, 7), (1, 8)),
@@ -13,84 +12,93 @@ conversions_ops = [
     lambda result: result.add_double_conversion((2, 7), (2, 8)),
     lambda result: result.add_double_conversion((3, 7), (3, 8)),
     lambda result: result.add_double_conversion((4, 7), (4, 8)),
-    # lambda result: result.add_double_conversion((5, 7), (5, 8)),  # wrong kinese partners
+    lambda result: result.add_double_conversion((5, 7), (5, 8)),  # wrong kinese partners
     lambda result: result.add_double_conversion((3, 5), (3, 6)),  # wrong kinese partners
-    # lambda result: result.add_double_conversion((1, 4), (1, 3)),
-    # lambda result: result.add_double_conversion((1, 6), (1, 5)),
-    # lambda result: result.add_double_conversion((1, 8), (1, 7)),
-    # lambda result: result.add_double_conversion((2, 4), (2, 3)),  # backward deactivation
-    # lambda result: result.add_double_conversion((2, 6), (2, 5)),  # backward deactivation
-    # lambda result: result.add_double_conversion((2, 8), (2, 7)),  # backward deactivation
-    # lambda result: result.add_double_conversion((3, 6), (3, 5)),
-    # lambda result: result.add_double_conversion((3, 8), (3, 7)),
-    # lambda result: result.add_double_conversion((4, 6), (4, 5)),  # backward deactivation
-    # lambda result: result.add_double_conversion((4, 8), (4, 7)),  # backward deactivation
-    # lambda result: result.add_double_conversion((5, 8), (5, 7)),
-    # lambda result: result.add_double_conversion((6, 8), (6, 7)),  # backward deactivation
+    lambda result: result.add_double_conversion((1, 4), (1, 3)),
+    lambda result: result.add_double_conversion((1, 6), (1, 5)),
+    lambda result: result.add_double_conversion((1, 8), (1, 7)),
+    lambda result: result.add_double_conversion((2, 4), (2, 3)),  # backward deactivation
+    lambda result: result.add_double_conversion((2, 6), (2, 5)),  # backward deactivation
+    lambda result: result.add_double_conversion((2, 8), (2, 7)),  # backward deactivation
+    lambda result: result.add_double_conversion((3, 6), (3, 5)),
+    lambda result: result.add_double_conversion((3, 8), (3, 7)),
+    lambda result: result.add_double_conversion((4, 6), (4, 5)),  # backward deactivation
+    lambda result: result.add_double_conversion((4, 8), (4, 7)),  # backward deactivation
+    lambda result: result.add_double_conversion((5, 8), (5, 7)),
+    lambda result: result.add_double_conversion((6, 8), (6, 7)),  # backward deactivation
 ]
 
-N_BOGUS = len(conversions_ops)
+
+def n_combinations():
+    return len(list(itertools.combinations(_np.arange(len(ALL_BOGUS_CONVERSION_OPS)), 15)))
 
 
-def bogus_bfc(result: _basis.BasisFunctionConfiguration):
-    for i in range(_np.min((N_BOGUS, len(conversions_ops)))):
-        conversions_ops[i](result)
-    return N_BOGUS
+def conversion_ops_range(start, end):
+    return list(itertools.combinations(_np.arange(len(ALL_BOGUS_CONVERSION_OPS)), 15))[start:end]
 
 
-def bfc():
-    result = _basis.BasisFunctionConfiguration(N_SPECIES)
+class MAPKConfiguration(object):
 
-    result.add_double_conversion([0, 1], [0, 2])  # S + MAPKKK -> S + MAPKKK*
-    result.add_conversion(2, 1)  # MAPKKK* -> MAPKKK
-    result.add_double_conversion([2, 3], [2, 4])  # MAPKKK* + MAPKK -> MAPKKK* -> MAPKK*
-    result.add_conversion(4, 3)  # MAPKK* -> MAPKK
-    result.add_double_conversion([4, 5], [4, 6])  # MAPKK* + MAPK -> MAPKK* -> MAPK*
-    result.add_conversion(6, 5)  # MAPK* -> MAPK
-    result.add_double_conversion([6, 7], [6, 8])  # MAPK* + TF -> MAPK* + TF*
-    result.add_conversion(8, 7)  # TF* -> TF
+    def __init__(self, conversion_ops_selection):
+        self.conversion_ops = [ALL_BOGUS_CONVERSION_OPS[i] for i in conversion_ops_selection]
+        self.n_bogus = len(self.conversion_ops)
+        self.n_real = 8
+        self.n_total = self.n_real + self.n_bogus
+        self.rates = _np.array([
+            1.,
+            1000.,
+            1.,
+            1000.,
+            1.,
+            1000.,
+            1.,
+            1000.,
+        ])
+        self.rates = _np.concatenate((self.rates, _np.zeros((self.n_bogus,))))
 
-    bogus_bfc(result)
+    def bfc(self) -> _basis.BasisFunctionConfiguration:
+        result = _basis.BasisFunctionConfiguration(N_SPECIES)
 
-    return result
+        result.add_double_conversion([0, 1], [0, 2])  # S + MAPKKK -> S + MAPKKK*
+        result.add_conversion(2, 1)  # MAPKKK* -> MAPKKK
+        result.add_double_conversion([2, 3], [2, 4])  # MAPKKK* + MAPKK -> MAPKKK* -> MAPKK*
+        result.add_conversion(4, 3)  # MAPKK* -> MAPKK
+        result.add_double_conversion([4, 5], [4, 6])  # MAPKK* + MAPK -> MAPKK* -> MAPK*
+        result.add_conversion(6, 5)  # MAPK* -> MAPK
+        result.add_double_conversion([6, 7], [6, 8])  # MAPK* + TF -> MAPK* + TF*
+        result.add_conversion(8, 7)  # TF* -> TF
+
+        for op in self.conversion_ops:
+            op(result)
+
+        return result
 
 
 N_STIMULUS = 100
 SPECIES_NAMES = ["S", "MAPKKK", "MAPKKK*", "MAPKK", "MAPKK*", "MAPK", "MAPK*", "TF", "TF*"]
 N_SPECIES = len(SPECIES_NAMES)
 TIMESTEP = 1e-3
-RATES = _np.array([
-    1.,
-    1000.,
-    1.,
-    1000.,
-    1.,
-    1000.,
-    1.,
-    1000.,
-])
-RATES = _np.concatenate((RATES, _np.zeros((N_BOGUS,))))
+
 INITIAL_STATES = [
     [N_STIMULUS, 1000, 0, 1000, 0, 1000, 0, 1000, 0]
 ]
 
 
-def generate_kmc(initial_state: int, target_time: float, n_realizations: int, njobs: int):
+def generate_kmc(target_time: float, n_realizations: int, config: MAPKConfiguration, njobs: int):
     import readdy_learn.analyze.generate as generate
     sys = _kmc.ReactionDiffusionSystem(diffusivity=len(SPECIES_NAMES) * [[[0.]]],
                                        n_species=len(SPECIES_NAMES), n_boxes=1,
-                                       init_state=[INITIAL_STATES[initial_state]],
+                                       init_state=[INITIAL_STATES[0]],
                                        species_names=SPECIES_NAMES)
-    sys.add_double_conversion(["S", "MAPKKK"], ["S", "MAPKKK*"], _np.array([RATES[0]]))
-    sys.add_conversion("MAPKKK*", "MAPKKK", _np.array([RATES[1]]))
-    sys.add_double_conversion(["MAPKKK*", "MAPKK"], ["MAPKKK*", "MAPKK*"], _np.array([RATES[2]]))
-    sys.add_conversion("MAPKK*", "MAPKK", _np.array([RATES[3]]))
-    sys.add_double_conversion(["MAPKK*", "MAPK"], ["MAPKK*", "MAPK*"], _np.array([RATES[4]]))
-    sys.add_conversion("MAPK*", "MAPK", _np.array([RATES[5]]))
-    sys.add_double_conversion(["MAPK*", "TF"], ["MAPK*", "TF*"], _np.array([RATES[6]]))
-    sys.add_conversion("TF*", "TF", _np.array([RATES[7]]))
+    sys.add_double_conversion(["S", "MAPKKK"], ["S", "MAPKKK*"], _np.array([config.rates[0]]))
+    sys.add_conversion("MAPKKK*", "MAPKKK", _np.array([config.rates[1]]))
+    sys.add_double_conversion(["MAPKKK*", "MAPKK"], ["MAPKKK*", "MAPKK*"], _np.array([config.rates[2]]))
+    sys.add_conversion("MAPKK*", "MAPKK", _np.array([config.rates[3]]))
+    sys.add_double_conversion(["MAPKK*", "MAPK"], ["MAPKK*", "MAPK*"], _np.array([config.rates[4]]))
+    sys.add_conversion("MAPK*", "MAPK", _np.array([config.rates[5]]))
+    sys.add_double_conversion(["MAPK*", "TF"], ["MAPK*", "TF*"], _np.array([config.rates[6]]))
+    sys.add_conversion("TF*", "TF", _np.array([config.rates[7]]))
 
-    assert initial_state < len(INITIAL_STATES)
     _, counts = generate.generate_averaged_kmc_counts(lambda: sys, target_time, TIMESTEP,
                                                       n_realizations=n_realizations, njobs=njobs)
     times = _np.linspace(0, counts.shape[0] * TIMESTEP, endpoint=False, num=counts.shape[0])
@@ -122,11 +130,11 @@ def derivative(times, counts):
     return dcounts_dt
 
 
-def generate_lma(initial_state: int, target_time: float):
+def generate_lma(target_time: float, config: MAPKConfiguration):
     import readdy_learn.analyze.generate as generate
-    basis = bfc()
-    assert basis.n_basis_functions == len(RATES)
-    _, counts = generate.generate_continuous_counts(RATES, INITIAL_STATES[initial_state],
+    basis = config.bfc()
+    assert basis.n_basis_functions == len(config.rates)
+    _, counts = generate.generate_continuous_counts(config.rates, INITIAL_STATES[0],
                                                     basis, TIMESTEP, target_time / TIMESTEP,
                                                     noise_variance=0, n_realizations=1)
     times = _np.linspace(0, counts.shape[0] * TIMESTEP, endpoint=False, num=counts.shape[0])
@@ -143,11 +151,11 @@ def generate_lma(initial_state: int, target_time: float):
     return times, counts, dcounts_dt
 
 
-def solve(counts, dcounts_dt, alpha, l1_ratio):
+def solve(config: MAPKConfiguration, counts, dcounts_dt, alpha, l1_ratio):
     import readdy_learn.analyze.estimator as rlas
     import readdy_learn.analyze.tools as tools
 
-    tolerances_to_try = _np.logspace(-16, -1, num=16)
+    tolerances_to_try = _np.logspace(-16, -10, num=7)
 
     if isinstance(counts, (list, tuple)):
         assert isinstance(dcounts_dt, (list, tuple))
@@ -162,10 +170,10 @@ def solve(counts, dcounts_dt, alpha, l1_ratio):
     estimator = None
     for tol in tolerances_to_try:
         print("Trying tolerance {}".format(tol))
-        estimator = rlas.ReaDDyElasticNetEstimator([traj], bfc(), alpha=alpha, l1_ratio=l1_ratio,
-                                                   maxiter=30000, method='SLSQP', verbose=True, approx_jac=False,
+        estimator = rlas.ReaDDyElasticNetEstimator([traj], config.bfc(), alpha=alpha, l1_ratio=l1_ratio,
+                                                   maxiter=500, method='SLSQP', verbose=True, approx_jac=False,
                                                    options={'ftol': tol}, rescale=False,
-                                                   init_xi=_np.zeros_like(RATES),
+                                                   init_xi=_np.zeros_like(config.rates),
                                                    constrained=False)
 
         estimator.fit(None)
@@ -177,7 +185,7 @@ def solve(counts, dcounts_dt, alpha, l1_ratio):
         raise ValueError('-_-')
 
 
-def solve_grid(counts, dcounts_dt, alphas, l1_ratios, njobs=1):
+def solve_grid(config: MAPKConfiguration, counts, dcounts_dt, alphas, l1_ratios, njobs=1):
     import itertools
     import pathos.multiprocessing as multiprocessing
     from readdy_learn.analyze.progress import Progress
@@ -191,7 +199,12 @@ def solve_grid(counts, dcounts_dt, alphas, l1_ratios, njobs=1):
 
     def worker(args):
         c, dc, a, l = args
-        return a, l, solve(c, dc, a, l)
+        try:
+            rates = solve(config, c, dc, a, l)
+        except ValueError as e:
+            print(f"caught value error {e}")
+            rates = _np.array([_np.nan for _ in range(len(config.rates))])
+        return a, l, rates
 
     result = []
     with multiprocessing.Pool(processes=njobs) as p:
@@ -203,13 +216,13 @@ def solve_grid(counts, dcounts_dt, alphas, l1_ratios, njobs=1):
     return result
 
 
-def cv(counts, dcounts_dt, alphas=(1.,), l1_ratios=(1.,), n_splits=5, njobs=1):
+def cv(config: MAPKConfiguration, counts, dcounts_dt, alphas=(1.,), l1_ratios=(1.,), n_splits=5, njobs=1):
     import readdy_learn.analyze.tools as tools
     import readdy_learn.analyze.cross_validation as cross_validation
 
     traj = tools.Trajectory(counts, time_step=TIMESTEP)
     traj.dcounts_dt = dcounts_dt
-    cv = cross_validation.CrossValidation([traj], bfc())
+    cv = cross_validation.CrossValidation([traj], config.bfc())
     cv.splitter = 'kfold'
     cv.n_splits = n_splits
     cv.njobs = njobs
