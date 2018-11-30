@@ -160,7 +160,7 @@ class ReaDDyElasticNetEstimator(BaseEstimator):
         jac = False if self.approx_jac else \
             lambda x: opt.elastic_net_objective_fun_jac(x, self.alpha, self.l1_ratio, large_theta, expected)
 
-        options = {'disp': False, 'maxiter': self.maxiter}
+        options = {'disp': False, 'maxiter': self.maxiter, 'iprint': 2}
         if self.method == 'L-BFGS-B':
             options['maxfun'] = self.maxiter
         options.update(self.options)

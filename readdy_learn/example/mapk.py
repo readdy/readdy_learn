@@ -4,6 +4,17 @@ import itertools
 
 import readdy_learn.analyze.basis as _basis
 
+
+N_STIMULUS = 1
+SPECIES_NAMES = ["S", "MAPKKK", "MAPKKK*", "MAPKK", "MAPKK*", "MAPK", "MAPK*", "TF", "TF*"]
+N_SPECIES = len(SPECIES_NAMES)
+TIMESTEP = 1e-3
+
+INITIAL_STATES = [
+    [N_STIMULUS, 1, 0, 1, 0, 1, 0, 1, 0]
+]
+
+
 ALL_BOGUS_CONVERSION_OPS = [
     lambda result: result.add_double_conversion((1, 3), (1, 4)),
     lambda result: result.add_double_conversion((1, 5), (1, 6)),
@@ -39,20 +50,20 @@ def conversion_ops_range(start, end):
 
 class MAPKConfiguration(object):
 
-    def __init__(self, conversion_ops_selection):
+    def __init__(self, conversion_ops_selection=_np.arange(len(ALL_BOGUS_CONVERSION_OPS))):
         self.conversion_ops = [ALL_BOGUS_CONVERSION_OPS[i] for i in conversion_ops_selection]
         self.n_bogus = len(self.conversion_ops)
         self.n_real = 8
         self.n_total = self.n_real + self.n_bogus
         self.rates = _np.array([
             1.,
-            1000.,
             1.,
-            1000.,
             1.,
-            1000.,
             1.,
-            1000.,
+            1.,
+            1.,
+            1.,
+            1.,
         ])
         self.rates = _np.concatenate((self.rates, _np.zeros((self.n_bogus,))))
 
@@ -72,16 +83,6 @@ class MAPKConfiguration(object):
             op(result)
 
         return result
-
-
-N_STIMULUS = 100
-SPECIES_NAMES = ["S", "MAPKKK", "MAPKKK*", "MAPKK", "MAPKK*", "MAPK", "MAPK*", "TF", "TF*"]
-N_SPECIES = len(SPECIES_NAMES)
-TIMESTEP = 1e-3
-
-INITIAL_STATES = [
-    [N_STIMULUS, 1000, 0, 1000, 0, 1000, 0, 1000, 0]
-]
 
 
 def generate_kmc(target_time: float, n_realizations: int, config: MAPKConfiguration, njobs: int):
@@ -171,10 +172,10 @@ def solve(config: MAPKConfiguration, counts, dcounts_dt, alpha, l1_ratio):
     for tol in tolerances_to_try:
         print("Trying tolerance {}".format(tol))
         estimator = rlas.ReaDDyElasticNetEstimator([traj], config.bfc(), alpha=alpha, l1_ratio=l1_ratio,
-                                                   maxiter=500, method='SLSQP', verbose=True, approx_jac=False,
+                                                   maxiter=5000, method='SLSQP', verbose=True, approx_jac=False,
                                                    options={'ftol': tol}, rescale=False,
                                                    init_xi=_np.zeros_like(config.rates),
-                                                   constrained=False)
+                                                   constrained=True)
 
         estimator.fit(None)
         if estimator.success_:
