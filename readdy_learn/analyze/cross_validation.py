@@ -89,9 +89,11 @@ class CrossValidation(object):
         if self._splitter == 'shuffle':
             splitter = _ShuffleSplit(n_splits=self.n_splits, test_size=.5)
         else:
+            print("Running kfold with n_splits={}".format(self.n_splits))
             splitter = _KFold(n_splits=self.n_splits)
         scores = []
         for train, test in splitter.split(_np.arange(n_steps_total)):
+            print("Test:", test)
             train_traj = self._obtain_trajs_subset(train)
             test_traj = self._obtain_trajs_subset(test)
             assert train_traj.n_time_steps == len(train)
