@@ -158,8 +158,8 @@ of a dynamical system, which renders the method consistent with and
 an extension of the framework of sparse identification of nonlinear
 dynamics (SINDy)~\cite{Brunton2015}. Specifically, the problem of
 identifying a reaction network from time traces of reactant concentrations
-can be solved by finding a linear combination from a library of nonlinear
-ansatz functions that each corresponds to a reaction acting on a set
+can be solved by finding a linear combination from a library of candidate
+nonlinear functions (ansatz functions) that each corresponds to a reaction acting on a set
 of reactants. With this formulation, the reaction rates can be determined
 \emph{via} regression. Sparsity is induced by equipping the regression
 algorithms with a sparsity inducing regularization. SINDy was investigated,
@@ -234,9 +234,9 @@ the sought macroscopic rate constants:
 \end{align}
 where $\xi_{r}$ are the to-be estimated macroscopic rate constants.
 The two reactions in the previous example (\ref{eq:example_reaction_1}-\ref{eq:example_reaction_2})
-would be modeled by the ansatz functions
+would be modeled by the functions
 \begin{align*}
-y_{1}(\mathbf{x}) & =(-x_{1},x_{1},0)^{\top}\\
+y_{1}(\mathbf{x}) & =(-x_{1},x_{1},0)^{\top},\\
 y_{2}(\mathbf{x}) & =(-x_{1},0,x_{1})^{\top},
 \end{align*}
 illustrating that the values of the coefficients $\xi_{1}$ and $\xi_{2}$
@@ -251,7 +251,7 @@ as a matrix
 \mathbf{x}(t_{1}) & \mathbf{x}(t_{2}) & \cdots & \mathbf{x}(t_{T})\end{array}\right)^{\top}\in\mathbb{R}^{T\times S}.
 \end{align}
 Given this matrix, a library $\Theta:\mathbb{R}^{T\times S}\to\mathbb{R}^{T\times S\times R},\;\mathbf{X}\mapsto\begin{pmatrix}\theta_{1}(\mathbf{X}) & \theta_{2}(\mathbf{X}) & \cdots & \theta_{R}(\mathbf{X})\end{pmatrix}$
-of $R$ ansatz reactions can be proposed with corresponding reaction
+of $R$ candidate (ansatz) reactions can be proposed with corresponding reaction
 functions 
 \begin{align}
 \theta_{r}(\mathbf{X})=\begin{pmatrix}\textbf{y}_{r}(\mathbf{X}_{1*})^{\top}\\
@@ -397,13 +397,13 @@ analysis. Gray dots depict concentration time series yielded from
 the LSQ rates estimated in Sec~\ref{sec:case-1}.}
 \end{figure}
 
-\ifthisispreprint
+%\ifthisispreprint
 % ignore
-\else
-\onecolumngrid
-\fi
+%\else
+%\onecolumngrid
+%\fi
 
-\begin{figure}
+\begin{figure*}
 \centering \includegraphics[width=0.82\doublecolumnwidth]{figures_jcp/3.pdf}
 \caption{\label{fig:case-1-sparsity-pattern}Estimated reaction rates in the
 system described in Sec.~\ref{sec:case-1}. The y and x axes contain
@@ -419,12 +419,12 @@ to a cutoff $\kappa=0.22$ corresponding to the green circle's area
 under which a sparse solution with the correct processes can be recovered.
 If a certain rate was estimated in both cases, two wedges instead
 of one circle are displayed.}
-\end{figure}
-\ifthisispreprint
+\end{figure*}
+%\ifthisispreprint
 % ignore
-\else
-\twocolumngrid
-\fi
+%\else
+%\twocolumngrid
+%\fi
 
 Next, we sought sparse solutions by using $\alpha>0$ and additionally
 eliminating reactions with rate constants smaller than a cutoff value
@@ -433,7 +433,7 @@ $\lambda=1$, and $\kappa=0.22$, a sparse solution is obtained that
 finds the correct reaction scheme and also recovers the decay reaction
 (Fig.~\ref{fig:case-1-sparsity-pattern}).
 
-The value of the cutoff was determined by comparing the magnitude
+The value of the cutoff $\kappa$ was determined by comparing the magnitude
 of estimated rates and finding a gap, see Fig.~\ref{fig:reaction-rates-sorted}.
 The hyperparameter pair $(\alpha,\lambda)$ was obtained by a grid
 search and evaluating the difference $\|\hat{\Xi}_{\alpha,\lambda}-\Xi\|_{1}$,
@@ -512,7 +512,7 @@ data matrices
  and the corresponding derivatives $\dot{\mathbf{X}}_{1}$, $\dot{\mathbf{X}}_{2}$
 have been obtained, the frames are concatenated so that 
 \[
-\mathbf{X}=\begin{pmatrix}\boldsymbol{x}_{1}(t_{1}) & \boldsymbol{x}_{2}(t_{1}) & \cdots & \boldsymbol{x}_{1}(t_{667}) & \boldsymbol{x}_{2}(t_{667})\end{pmatrix},
+\mathbf{X}=\begin{pmatrix}\boldsymbol{x}_{1}(t_{1}) & \cdots & \boldsymbol{x}_{1}(t_{667}) & \boldsymbol{x}_{2}(t_{1}) & \cdots & \boldsymbol{x}_{2}(t_{667})\end{pmatrix},
 \]
 analogously for $\dot{\mathbf{X}}$.
 
@@ -597,13 +597,13 @@ The rates were estimated using the regularized minimization problem.}
 
 \end{figure}
 
-\ifthisispreprint
+%\ifthisispreprint
 % ignore
-\else
-\onecolumngrid
-\fi
+%\else
+%\onecolumngrid
+%\fi
 
-\begin{table}[h!]
+\begin{table*}[h!]
 \centering %
 %\resizebox{.9\textwidth}{!}{%
 \begin{tabular}{rclcc}
@@ -660,13 +660,13 @@ $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{C}$  & 
 \end{tabular}\caption{\label{tab:reaction-library}Full set of ansatz reactions $\Theta$
 used in Sec.~\ref{sec:results}. The given rate constants define
 the ground truth reaction model.}
-\end{table}
+\end{table*}
 
-\ifthisispreprint
+%\ifthisispreprint
 % ignore
-\else
-\twocolumngrid
-\fi
+%\else
+%\twocolumngrid
+%\fi
 
 \linespread{1.45}
 
