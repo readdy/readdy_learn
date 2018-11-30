@@ -6,18 +6,18 @@ import readdy_learn.analyze.basis as _basis
 FRICTION_PREY = .1
 FRICTION_PREDATOR = .1
 
-BETA = 200.
+BETA = 1
 
 INITIAL_STATES = _np.array([
-    [1500, 1500],
+    [1, 1],
 ])
 
 RATES = _np.array([
-    10.,  # X + X -> 0
-    10.,  # Y + Y -> 0
-    1000 * BETA,  # X -> X + X
+    .1,  # X + X -> 0
+    .1,  # Y + Y -> 0
+    1 * BETA,  # X -> X + X
     BETA,  # X + Y -> Y + Y
-    1000 * BETA,  # Y -> 0
+    1 * BETA,  # Y -> 0
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  # bogus
 ])
 
@@ -135,7 +135,7 @@ def solve(counts, dcounts_dt, alpha, l1_ratio):
                                                    maxiter=30000, method='SLSQP', verbose=True, approx_jac=False,
                                                    options={'ftol': tol}, rescale=False,
                                                    init_xi=_np.zeros_like(RATES),
-                                                   constrained=False)
+                                                   constrained=True)
 
         estimator.fit(None)
         if estimator.success_:
