@@ -1,3 +1,3 @@
 ```bash
-git latexdiff -v --main readdy_plos_manuscript.tex $(git rev-parse original-submission) --
+git latexdiff --latexmk --main docs/manuscript_jcp.tex $(git rev-parse original-submission) --
 ```

@@ -402,3 +402,5 @@ docs/figures_tex/.DS_Store
 
 # data
 *.pickle
+
+docs/manuscript_jcpNotes.bib
