@@ -282,7 +282,7 @@ that, depending on $\lambda$, can induce sparsity and give preference
 to smaller solutions in the $L_{1}$ or $L_{2}$ sense. For $\alpha=0$
 the minimization problem reduces to standard least-squares (LSQ) with
 the constraint $\Xi\geq0$. Reactive SINDy (\ref{method:minimizationproblem})
-is therefore a generalization of the SINDy method to to the vector-valued
+is therefore a generalization of the SINDy method to vector-valued
 ansatz functions.
 
 Since only the concentration data $\mathbf{X}$ is available but not
@@ -547,6 +547,10 @@ that 20-fold cross validation was used for hyperparameter estimation.}
 The hyperparameters $(\alpha,\lambda)$ are obtained by shuffling
 the data and performing a $20$-fold cross validation.
 
+\subsection{Application to MAPK cascade\label{sec:mapk}}
+
+\subsection{Application to Lotka-Volterra system\label{sec:lv}}
+
 \section{Conclusion}
 
 In this work we have extended the SINDy method to reactive SINDy,
@@ -657,9 +661,35 @@ $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{mRNA}_{\mathrm{C}}$  & $\rightharpoonup$  & 
 $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{mRNA}_{\mathrm{B}}$  & $\rightharpoonup$  & $\mathrm{mRNA}_{\mathrm{C}}$  & $k_{42}=0$  & artificial fusion\tabularnewline
 $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{C}$  & $k_{43}=0$  & artificial fusion\tabularnewline
 \bottomrule
-\end{tabular}\caption{\label{tab:reaction-library}Full set of ansatz reactions $\Theta$
-used in Sec.~\ref{sec:results}. The given rate constants define
-the ground truth reaction model.}
+\end{tabular}\caption{\label{tab:reaction-library}Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:results} for the gene-regulatory network. The given rate constants define the ground truth reaction model.}
+\end{table*}
+
+\begin{table*}[h!]
+    \centering %
+    %\resizebox{.9\textwidth}{!}{%
+    \begin{tabular}{rclcc}
+        \toprule 
+        \multicolumn{3}{c}{Reaction} & rate  & description \tabularnewline
+        \midrule 
+        $\mathrm{DNA}_{\mathrm{A}}$  & $\rightharpoonup$  & $\mathrm{DNA}_{\mathrm{A}}+\mathrm{mRNA}_{\mathrm{A}}$  & $k_{1}=1.8$  & transcription of $\mathrm{mRNA}_{\mathrm{A}}$\tabularnewline
+        $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{mRNA}_{\mathrm{A}}$  & $k_{19}=0$  & artificial fusion\tabularnewline
+        $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{B}$  & $\rightharpoonup$  & $\mathrm{mRNA}_{\mathrm{B}}$  & $k_{20}=0$  & artificial fusion\tabularnewline
+        \bottomrule
+    \end{tabular}\caption{\label{tab:reaction-library-mapk}Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:mapk} for the MAPK system. The given rate constants define the ground truth reaction model.}
+\end{table*}
+
+\begin{table*}[h!]
+    \centering %
+    %\resizebox{.9\textwidth}{!}{%
+    \begin{tabular}{rclcc}
+        \toprule 
+        \multicolumn{3}{c}{Reaction} & rate  & description \tabularnewline
+        \midrule 
+        $\mathrm{DNA}_{\mathrm{A}}$  & $\rightharpoonup$  & $\mathrm{DNA}_{\mathrm{A}}+\mathrm{mRNA}_{\mathrm{A}}$  & $k_{1}=1.8$  & transcription of $\mathrm{mRNA}_{\mathrm{A}}$\tabularnewline
+        $\mathrm{mRNA}_{\mathrm{A}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{mRNA}_{\mathrm{A}}$  & $k_{19}=0$  & artificial fusion\tabularnewline
+        $\mathrm{mRNA}_{\mathrm{B}}+\mathrm{B}$  & $\rightharpoonup$  & $\mathrm{mRNA}_{\mathrm{B}}$  & $k_{20}=0$  & artificial fusion\tabularnewline
+        \bottomrule
+    \end{tabular}\caption{\label{tab:reaction-library-lv}Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:lv} for the Lotka-Volterra system. The given rate constants define the ground truth reaction model.}
 \end{table*}
 
 %\ifthisispreprint

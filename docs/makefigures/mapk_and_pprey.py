@@ -1,0 +1,133 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+if __name__ == '__main__':
+    plt.style.use("./rlearn.mplstyle")
+
+    # MAPK
+    print(5 * "-----" + "MAPK" + 5 * "-----")
+    mapk_file = "../../mapk_pathway/mapk_data.npz"
+    with np.load(mapk_file) as f:
+        time = f["time"]
+        counts = f["counts"]
+        dcounts_dt = f["dcounts_dt"]
+        alphas_gs = f["alphas_gs"]
+        l1_errs_gs = f["l1_errs_gs"]
+        estimated_rates_gs = f["estimated_rates_gs"]
+        best_estimated_rates_gs = f["best_estimated_rates_gs"]
+        alphas_cv = f["alphas_cv"]
+        scores_cv = f["scores_cv"]
+        rates_cv = f["rates_cv"]
+        rates_lsq = f["rates_lsq"]
+        rates_desired = f["rates_desired"]
+        activities = f["activities"]
+        stimulus = f["stimulus"]
+        init_state_activities = f["init_state_activities"]
+
+    # plot MAPK activation curve
+    plt.semilogx(stimulus, activities)
+    plt.xlabel('stimulus')
+    plt.ylabel('activity')
+    plt.vlines(init_state_activities, *plt.ylim(), color="xkcd:red", label="initial conditions", lw=0.5)
+    plt.legend()
+    plt.gcf().tight_layout()
+    plt.savefig("mapk_activation.pdf")
+    #plt.show()
+    plt.clf()
+
+    # @todo plot data ?
+
+    # plot cross validation scores
+    sel = np.argmin(-scores_cv)
+    plt.semilogx(alphas_cv, -scores_cv)
+    #plt.plot([alphas_cv[sel]], [-scores_cv[sel]], 'x', markersize=20)
+    plt.ylim(0., 0.5e-9)
+    xmin, xmax = plt.xlim()
+    plt.xlim(xmin, 2e-8)
+    plt.xlabel(r"Hyperparameter $\alpha$")
+    plt.ylabel(r"Mean loss in val. set")
+    plt.gcf().tight_layout()
+    plt.savefig("mapk_cross_validation.pdf", bbox_inches="tight")
+    #plt.show()
+    plt.clf()
+
+    # plot resulting models
+    plt.plot(rates_cv, 'o', label="regularized")
+    plt.plot(rates_lsq, 'd', label="LSQ")
+    #plt.vlines([7.5], 0, 1, 'grey', 'dashed')
+    plt.plot(rates_desired, 'x', label="ground truth")
+    labels = list(map(str, range(1, len(rates_desired) + 1)))
+    for i in range(len(labels)):
+        if i % 3 == 0:
+            pass
+        else:
+            labels[i] = ""
+    plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
+    plt.legend()
+    plt.xlabel(r"Ansatz reaction \#")
+    plt.ylabel("Rate constant in a.u.")
+    plt.gcf().tight_layout()
+    plt.savefig("mapk_result_models.pdf", bbox_inches="tight")
+    #plt.show()
+    plt.clf()
+
+    print("1-norm of relative deviation from the ground truth rates (LSQ):", np.sum(np.abs(((rates_lsq[:8] - rates_desired[:8]) / rates_desired[:8]))))
+
+    print("1-norm of relative deviation from the ground truth rates (regularized):", np.sum(np.abs(((rates_cv[:8] - rates_desired[:8]) / rates_desired[:8]))))
+
+    # Predator Prey
+    print(5 * "-----" + "Predator prey" + 5 * "-----")
+    pprey_file = "../../predator_prey/predator_prey_data.npz"
+    with np.load(pprey_file) as f:
+        time = f["time"]
+        counts = f["counts"]
+        dcounts_dt = f["dcounts_dt"]
+        alphas_gs = f["alphas_gs"]
+        l1_errs_gs = f["l1_errs_gs"]
+        estimated_rates_gs = f["estimated_rates_gs"]
+        best_estimated_rates_gs = f["best_estimated_rates_gs"]
+        alphas_cv = f["alphas_cv"]
+        scores_cv = f["scores_cv"]
+        rates_cv = f["rates_cv"]
+        rates_lsq = f["rates_lsq"]
+        rates_desired = f["rates_desired"]
+
+    # @todo plot data ?
+
+    # plot cross validation scores
+    sel = np.argmin(-scores_cv)
+    plt.semilogx(alphas_cv, -scores_cv)
+    #plt.plot([alphas_cv[sel]], [-scores_cv[sel]], 'x', markersize=20)
+    plt.ylim(6.45e-7, 6.7e-7)
+    xmin, xmax = plt.xlim()
+    plt.xlim(1e-9, 1e-5)
+    plt.xlabel(r"Hyperparameter $\alpha$")
+    plt.ylabel(r"Mean loss in val. set")
+    plt.gcf().tight_layout()
+    plt.savefig("pprey_cross_validation.pdf", bbox_inches="tight")
+    #plt.show()
+    plt.clf()
+
+    # plot resulting models
+    plt.plot(rates_cv, 'o', label="regularized")
+    plt.plot(rates_lsq, 'd', label="LSQ")
+    #plt.vlines([7.5], 0, 1, 'grey', 'dashed')
+    plt.plot(rates_desired, 'x', label="ground truth")
+    labels = list(map(str, range(1, len(rates_desired) + 1)))
+    for i in range(len(labels)):
+        if i % 2 == 0:
+            pass
+        else:
+            labels[i] = ""
+    plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
+    plt.legend()
+    plt.xlabel(r"Ansatz reaction \#")
+    plt.ylabel("Rate constant in a.u.")
+    plt.gcf().tight_layout()
+    plt.savefig("pprey_result_models.pdf", bbox_inches="tight")
+    #plt.show()
+    plt.clf()
+
+    print("1-norm of relative deviation from the ground truth rates (LSQ):", np.sum(np.abs(((rates_lsq[:5] - rates_desired[:5]) / rates_desired[:5]))))
+
+    print("1-norm of relative deviation from the ground truth rates (regularized):", np.sum(np.abs(((rates_cv[:5] - rates_desired[:5]) / rates_desired[:5]))))
