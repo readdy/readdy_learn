@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     def plot_mapk_activation_curve():
         plt.semilogx(stimulus, activities, label="MAPK cascade response")
-        plt.xlabel('Stimulus in a.u.')
-        plt.ylabel('Activity in a.u.')
+        plt.xlabel(r'Stimulus $[\mathrm{S}]$ in a.u.')
+        plt.ylabel(r'Activity $[\mathrm{TF*}]$ in a.u.')
         ymin, ymax = plt.ylim()
         plt.ylim(ymin, 0.35)
         plt.vlines(init_state_activities, *plt.ylim(), color="xkcd:red", linestyle="--",label="initial conditions", lw=1)
