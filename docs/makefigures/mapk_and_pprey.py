@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from matplotlib.ticker import LogLocator
 import numpy as np
 
 if __name__ == '__main__':
@@ -24,18 +26,9 @@ if __name__ == '__main__':
         stimulus = f["stimulus"]
         init_state_activities = f["init_state_activities"]
 
-    # plot MAPK activation curve
-    plt.semilogx(stimulus, activities)
-    plt.xlabel('stimulus')
-    plt.ylabel('activity')
-    plt.vlines(init_state_activities, *plt.ylim(), color="xkcd:red", label="initial conditions", lw=0.5)
-    plt.legend()
-    plt.gcf().tight_layout()
-    plt.savefig("mapk_activation.pdf")
-    #plt.show()
-    plt.clf()
+    # plot data ?
+    print(f"Number of frames: {len(time)}")
 
-    # @todo plot data ?
 
     # plot cross validation scores
     sel = np.argmin(-scores_cv)
@@ -51,29 +44,61 @@ if __name__ == '__main__':
     #plt.show()
     plt.clf()
 
-    # plot resulting models
-    plt.plot(rates_cv, 'o', label="regularized")
-    plt.plot(rates_lsq, 'd', label="LSQ")
-    #plt.vlines([7.5], 0, 1, 'grey', 'dashed')
-    plt.plot(rates_desired, 'x', label="ground truth")
-    labels = list(map(str, range(1, len(rates_desired) + 1)))
-    for i in range(len(labels)):
-        if i % 3 == 0:
-            pass
-        else:
-            labels[i] = ""
-    plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
-    plt.legend()
-    plt.xlabel(r"Ansatz reaction \#")
-    plt.ylabel("Rate constant in a.u.")
-    plt.gcf().tight_layout()
-    plt.savefig("mapk_result_models.pdf", bbox_inches="tight")
+    def plot_mapk_activation_curve():
+        plt.semilogx(stimulus, activities, label="MAPK cascade response")
+        plt.xlabel('Stimulus in a.u.')
+        plt.ylabel('Activity in a.u.')
+        ymin, ymax = plt.ylim()
+        plt.ylim(ymin, 0.35)
+        plt.vlines(init_state_activities, *plt.ylim(), color="xkcd:red", linestyle="--",label="initial conditions", lw=1)
+        plt.gca().xaxis.set_major_locator(LogLocator(base=10.0, numticks=6))
+        plt.legend(loc="upper left")
+
+
+    def plot_mapk_models():
+        plt.plot(rates_cv, 'o', label="regularized")
+        plt.plot(rates_lsq, 'd', label="LSQ")
+        # plt.vlines([7.5], 0, 1, 'grey', 'dashed')
+        plt.plot(rates_desired, 'x', label="ground truth")
+        labels = list(map(str, range(1, len(rates_desired) + 1)))
+        for i in range(len(labels)):
+            if i % 3 == 0:
+                pass
+            else:
+                labels[i] = ""
+        plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
+        plt.legend()
+        plt.xlabel(r"Ansatz reaction \#")
+        plt.ylabel("Rate constant in a.u.")
+
+    # Combined figure of activation and results
+    fs = plt.rcParams.get('figure.figsize')
+    figure = plt.figure(figsize=(fs[0], 2. * fs[1]))
+
+    gs = GridSpec(2, 1)
+    ax1 = plt.subplot(gs[0, 0])
+    ax2 = plt.subplot(gs[1, 0])
+
+    plt.sca(ax1)
+    plot_mapk_activation_curve()
+
+    plt.sca(ax2)
+    plot_mapk_models()
+
+    figure.text(0., .96, r'\textbf{(a)}', fontdict={'size': plt.rcParams['font.size'] + 4})
+    figure.text(0., .48, r'\textbf{(b)}', fontdict={'size': plt.rcParams['font.size'] + 4})
+
+    figure.tight_layout()
+    figure.savefig("mapk.pdf", bbox_inches="tight", transparent=True, dpi=300)
+
     #plt.show()
     plt.clf()
+
 
     print("1-norm of relative deviation from the ground truth rates (LSQ):", np.sum(np.abs(((rates_lsq[:8] - rates_desired[:8]) / rates_desired[:8]))))
 
     print("1-norm of relative deviation from the ground truth rates (regularized):", np.sum(np.abs(((rates_cv[:8] - rates_desired[:8]) / rates_desired[:8]))))
+
 
     # Predator Prey
     print(5 * "-----" + "Predator prey" + 5 * "-----")
@@ -92,7 +117,50 @@ if __name__ == '__main__':
         rates_lsq = f["rates_lsq"]
         rates_desired = f["rates_desired"]
 
-    # @todo plot data ?
+    print(f"Number of frames: {len(time)}")
+
+    def plot_pprey_traj():
+        plt.plot(time, counts[:, 0], label='prey')
+        plt.plot(time, counts[:, 1], label='predator')
+        plt.xlabel("Time")
+        plt.ylabel("Concentration")
+        plt.legend()
+
+    def plot_pprey_models():
+        plt.plot(rates_cv, 'o', label="regularized")
+        plt.plot(rates_lsq, 'd', label="LSQ")
+        # plt.vlines([7.5], 0, 1, 'grey', 'dashed')
+        plt.plot(rates_desired, 'x', label="ground truth")
+        labels = list(map(str, range(1, len(rates_desired) + 1)))
+        for i in range(len(labels)):
+            if i % 2 == 0:
+                pass
+            else:
+                labels[i] = ""
+        plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
+        plt.legend()
+        plt.xlabel(r"Ansatz reaction \#")
+        plt.ylabel("Rate constant in a.u.")
+
+    # Combined figure of traj and result
+    fs = plt.rcParams.get('figure.figsize')
+    figure = plt.figure(figsize=(fs[0], 2. * fs[1]))
+
+    gs = GridSpec(2, 1)
+    ax1 = plt.subplot(gs[0, 0])
+    ax2 = plt.subplot(gs[1, 0])
+
+    plt.sca(ax1)
+    plot_pprey_traj()
+
+    plt.sca(ax2)
+    plot_pprey_models()
+
+    figure.text(0., .96, r'\textbf{(a)}', fontdict={'size': plt.rcParams['font.size'] + 4})
+    figure.text(0., .48, r'\textbf{(b)}', fontdict={'size': plt.rcParams['font.size'] + 4})
+
+    figure.tight_layout()
+    figure.savefig("pprey.pdf", bbox_inches="tight", transparent=True, dpi=300)
 
     # plot cross validation scores
     sel = np.argmin(-scores_cv)
@@ -108,25 +176,7 @@ if __name__ == '__main__':
     #plt.show()
     plt.clf()
 
-    # plot resulting models
-    plt.plot(rates_cv, 'o', label="regularized")
-    plt.plot(rates_lsq, 'd', label="LSQ")
-    #plt.vlines([7.5], 0, 1, 'grey', 'dashed')
-    plt.plot(rates_desired, 'x', label="ground truth")
-    labels = list(map(str, range(1, len(rates_desired) + 1)))
-    for i in range(len(labels)):
-        if i % 2 == 0:
-            pass
-        else:
-            labels[i] = ""
-    plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
-    plt.legend()
-    plt.xlabel(r"Ansatz reaction \#")
-    plt.ylabel("Rate constant in a.u.")
-    plt.gcf().tight_layout()
-    plt.savefig("pprey_result_models.pdf", bbox_inches="tight")
-    #plt.show()
-    plt.clf()
+
 
     print("1-norm of relative deviation from the ground truth rates (LSQ):", np.sum(np.abs(((rates_lsq[:5] - rates_desired[:5]) / rates_desired[:5]))))
 

@@ -1,0 +1,36 @@
+
+
+1:  X + X -> 0
+2:  Y + Y -> 0
+3:  X     -> X + X
+4:  X + Y -> Y + Y
+5:  Y     -> 0
+6:  X + Y -> X + X
+7:  X     -> 0
+8:  Y + Y -> Y
+9:  Y     -> Y + Y
+10: X + X -> X
+11: X + Y -> X
+12: X + Y -> Y
+13: X + X -> Y
+14: X     -> Y
+15: Y     -> X
+16: X     -> Y + Y
+
+$\mathrm{X} + \mathrm{X}$ & $\rightharpoonup$ & $\mathrm{0}             $ & $k_{1} =0.1$ \tabularnewline
+$\mathrm{Y} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{0}             $ & $k_{2} =0.1$ \tabularnewline
+$\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{X} + \mathrm{X}$ & $k_{3} =1  $ \tabularnewline
+$\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{Y} + \mathrm{Y}$ & $k_{4} =1  $ \tabularnewline
+$\mathrm{Y}             $ & $\rightharpoonup$ & $\mathrm{0}             $ & $k_{5} =1  $ \tabularnewline
+$\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{X} + \mathrm{X}$ & $k_{6} =0  $ \tabularnewline
+$\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{0}             $ & $k_{7} =0  $ \tabularnewline
+$\mathrm{Y} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{8} =0  $ \tabularnewline
+$\mathrm{Y}             $ & $\rightharpoonup$ & $\mathrm{Y} + \mathrm{Y}$ & $k_{9} =0  $ \tabularnewline
+$\mathrm{X} + \mathrm{X}$ & $\rightharpoonup$ & $\mathrm{X}             $ & $k_{10}=0  $ \tabularnewline
+$\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{X}             $ & $k_{11}=0  $ \tabularnewline
+$\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{12}=0  $ \tabularnewline
+$\mathrm{X} + \mathrm{X}$ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{13}=0  $ \tabularnewline
+$\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{14}=0  $ \tabularnewline
+$\mathrm{Y}             $ & $\rightharpoonup$ & $\mathrm{X}             $ & $k_{15}=0  $ \tabularnewline
+$\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{Y} + \mathrm{Y}$ & $k_{16}=0  $ \tabularnewline
+

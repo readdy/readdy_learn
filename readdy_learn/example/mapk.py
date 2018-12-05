@@ -6,6 +6,7 @@ import readdy_learn.analyze.basis as _basis
 
 
 N_STIMULUS = 1
+# ids             0    1         2          3        4         5       6        7     8
 SPECIES_NAMES = ["S", "MAPKKK", "MAPKKK*", "MAPKK", "MAPKK*", "MAPK", "MAPK*", "TF", "TF*"]
 N_SPECIES = len(SPECIES_NAMES)
 TIMESTEP = 1e-3
@@ -16,27 +17,27 @@ INITIAL_STATES = [
 
 
 ALL_BOGUS_CONVERSION_OPS = [
-    lambda result: result.add_double_conversion((1, 3), (1, 4)),
-    lambda result: result.add_double_conversion((1, 5), (1, 6)),
-    lambda result: result.add_double_conversion((1, 7), (1, 8)),
-    lambda result: result.add_double_conversion((2, 5), (2, 6)),
-    lambda result: result.add_double_conversion((2, 7), (2, 8)),
-    lambda result: result.add_double_conversion((3, 7), (3, 8)),
-    lambda result: result.add_double_conversion((4, 7), (4, 8)),
-    lambda result: result.add_double_conversion((5, 7), (5, 8)),  # wrong kinese partners
-    lambda result: result.add_double_conversion((3, 5), (3, 6)),  # wrong kinese partners
-    lambda result: result.add_double_conversion((1, 4), (1, 3)),
-    lambda result: result.add_double_conversion((1, 6), (1, 5)),
-    lambda result: result.add_double_conversion((1, 8), (1, 7)),
-    lambda result: result.add_double_conversion((2, 4), (2, 3)),  # backward deactivation
-    lambda result: result.add_double_conversion((2, 6), (2, 5)),  # backward deactivation
-    lambda result: result.add_double_conversion((2, 8), (2, 7)),  # backward deactivation
-    lambda result: result.add_double_conversion((3, 6), (3, 5)),
-    lambda result: result.add_double_conversion((3, 8), (3, 7)),
-    lambda result: result.add_double_conversion((4, 6), (4, 5)),  # backward deactivation
-    lambda result: result.add_double_conversion((4, 8), (4, 7)),  # backward deactivation
-    lambda result: result.add_double_conversion((5, 8), (5, 7)),
-    lambda result: result.add_double_conversion((6, 8), (6, 7)),  # backward deactivation
+    lambda result: result.add_double_conversion((1, 3), (1, 4)),  # 9:  MAPKKK + MAPKK -> MAPKKK + MAPKK*
+    lambda result: result.add_double_conversion((1, 5), (1, 6)),  # 10: MAPKKK + MAPK -> MAPK*
+    lambda result: result.add_double_conversion((1, 7), (1, 8)),  # 11: MAPKKK + TF -> MAPKKK + TF*
+    lambda result: result.add_double_conversion((2, 5), (2, 6)),  # 12: MAPKKK* + MAPK -> MAPKKK* + MAPK*
+    lambda result: result.add_double_conversion((2, 7), (2, 8)),  # 13: MAPKKK* + TF -> MAPKKK* + TF*
+    lambda result: result.add_double_conversion((3, 7), (3, 8)),  # 14: MAPKK + TF -> MAPKK + TF*
+    lambda result: result.add_double_conversion((4, 7), (4, 8)),  # 15: MAPKK* + TF -> MAPKK* + TF*
+    lambda result: result.add_double_conversion((5, 7), (5, 8)),  # 16: MAPK + TF -> MAPK + TF*                   wrong kinese partners
+    lambda result: result.add_double_conversion((3, 5), (3, 6)),  # 17: MAPKK + MAPK -> MAPKK + MAPK*             wrong kinese partners
+    lambda result: result.add_double_conversion((1, 4), (1, 3)),  # 18: MAPKKK + MAPKK* -> MAPKKK + MAPKK
+    lambda result: result.add_double_conversion((1, 6), (1, 5)),  # 19: MAPKKK + MAPK* -> MAPKKK + MAPK
+    lambda result: result.add_double_conversion((1, 8), (1, 7)),  # 20: MAPKKK + TF* -> MAPKKK + TF
+    lambda result: result.add_double_conversion((2, 4), (2, 3)),  # 21: MAPKKK* + MAPKK* -> MAPKKK* + MAPKK       backward deactivation
+    lambda result: result.add_double_conversion((2, 6), (2, 5)),  # 22: MAPKKK* + MAPK* -> MAPKKK* + MAPK         backward deactivation
+    lambda result: result.add_double_conversion((2, 8), (2, 7)),  # 23: MAPKKK* + TF* -> MAPKKK* + TF             backward deactivation
+    lambda result: result.add_double_conversion((3, 6), (3, 5)),  # 24: MAPKK + MAPK* -> MAPKK + MAPK
+    lambda result: result.add_double_conversion((3, 8), (3, 7)),  # 25: MAPKK + TF* -> MAPKK + TF
+    lambda result: result.add_double_conversion((4, 6), (4, 5)),  # 26: MAPKK* + MAPK* -> MAPKK* + MAPK           backward deactivation
+    lambda result: result.add_double_conversion((4, 8), (4, 7)),  # 27: MAPKK* + TF* -> MAPKK* + TF               backward deactivation
+    lambda result: result.add_double_conversion((5, 8), (5, 7)),  # 28: MAPK + TF* -> MAPK + TF
+    lambda result: result.add_double_conversion((6, 8), (6, 7)),  # 29: MAPK* + TF* -> MAPK* + TF                 backward deactivation
 ]
 
 
@@ -70,14 +71,14 @@ class MAPKConfiguration(object):
     def bfc(self) -> _basis.BasisFunctionConfiguration:
         result = _basis.BasisFunctionConfiguration(N_SPECIES)
 
-        result.add_double_conversion([0, 1], [0, 2])  # S + MAPKKK -> S + MAPKKK*
-        result.add_conversion(2, 1)  # MAPKKK* -> MAPKKK
-        result.add_double_conversion([2, 3], [2, 4])  # MAPKKK* + MAPKK -> MAPKKK* -> MAPKK*
-        result.add_conversion(4, 3)  # MAPKK* -> MAPKK
-        result.add_double_conversion([4, 5], [4, 6])  # MAPKK* + MAPK -> MAPKK* -> MAPK*
-        result.add_conversion(6, 5)  # MAPK* -> MAPK
-        result.add_double_conversion([6, 7], [6, 8])  # MAPK* + TF -> MAPK* + TF*
-        result.add_conversion(8, 7)  # TF* -> TF
+        result.add_double_conversion([0, 1], [0, 2])  # 1: S + MAPKKK -> S + MAPKKK*
+        result.add_conversion(2, 1)                   # 2: MAPKKK* -> MAPKKK
+        result.add_double_conversion([2, 3], [2, 4])  # 3: MAPKKK* + MAPKK -> MAPKKK* + MAPKK*
+        result.add_conversion(4, 3)                   # 4: MAPKK* -> MAPKK
+        result.add_double_conversion([4, 5], [4, 6])  # 5: MAPKK* + MAPK -> MAPKK* + MAPK*
+        result.add_conversion(6, 5)                   # 6: MAPK* -> MAPK
+        result.add_double_conversion([6, 7], [6, 8])  # 7: MAPK* + TF -> MAPK* + TF*
+        result.add_conversion(8, 7)                   # 8: TF* -> TF
 
         for op in self.conversion_ops:
             op(result)

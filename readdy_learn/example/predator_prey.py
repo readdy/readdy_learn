@@ -28,23 +28,23 @@ TIMESTEP = 2e-7
 def bfc():
     result = _basis.BasisFunctionConfiguration(len(SPECIES_NAMES))
 
-    result.add_fusion(0, 0, None)
-    result.add_fusion(1, 1, None)
-    result.add_fission(0, 0, 0)
-    result.add_double_conversion([0, 1], [1, 1])
-    result.add_decay(1)
+    result.add_fusion(0, 0, None)                 # 1:  X + X -> 0
+    result.add_fusion(1, 1, None)                 # 2:  Y + Y -> 0
+    result.add_fission(0, 0, 0)                   # 3:  X     -> X + X
+    result.add_double_conversion([0, 1], [1, 1])  # 4:  X + Y -> Y + Y
+    result.add_decay(1)                           # 5:  Y     -> 0
 
-    result.add_double_conversion([0, 1], [0, 0])
-    result.add_decay(0)
-    result.add_fusion(1, 1, 1)
-    result.add_fission(1, 1, 1)
-    result.add_fusion(0, 0, 0)
-    result.add_fusion(0, 1, 0)
-    result.add_fusion(0, 1, 1)
-    result.add_fission(0, 0, 1)
-    result.add_conversion(0, 1)
-    result.add_conversion(1, 0)
-    result.add_fission(0, 1, 1)
+    result.add_double_conversion([0, 1], [0, 0])  # 6:  X + Y -> X + X
+    result.add_decay(0)                           # 7:  X     -> 0
+    result.add_fusion(1, 1, 1)                    # 8:  Y + Y -> Y
+    result.add_fission(1, 1, 1)                   # 9:  Y     -> Y + Y
+    result.add_fusion(0, 0, 0)                    # 10: X + X -> X
+    result.add_fusion(0, 1, 0)                    # 11: X + Y -> X
+    result.add_fusion(0, 1, 1)                    # 12: X + Y -> Y
+    result.add_fission(0, 0, 1)                   # 13: X + X -> Y
+    result.add_conversion(0, 1)                   # 14: X     -> Y
+    result.add_conversion(1, 0)                   # 15: Y     -> X
+    result.add_fission(0, 1, 1)                   # 16: X     -> Y + Y
 
     return result
 
