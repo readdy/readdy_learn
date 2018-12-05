@@ -184,9 +184,16 @@ different scenarios of measurement: When there is no noise in the
 data we can find, given sufficient amounts of data, all relevant processes
 of the ground truth. If there is noise in the data we converge to
 the correct reaction network and rates with decreasing levels of noise.
-The final scenario generalizes the method to two measurements with
+The third scenario generalizes the method to two measurements with
 different initial conditions, also converging to the correct model
 with decreasing levels of noise.
+
+We additionally demonstrate the algorithm
+on time series data of the mitogen activated protein kinases (MAPK) pathway as 
+an example for a bimodal system and on time series data of the
+Lotka-Volterra system which describes predator-prey dynamics subject to
+social friction. In both systems reactive SINDy recovers the generating 
+reaction network whereas non-sparse estimation detects many false processes.
 
 \section{Reactive SINDy: Sparse learning of reaction kinetics}
 
@@ -548,17 +555,88 @@ The hyperparameters $(\alpha,\lambda)$ are obtained by shuffling
 the data and performing a $20$-fold cross validation.
 
 \subsection{Application to MAPK cascade\label{sec:mapk}}
+The reactive SINDy method is applied to the mitogen activated protein 
+kinases (MAPK) pathway~\cite{Xing1996} which is an important regulatory mechanism of 
+biological cells to respond to stimuli and is involved in proliferation, differentiation, 
+inflammation, and apoptosis~\cite{Zhang2002mapk}. 
+Single-cell MAPK kinetics can be observed experimentally~\cite{Ryu2018integrated}.
+Mathematically MAPK kinetics are often modelled using reaction 
+rate equations~\cite{Kolch2005kinases,Orton2005computational} which 
+enables analysis using reactive SINDy.
+
+Generally a MAPK pathway consists of multiple stages of kinases that 
+are either inactive or active, denoted by ``*''. Their activation occurs 
+due to phosphorylation catalyzed by the upstream kinase of the previous 
+stage, dephosphorylation is catalyzed by phosphatases. When the kinase is 
+active it can activate other downstream kinases of the next stage. 
+The initial activation is often due to an external stimulus. 
+The response of the whole cascade is the amount of activated substrate 
+after the final stage, typically measured as a function of the initial stimulus.
+
+Here we model the MAPK pathway with three stages of kinases $\mathrm{MAPK}$, $\mathrm{MAPKK}$, and $\mathrm{MAPKKK}$. The initial stimulus is called $\mathrm{S}$ and the final substrate to be activated is a transcription factor $\mathrm{TF}$. The ground truth reaction network reads
+\begin{align*}
+\text{Activations:} &\\
+\mathrm{S}        + \mathrm{MAPKKK}  & \rightharpoonup \mathrm{S      } + \mathrm{MAPKKK*} \\
+\mathrm{MAPKKK*}  + \mathrm{MAPKK }  & \rightharpoonup \mathrm{MAPKKK*} + \mathrm{MAPKK* } \\
+\mathrm{MAPKK*}   + \mathrm{MAPK  }  & \rightharpoonup \mathrm{MAPKK* } + \mathrm{MAPK*  } \\
+\mathrm{MAPK*}    + \mathrm{TF    }  & \rightharpoonup \mathrm{MAPK*  } + \mathrm{TF*    }  \\
+\text{Deactivations:}&\\
+\mathrm{MAPKKK*}    \mathrm{      }  & \rightharpoonup \mathrm{MAPKKK }  \\
+\mathrm{MAPKK*}     \mathrm{      }  & \rightharpoonup \mathrm{MAPKK  }  \\
+\mathrm{MAPK*}      \mathrm{      }  & \rightharpoonup \mathrm{MAPK   }  \\
+\mathrm{TF*}        \mathrm{      }  & \rightharpoonup \mathrm{TF     }.
+\end{align*}
+For simplicity we assume phosphatase to be abundant such that deactivations 
+effectively become first order reactions.
+The external stimulus $\mathrm{S}$ is not consumed such that time integration of these 
+reactions yields a steady state in which the concentration of response $[\mathrm{TF}]$ 
+can be measured as a function of the stimulus concentration $[\mathrm{S}]$.
+Using the rate constants given in Tab.~\ref{tab:reaction-library-mapk} we obtain the 
+response curve given in Fig.~\ref{fig:mapk}a. 
+
+We generate concentration time series data of the MAPK reactions above at 
+three different initial conditions, each differing in the amount of stimulus.
+They are marked in Fig.~\ref{fig:mapk}a by vertical dashed lines.
+These time series are concatenated to yield a dataset of 300 frames in total.
+We use the library $\Theta$ of candidate reactions Tab.~\ref{tab:reaction-library-mapk}.
+To determine the hyperparameter $\alpha=6.6\times 10^{-9}$ we shuffle the data and perform
+15-fold cross validation. We obtain the estimated 
+rate constants by solving the minimization problem (\ref{method:minimizationproblem}) 
+with $\lambda=1$. The results are given in Fig.~\ref{fig:mapk}b.
+{\color{red}TODO describe}
+
 \begin{figure}
     \centering
     \includegraphics[width=\singlecolumnwidth]{figures_jcp/6.pdf}
-    \caption{\label{fig:mapk}Application of reactive SINDy to the MAPK pathway system. \textbf{(a)}~The response curve of the MAPK cascade as a function of external stimulus given as a constant concentration $[\mathrm{S}]$. The activity is the long-time concentration of activated transcription factors $[\mathrm{TF*}]$. Dashed lines show the values of $[\mathrm{S}]$ at which concentration time series data was generated. \textbf{(b)}~Estimated rate coefficients of candidate reactions after application of reactive SINDy (regularized) to the time series data. LSQ estimation and the ground truth model for comparison.}
+    \caption{\label{fig:mapk}Application of reactive SINDy to the MAPK pathway system. \textbf{(a)}~The response curve of the MAPK cascade as a function of external stimulus given as a constant concentration $[\mathrm{S}]$. The activity is the steady state concentration of activated transcription factors $[\mathrm{TF*}]$. Dashed lines show the values of $[\mathrm{S}]$ at which concentration time series data was generated. \textbf{(b)}~Estimated rate coefficients of candidate reactions after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) and the ground truth model for comparison.}
 \end{figure}
 
 \subsection{Application to Lotka-Volterra system\label{sec:lv}}
+As biological pathways often exhibit oscillatory behavior~\cite{Iqbal2008tnf} which can stem 
+from positive or negative feedback loops~\cite{Shin2009positive} we apply reactive SINDy to
+an idealized oscillatory system, namely the Lotka-Volterra system. 
+The predator-prey dynamics of two species $\mathrm{A}$ (prey) and $\mathrm{B}$ 
+(predator) is defined by the reactions
+\begin{align*}
+\mathrm{A}              & \rightharpoonup \mathrm{A} + \mathrm{A} &  & \text{(prey growth)},\\
+\mathrm{A} + \mathrm{B} & \rightharpoonup \mathrm{B} + \mathrm{B} &  & \text{(predator eats prey)},\\
+\mathrm{B}              & \rightharpoonup \emptyset &  & \text{(predator decay)},\\
+\mathrm{A} + \mathrm{A} & \rightharpoonup \emptyset &  & \text{(prey friction)},\\
+\mathrm{B} + \mathrm{B} & \rightharpoonup \emptyset &  & \text{(predator friction)}.
+\end{align*}
+From this model we generate concentration time series data with $200$ frames 
+which is displayed in Fig.~\ref{fig:lv}a. We construct the library $\Theta$ 
+of candidate reactions given in Tab.~\ref{tab:reaction-library-lv}. 
+We determine the hyperparameter $\alpha=2.7\times10^{-7}$ by shuffling 
+the data and performing 5-fold cross validation. We obtain the estimated 
+rate constants by solving the minimization problem (\ref{method:minimizationproblem}) 
+with $\lambda=1$. The results are given in Fig.~\ref{fig:lv}b.
+{\color{red}TODO describe}
+
 \begin{figure}
     \centering
     \includegraphics[width=\singlecolumnwidth]{figures_jcp/7.pdf}
-    \caption{\label{fig:lv}Application of reactive SINDy to the Lotka-Volterra system with social friction. \textbf{(a)}~Concentration data as a function of time for predator and prey. \textbf{(b)}~Estimated rate coefficients of candidate reactions after application of reactive SINDy (regularized) to the time series data. LSQ estimation and the ground truth model for comparison.}
+    \caption{\label{fig:lv}Application of reactive SINDy to the Lotka-Volterra system with social friction. \textbf{(a)}~Concentration data as a function of time for predator and prey species. \textbf{(b)}~Estimated rate coefficients of candidate reactions after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) estimation and the ground truth model for comparison.}
 \end{figure}
 
 \section{Conclusion}
@@ -721,22 +799,22 @@ $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{C}$  & 
         \toprule 
         \multicolumn{3}{c}{Reaction} & rate & description \tabularnewline
         \midrule 
-        $\mathrm{X} + \mathrm{X}$ & $\rightharpoonup$ & $\emptyset             $  & $k_{1} =0.1$ & social friction of prey\tabularnewline
-        $\mathrm{Y} + \mathrm{Y}$ & $\rightharpoonup$ & $\emptyset             $  & $k_{2} =0.1$ & social friction of predator\tabularnewline
-        $\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{X} + \mathrm{X}$ & $k_{3} =1  $ & prey growth\tabularnewline
-        $\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{Y} + \mathrm{Y}$ & $k_{4} =1  $ & predator eats prey\tabularnewline
-        $\mathrm{Y}             $ & $\rightharpoonup$ & $\emptyset             $  & $k_{5} =1  $ & predator decays\tabularnewline
-        $\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{X} + \mathrm{X}$ & $k_{6} =0  $ & artificial reaction\tabularnewline
-        $\mathrm{X}             $ & $\rightharpoonup$ & $\emptyset             $  & $k_{7} =0  $ & artificial reaction\tabularnewline
-        $\mathrm{Y} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{8} =0  $ & artificial reaction\tabularnewline
-        $\mathrm{Y}             $ & $\rightharpoonup$ & $\mathrm{Y} + \mathrm{Y}$ & $k_{9} =0  $ & artificial reaction\tabularnewline
-        $\mathrm{X} + \mathrm{X}$ & $\rightharpoonup$ & $\mathrm{X}             $ & $k_{10}=0  $ & artificial reaction\tabularnewline
-        $\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{X}             $ & $k_{11}=0  $ & artificial reaction\tabularnewline
-        $\mathrm{X} + \mathrm{Y}$ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{12}=0  $ & artificial reaction\tabularnewline
-        $\mathrm{X} + \mathrm{X}$ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{13}=0  $ & artificial reaction\tabularnewline
-        $\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{Y}             $ & $k_{14}=0  $ & artificial reaction\tabularnewline
-        $\mathrm{Y}             $ & $\rightharpoonup$ & $\mathrm{X}             $ & $k_{15}=0  $ & artificial reaction\tabularnewline
-        $\mathrm{X}             $ & $\rightharpoonup$ & $\mathrm{Y} + \mathrm{Y}$ & $k_{16}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{A} + \mathrm{A}$ & $\rightharpoonup$ & $\emptyset             $  & $k_{1} =0.1$ & social friction of prey\tabularnewline
+        $\mathrm{B} + \mathrm{B}$ & $\rightharpoonup$ & $\emptyset             $  & $k_{2} =0.1$ & social friction of predator\tabularnewline
+        $\mathrm{A}             $ & $\rightharpoonup$ & $\mathrm{A} + \mathrm{A}$ & $k_{3} =1  $ & prey growth\tabularnewline
+        $\mathrm{A} + \mathrm{B}$ & $\rightharpoonup$ & $\mathrm{B} + \mathrm{B}$ & $k_{4} =1  $ & predator eats prey\tabularnewline
+        $\mathrm{B}             $ & $\rightharpoonup$ & $\emptyset             $  & $k_{5} =1  $ & predator decays\tabularnewline
+        $\mathrm{A} + \mathrm{B}$ & $\rightharpoonup$ & $\mathrm{A} + \mathrm{A}$ & $k_{6} =0  $ & artificial reaction\tabularnewline
+        $\mathrm{A}             $ & $\rightharpoonup$ & $\emptyset             $  & $k_{7} =0  $ & artificial reaction\tabularnewline
+        $\mathrm{B} + \mathrm{B}$ & $\rightharpoonup$ & $\mathrm{B}             $ & $k_{8} =0  $ & artificial reaction\tabularnewline
+        $\mathrm{B}             $ & $\rightharpoonup$ & $\mathrm{B} + \mathrm{B}$ & $k_{9} =0  $ & artificial reaction\tabularnewline
+        $\mathrm{A} + \mathrm{A}$ & $\rightharpoonup$ & $\mathrm{A}             $ & $k_{10}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{A} + \mathrm{B}$ & $\rightharpoonup$ & $\mathrm{A}             $ & $k_{11}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{A} + \mathrm{B}$ & $\rightharpoonup$ & $\mathrm{B}             $ & $k_{12}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{A} + \mathrm{A}$ & $\rightharpoonup$ & $\mathrm{B}             $ & $k_{13}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{A}             $ & $\rightharpoonup$ & $\mathrm{B}             $ & $k_{14}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{B}             $ & $\rightharpoonup$ & $\mathrm{A}             $ & $k_{15}=0  $ & artificial reaction\tabularnewline
+        $\mathrm{A}             $ & $\rightharpoonup$ & $\mathrm{B} + \mathrm{B}$ & $k_{16}=0  $ & artificial reaction\tabularnewline
         \bottomrule
     \end{tabular}\caption{\label{tab:reaction-library-lv}Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:lv} for the Lotka-Volterra system. The given rate constants define the ground truth reaction model.}
 \end{table*}

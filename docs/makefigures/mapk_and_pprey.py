@@ -34,6 +34,7 @@ if __name__ == '__main__':
     sel = np.argmin(-scores_cv)
     plt.semilogx(alphas_cv, -scores_cv)
     #plt.plot([alphas_cv[sel]], [-scores_cv[sel]], 'x', markersize=20)
+    print(f"Hyperparameter alpha {alphas_cv[sel]}")
     plt.ylim(0., 0.5e-9)
     xmin, xmax = plt.xlim()
     plt.xlim(xmin, 2e-8)
@@ -122,8 +123,8 @@ if __name__ == '__main__':
     def plot_pprey_traj():
         plt.plot(time, counts[:, 0], label='prey')
         plt.plot(time, counts[:, 1], label='predator')
-        plt.xlabel("Time")
-        plt.ylabel("Concentration")
+        plt.xlabel("Time in a.u.")
+        plt.ylabel("Concentration in a.u.")
         plt.legend()
 
     def plot_pprey_models():
@@ -166,6 +167,7 @@ if __name__ == '__main__':
     sel = np.argmin(-scores_cv)
     plt.semilogx(alphas_cv, -scores_cv)
     #plt.plot([alphas_cv[sel]], [-scores_cv[sel]], 'x', markersize=20)
+    print(f"Hyperparameter alpha {alphas_cv[sel]}")
     plt.ylim(6.45e-7, 6.7e-7)
     xmin, xmax = plt.xlim()
     plt.xlim(1e-9, 1e-5)
