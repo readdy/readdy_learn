@@ -191,7 +191,7 @@ with decreasing levels of noise.
 We additionally demonstrate the algorithm
 on time series data of the mitogen activated protein kinases (MAPK) pathway as 
 an example for a bimodal system and on time series data of the
-Lotka-Volterra system which describes predator-prey dynamics subject to
+Lotka-Volterra system which describes oscillatory predator-prey dynamics subject to
 social friction. In both systems reactive SINDy recovers the generating 
 reaction network whereas non-sparse estimation detects many false processes.
 
@@ -589,13 +589,13 @@ Here we model the MAPK pathway with three stages of kinases $\mathrm{MAPK}$, $\m
 For simplicity we assume phosphatase to be abundant such that deactivations 
 effectively become first order reactions.
 The external stimulus $\mathrm{S}$ is not consumed such that time integration of these 
-reactions yields a steady state in which the concentration of response $[\mathrm{TF}]$ 
+reactions yields a steady state in which the response, i.e. the concentration $[\mathrm{TF*}]$ 
 can be measured as a function of the stimulus concentration $[\mathrm{S}]$.
 Using the rate constants given in Tab.~\ref{tab:reaction-library-mapk} we obtain the 
 response curve given in Fig.~\ref{fig:mapk}a. 
 
 We generate concentration time series data of the MAPK reactions above at 
-three different initial conditions, each differing in the amount of stimulus.
+three different initial conditions, each differing in the amount of stimulus $[\mathrm{S}]$.
 They are marked in Fig.~\ref{fig:mapk}a by vertical dashed lines.
 These time series are concatenated to yield a dataset of 300 frames in total.
 We use the library $\Theta$ of candidate reactions Tab.~\ref{tab:reaction-library-mapk}.
@@ -603,12 +603,27 @@ To determine the hyperparameter $\alpha=6.6\times 10^{-9}$ we shuffle the data a
 15-fold cross validation. We obtain the estimated 
 rate constants by solving the minimization problem (\ref{method:minimizationproblem}) 
 with $\lambda=1$. The results are given in Fig.~\ref{fig:mapk}b.
-{\color{red}TODO describe}
+Least-squares estimation detects 5 of the 8 reaction processes that belong to the 
+ground truth model. However it also detects 12 other reaction 
+processes ($\theta_{18}$ - $\theta_{29}$) which are not in the ground truth.
+Reactive SINDy estimation detects all reactions of the ground truth, 
+two processes ($\theta_{4}$ and $\theta_{8}$) show deviations in 
+rate constants. Generally reactive SINDy yields a sparse model which allows further
+simplification of the reaction network by dropping out reaction processes that lie 
+beneath a certain cutoff. In this case for example a cutoff of $0.25$ would directly recover
+the ground truth reaction network.
+Quantitatively, one may consider the $L_1$ norm of the relative distance 
+of estimated rate constants $\hat{\xi}_r$ to the non-zero rate 
+constants of the ground truth $\xi_r$
+\begin{equation*}
+\sum_{r=1}^{8} \left|(\hat{\xi}_{r} - \xi_r)/\xi_r\right|
+\end{equation*}
+which yields $167\%$ error for least-squares and $21\%$ error for reactive SINDy.
 
 \begin{figure}
     \centering
     \includegraphics[width=\singlecolumnwidth]{figures_jcp/6.pdf}
-    \caption{\label{fig:mapk}Application of reactive SINDy to the MAPK pathway system. \textbf{(a)}~The response curve of the MAPK cascade as a function of external stimulus given as a constant concentration $[\mathrm{S}]$. The activity is the steady state concentration of activated transcription factors $[\mathrm{TF*}]$. Dashed lines show the values of $[\mathrm{S}]$ at which concentration time series data was generated. \textbf{(b)}~Estimated rate coefficients of candidate reactions after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) and the ground truth model for comparison.}
+    \caption{\label{fig:mapk}Application of reactive SINDy to the MAPK pathway system. \textbf{(a)}~The response curve of the MAPK cascade as a function of external stimulus given as a constant concentration $[\mathrm{S}]$. The activity is the steady state concentration of activated transcription factors $[\mathrm{TF*}]$. Dashed lines show the values of $[\mathrm{S}]$ at which concentration time series data was generated. \textbf{(b)}~Estimated rate coefficients of candidate reactions (see Tab.~\ref{tab:reaction-library-mapk}) after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) and the ground truth model for comparison.}
 \end{figure}
 
 \subsection{Application to Lotka-Volterra system\label{sec:lv}}
@@ -631,12 +646,21 @@ We determine the hyperparameter $\alpha=2.7\times10^{-7}$ by shuffling
 the data and performing 5-fold cross validation. We obtain the estimated 
 rate constants by solving the minimization problem (\ref{method:minimizationproblem}) 
 with $\lambda=1$. The results are given in Fig.~\ref{fig:lv}b.
-{\color{red}TODO describe}
+Least-squares estimation detects all reactions of the ground truth model but also
+two false processes ($\theta_{6}$ and $\theta_{7}$) with a higher rate than
+the two first true processes ($\theta_{1}$ and $\theta_{2}$). Reactive SINDy detects
+the true reaction network with minor deviations in rate constants. As in 
+Sec.~\ref{sec:mapk} we consider the $L_1$ norm of the relative distance to the ground truth
+for non-zero rate constants
+\begin{equation*}
+\sum_{r=1}^{5} \left|(\hat{\xi}_{r} - \xi_r)/\xi_r\right|
+\end{equation*}
+which yields $75\%$ error for least-squares and $7\%$ error for reactive SINDy.
 
 \begin{figure}
     \centering
     \includegraphics[width=\singlecolumnwidth]{figures_jcp/7.pdf}
-    \caption{\label{fig:lv}Application of reactive SINDy to the Lotka-Volterra system with social friction. \textbf{(a)}~Concentration data as a function of time for predator and prey species. \textbf{(b)}~Estimated rate coefficients of candidate reactions after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) estimation and the ground truth model for comparison.}
+    \caption{\label{fig:lv}Application of reactive SINDy to the Lotka-Volterra system with social friction. \textbf{(a)}~Concentration data as a function of time for predator and prey species. \textbf{(b)}~Estimated rate coefficients of candidate reactions (see Tab.~\ref{tab:reaction-library-lv}) after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) estimation and the ground truth model for comparison.}
 \end{figure}
 
 \section{Conclusion}
@@ -648,21 +672,25 @@ a sparse set of rates with respect to generating reactions (\ref{method:the-reac
 Mathematically this has been achieved by permitting vector-valued
 basis functions and obtaining a tensor linear regression problem.
 We have applied this method on data generated from a gene regulation
-network and could successfully recover the underlying model.
+network, a MAPK pathway, and a Lotka-Volterra system and 
+could successfully recover the underlying reaction networks.
 
 The studies of Sec.~\ref{sec:case-2} and Sec.~\ref{sec:case-3}
 have shown that the applied regularization terms can mitigate noise
 up to a certain degree compared to the unregularized method, so that
 identification of the reaction network is more robust and closer to
 the ground truth.
-
 Potentially, this method could be used to identify reaction networks
 from time series measurements even if the initial conditions are not
 always exactly identical, as was demonstrated in Sec.~\ref{sec:case-3}.
+
 One apparent limitation is that the method can only be applied if
 the data stems from the equilibration phase, as the concentration-based
 approach has derivatives equal zero in the equilibrium, which precludes
-the reaction dynamics to be recovered. In future work, we will consider
+the reaction dynamics to be recovered. Thus, in the case of oscillatory 
+systems the reaction network can be recovered robustly.
+
+In future work, we will consider
 the identification of reaction schemes from instantaneous fluctuations
 of particle numbers in equilibrium.
 

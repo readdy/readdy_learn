@@ -137,19 +137,27 @@ if __name__ == '__main__':
         plt.legend()
 
     def plot_pprey_models():
+        from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+
+        majorLocator = MultipleLocator(3)
+        minorLocator = MultipleLocator(1)
+        x_values = [r"$\theta_{%s}$" % (i + 1) for i in range(len(rates_lsq))]
         plt.plot(rates_cv, 'o', label="regularized")
         plt.plot(rates_lsq, 'd', label="LSQ")
         # plt.vlines([7.5], 0, 1, 'grey', 'dashed')
         plt.plot(rates_desired, 'x', label="ground truth")
-        labels = list(map(str, range(1, len(rates_desired) + 1)))
-        for i in range(len(labels)):
-            if i % 2 == 0:
-                pass
-            else:
-                labels[i] = ""
-        plt.xticks(ticks=range(len(rates_desired)), labels=labels, fontsize=11)
+        # plt.xticks([0, 5, 10], [r'$a^2$', r'$b^2$', r'$c^2$'])
+        labels = [x for (i, x) in enumerate(x_values) if i % 3 == 0]  # list(map(str, range(1, len(rates_desired) + 1)))
+        # for i in range(len(labels)):
+        #    if i % 3 == 0:
+        #        labels[i] = x_values[i]
+        #    else:
+        #        labels[i] = ""
+        plt.gca().xaxis.set_major_locator(majorLocator)
+        plt.gca().xaxis.set_minor_locator(minorLocator)
+        plt.xticks(ticks=[i * 3 for i in range(len(labels))], labels=labels, fontsize=11)
         plt.legend()
-        plt.xlabel(r"Ansatz reaction \#")
+        plt.xlabel(r"Ansatz reaction $\theta_r$")
         plt.ylabel("Rate constant in a.u.")
 
     # Combined figure of traj and result
