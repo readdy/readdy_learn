@@ -573,18 +573,19 @@ The initial activation is often due to an external stimulus.
 The response of the whole cascade is the amount of activated substrate 
 after the final stage, typically measured as a function of the initial stimulus.
 
-Here we model the MAPK pathway with three stages of kinases $\mathrm{MAPK}$, $\mathrm{MAPKK}$, and $\mathrm{MAPKKK}$. The initial stimulus is called $\mathrm{S}$ and the final substrate to be activated is a transcription factor $\mathrm{TF}$. The ground truth reaction network reads
+Here we model the MAPK pathway with three stages of kinases $\mathrm{MAPK}$, $\mathrm{MAPKK}$, and $\mathrm{MAPKKK}$. The initial stimulus is called $\mathrm{S}$ and the final substrate to be activated is a transcription factor $\mathrm{TF}$. The ground truth reaction network consists of activation/phosphorylation reactions
 \begin{align*}
-%\intertext{Activations:}
 \mathrm{S}        + \mathrm{MAPKKK}  & \rightharpoonup \mathrm{S      } + \mathrm{MAPKKK*} \\
 \mathrm{MAPKKK*}  + \mathrm{MAPKK }  & \rightharpoonup \mathrm{MAPKKK*} + \mathrm{MAPKK* } \\
 \mathrm{MAPKK*}   + \mathrm{MAPK  }  & \rightharpoonup \mathrm{MAPKK* } + \mathrm{MAPK*  } \\
-\mathrm{MAPK*}    + \mathrm{TF    }  & \rightharpoonup \mathrm{MAPK*  } + \mathrm{TF*    }
-%\intertext{Deactivations:}
-\\\mathrm{MAPKKK*}    \mathrm{      }  & \rightharpoonup \mathrm{MAPKKK }  \\
-\mathrm{MAPKK*}     \mathrm{      }  & \rightharpoonup \mathrm{MAPKK  }  \\
-\mathrm{MAPK*}      \mathrm{      }  & \rightharpoonup \mathrm{MAPK   }  \\
-\mathrm{TF*}        \mathrm{      }  & \rightharpoonup \mathrm{TF     }.
+\mathrm{MAPK*}    + \mathrm{TF    }  & \rightharpoonup \mathrm{MAPK*  } + \mathrm{TF*    } \\
+\end{align*}
+and deactivation/dephosphorylation reactions
+\begin{align*}
+\mathrm{MAPKKK*}                     & \rightharpoonup \mathrm{MAPKKK }  \\
+\mathrm{MAPKK*}                      & \rightharpoonup \mathrm{MAPKK  }  \\
+\mathrm{MAPK*}                       & \rightharpoonup \mathrm{MAPK   }  \\
+\mathrm{TF*}                         & \rightharpoonup \mathrm{TF     }.
 \end{align*}
 For simplicity we assume phosphatase to be abundant such that deactivations 
 effectively become first order reactions.
