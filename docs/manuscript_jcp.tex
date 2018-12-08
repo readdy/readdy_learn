@@ -191,7 +191,7 @@ with decreasing levels of noise.
 We additionally demonstrate the algorithm
 on time series data of the mitogen activated protein kinases (MAPK) pathway as 
 an example for a bimodal system and on time series data of the
-Lotka-Volterra system which describes oscillatory predator-prey dynamics subject to
+Lotka--Volterra system which describes oscillatory predator-prey dynamics subject to
 social friction. In both systems reactive SINDy recovers the generating 
 reaction network whereas non-sparse estimation detects many false processes.
 
@@ -640,28 +640,28 @@ The predator-prey dynamics of two species $\mathrm{A}$ (prey) and $\mathrm{B}$
 \mathrm{A} + \mathrm{A} & \rightharpoonup \emptyset &  & \text{(prey friction)},\\
 \mathrm{B} + \mathrm{B} & \rightharpoonup \emptyset &  & \text{(predator friction)}.
 \end{align*}
-From this model we generate concentration time series data with $200$ frames 
-which is displayed in Fig.~\ref{fig:lv}a. We construct the library $\Theta$ 
-of candidate reactions given in Tab.~\ref{tab:reaction-library-lv}. 
-We determine the hyperparameter $\alpha=2.7\times10^{-7}$ by shuffling 
-the data and performing 5-fold cross validation. We obtain the estimated 
-rate constants by solving the minimization problem (\ref{method:minimizationproblem}) 
-with $\lambda=1$. The results are given in Fig.~\ref{fig:lv}b.
+From this model we generated concentration time series data with $200$ frames 
+which is displayed in Fig.~\ref{fig:lv}a. The library 
+of ansatz reactions $\Theta$ is given in Tab.~\ref{tab:reaction-library-lv}. 
+The hyperparameter $\alpha=2.7\times10^{-7}$ was determined by shuffling 
+the data and performing 5-fold cross validation. The estimated 
+rate constants were obtained by solving the minimization problem (\ref{method:minimizationproblem}) 
+with $\lambda=1$. The results are depicted in Fig.~\ref{fig:lv}b.
 Least-squares estimation detects all reactions of the ground truth model but also
-two false processes ($\theta_{6}$ and $\theta_{7}$) with a higher rate than
-the two first true processes ($\theta_{1}$ and $\theta_{2}$). Reactive SINDy detects
+two spurious processes ($\theta_{6}$ and $\theta_{7}$) with a higher rate than
+the first two underlying processes ($\theta_{1}$ and $\theta_{2}$). Reactive SINDy recovers
 the true reaction network with minor deviations in rate constants. As in 
-Sec.~\ref{sec:mapk} we consider the $L_1$ norm of the relative distance to the ground truth
+Sec.~\ref{sec:mapk}, considering the $L_1$ norm of the relative distance to the ground truth
 for non-zero rate constants
 \begin{equation*}
 \sum_{r=1}^{5} \left|(\hat{\xi}_{r} - \xi_r)/\xi_r\right|
 \end{equation*}
-which yields $75\%$ error for least-squares and $7\%$ error for reactive SINDy.
+yields $75\%$ error for least-squares and $7\%$ error for reactive SINDy.
 
 \begin{figure}
     \centering
     \includegraphics[width=\singlecolumnwidth]{figures_jcp/7.pdf}
-    \caption{\label{fig:lv}Application of reactive SINDy to the Lotka-Volterra system with social friction. \textbf{(a)}~Concentration data as a function of time for predator and prey species. \textbf{(b)}~Estimated rate coefficients of candidate reactions (see Tab.~\ref{tab:reaction-library-lv}) after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) estimation and the ground truth model for comparison.}
+    \caption{\label{fig:lv}Application of reactive SINDy to the Lotka--Volterra system with social friction. \textbf{(a)}~Concentration data as a function of time for predator and prey species. \textbf{(b)}~Estimated rate coefficients of candidate reactions (see Tab.~\ref{tab:reaction-library-lv}) after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) estimation and the ground truth model for comparison.}
 \end{figure}
 
 \section{Conclusion}
@@ -673,7 +673,7 @@ a sparse set of rates with respect to generating reactions (\ref{method:the-reac
 Mathematically this has been achieved by permitting vector-valued
 basis functions and obtaining a tensor linear regression problem.
 We have applied this method on data generated from a gene regulation
-network, a MAPK pathway, and a Lotka-Volterra system and 
+network, a MAPK pathway, and a Lotka--Volterra system and 
 could successfully recover the underlying reaction networks.
 
 The studies of Sec.~\ref{sec:case-2} and Sec.~\ref{sec:case-3}
@@ -845,7 +845,7 @@ $\mathrm{mRNA}_{\mathrm{C}}+\mathrm{A}$  & $\rightharpoonup$  & $\mathrm{C}$  & 
         $\mathrm{B}             $ & $\rightharpoonup$ & $\mathrm{A}             $ & $k_{15}=0  $ & artificial reaction\tabularnewline
         $\mathrm{A}             $ & $\rightharpoonup$ & $\mathrm{B} + \mathrm{B}$ & $k_{16}=0  $ & artificial reaction\tabularnewline
         \bottomrule
-    \end{tabular}\caption{\label{tab:reaction-library-lv}Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:lv} for the Lotka-Volterra system. The given rate constants define the ground truth reaction model.}
+    \end{tabular}\caption{\label{tab:reaction-library-lv}Full set of ansatz reactions $\Theta$ used in Sec.~\ref{sec:lv} for the Lotka--Volterra system. The given rate constants define the ground truth reaction model.}
 \end{table*}
 
 %\ifthisispreprint
