@@ -573,7 +573,7 @@ The initial activation is often due to an external stimulus.
 The response of the whole cascade is the amount of activated substrate 
 after the final stage, typically measured as a function of the initial stimulus.
 
-Here we model the MAPK pathway with three stages of kinases $\mathrm{MAPK}$, $\mathrm{MAPKK}$, and $\mathrm{MAPKKK}$. The initial stimulus is called $\mathrm{S}$ and the final substrate to be activated is a transcription factor $\mathrm{TF}$. The ground truth reaction network consists of activation/phosphorylation reactions
+Here the MAPK pathway is modeled with three stages of kinases $\mathrm{MAPK}$, $\mathrm{MAPKK}$, and $\mathrm{MAPKKK}$. The initial stimulus is called $\mathrm{S}$ and the final substrate to be activated is a transcription factor $\mathrm{TF}$. The ground truth reaction network consists of activation/phosphorylation reactions
 \begin{align*}
 \mathrm{S}        + \mathrm{MAPKKK}  & \rightharpoonup \mathrm{S      } + \mathrm{MAPKKK*} \\
 \mathrm{MAPKKK*}  + \mathrm{MAPKK }  & \rightharpoonup \mathrm{MAPKKK*} + \mathrm{MAPKK* } \\
@@ -590,28 +590,28 @@ and deactivation/dephosphorylation reactions
 For simplicity we assume phosphatase to be abundant such that deactivations 
 effectively become first order reactions.
 The external stimulus $\mathrm{S}$ is not consumed such that time integration of these 
-reactions yields a steady state in which the response, i.e. the concentration $[\mathrm{TF*}]$ 
+reactions yields a steady state in which the response, i.e., the concentration $[\mathrm{TF*}]$ 
 can be measured as a function of the stimulus concentration $[\mathrm{S}]$.
 Using the rate constants given in Tab.~\ref{tab:reaction-library-mapk} we obtain the 
 response curve given in Fig.~\ref{fig:mapk}a. 
 
 We generate concentration time series data of the MAPK reactions above at 
 three different initial conditions, each differing in the amount of stimulus $[\mathrm{S}]$.
-They are marked in Fig.~\ref{fig:mapk}a by vertical dashed lines.
-These time series are concatenated to yield a dataset of 300 frames in total.
-We use the library $\Theta$ of candidate reactions Tab.~\ref{tab:reaction-library-mapk}.
-To determine the hyperparameter $\alpha=6.6\times 10^{-9}$ we shuffle the data and perform
-15-fold cross validation. We obtain the estimated 
-rate constants by solving the minimization problem (\ref{method:minimizationproblem}) 
+The response yielded by the chosen initial conditions is marked in Fig.~\ref{fig:mapk}a by vertical dashed lines.
+The concatenated time series is a dataset of 300 frames in total.
+We use the library $\Theta$ of ansatz reactions Tab.~\ref{tab:reaction-library-mapk}.
+The hyperparameter $\alpha=6.6\times 10^{-9}$ was determined by shuffling the data and performing
+15-fold cross validation. The estimated 
+rate constants were obtained by solving the minimization problem (\ref{method:minimizationproblem}) 
 with $\lambda=1$. The results are given in Fig.~\ref{fig:mapk}b.
 Least-squares estimation detects 5 of the 8 reaction processes that belong to the 
-ground truth model. However it also detects 12 other reaction 
-processes ($\theta_{18}$ - $\theta_{29}$) which are not in the ground truth.
+ground truth model. However it also detects 12 spurious reaction 
+processes ($\theta_{18}$ - $\theta_{29}$).
 Reactive SINDy estimation detects all reactions of the ground truth, 
 two processes ($\theta_{4}$ and $\theta_{8}$) show deviations in 
 rate constants. Generally reactive SINDy yields a sparse model which allows further
 simplification of the reaction network by dropping out reaction processes that lie 
-beneath a certain cutoff. In this case for example a cutoff of $0.25$ would directly recover
+beneath a certain cutoff. In this case for example a cutoff of $\kappa=0.25$ would directly recover
 the ground truth reaction network.
 Quantitatively, one may consider the $L_1$ norm of the relative distance 
 of estimated rate constants $\hat{\xi}_r$ to the non-zero rate 
@@ -627,12 +627,12 @@ which yields $167\%$ error for least-squares and $21\%$ error for reactive SINDy
     \caption{\label{fig:mapk}Application of reactive SINDy to the MAPK pathway system. \textbf{(a)}~The response curve of the MAPK cascade as a function of external stimulus given as a constant concentration $[\mathrm{S}]$. The activity is the steady state concentration of activated transcription factors $[\mathrm{TF*}]$. Dashed lines show the values of $[\mathrm{S}]$ at which concentration time series data was generated. \textbf{(b)}~Estimated rate coefficients of candidate reactions (see Tab.~\ref{tab:reaction-library-mapk}) after application of reactive SINDy (regularized) to the time series data. Least-squares estimation (LSQ) and the ground truth model for comparison.}
 \end{figure}
 
-\subsection{Application to Lotka-Volterra system\label{sec:lv}}
+\subsection{Application to Lotka--Volterra system\label{sec:lv}}
 As biological pathways often exhibit oscillatory behavior~\cite{Iqbal2008tnf} which can stem 
 from positive or negative feedback loops~\cite{Shin2009positive} we apply reactive SINDy to
-an idealized oscillatory system, namely the Lotka-Volterra system. 
+an idealized oscillatory system, namely the Lotka--Volterra system. 
 The predator-prey dynamics of two species $\mathrm{A}$ (prey) and $\mathrm{B}$ 
-(predator) is defined by the reactions
+(predator) is defined by the reaction network
 \begin{align*}
 \mathrm{A}              & \rightharpoonup \mathrm{A} + \mathrm{A} &  & \text{(prey growth)},\\
 \mathrm{A} + \mathrm{B} & \rightharpoonup \mathrm{B} + \mathrm{B} &  & \text{(predator eats prey)},\\
