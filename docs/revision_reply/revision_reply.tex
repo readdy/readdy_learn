@@ -1,0 +1,50 @@
+\documentclass[11pt,english]{article}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage[utf8]{inputenc}
+\usepackage{babel}
+\usepackage{hyperref}
+\setlength\parindent{0pt}
+
+\usepackage{url}
+\def\UrlFont{\fontfamily{lmtt}\selectfont \footnotesize}
+
+\title{}
+
+\begin{document}
+\pagenumbering{gobble}
+
+\textbf{{\Large Response to the reviewers}}\newline
+
+\textbf{{\large Reviewer \# 2}}\newline
+
+Thank you for the detailed review. We have addressed the comments in the
+following way\newline
+
+\textbf{Original comment:}
+{This paper describes the modification of an approach called SINDY that first appeared in PNAS in 2015. It is used to estimate parameters in a system of chemical reactions in the presence or absence of noise. The method is applied to a rather artificial gene regulatory models in both a deterministic and stochastic setting. I have the following minor comments and one major comment.\\
+1. The authors refer to ``ansatz'' functions. I know what ansatz means in German but what is meant here? - please clarify.}\newline
+
+\textbf{Answer:}
+The meaning of the word ``ansatz'' is now clarified when it first occurs (page 1).\newline
+
+\textbf{Original comment:}
+{2. Bottom of page 3, column 1. The authors mention a suitable choice of hyper parameters. But why is alpha =$1.91\times 10^{-7}$ suitable? And at this stage I still do not know what Kappa represents.\\
+3. Page 3, line -5, Col. 2. There is a line that makes no sense.}\newline
+
+\textbf{Answer:}
+There was a formatting error which caused certain pieces of
+text to disappear and randomly re-appear at a different place in the
+document. We hope that now the choice of alpha (cross validation) and
+the meaning of kappa (cutoff) are clarified and the line that made no
+sense is put back into context.\newline
+
+\textbf{Original comment:}
+{My major comment is that the test problem is artificial and boring, with very little interesting dynamics. I would like to see the approach work on a problem that has some bimodality, for example. Furthermore, I would also like to see the method applied to a realistic biological test problem such as the MAPK cascade. Otherwise the impact of the work is quite low. This is not negotiable in terms of acceptance.}\newline
+
+\textbf{Answer:}
+We now applied the method to a MAPK cascade as well as a predator-prey model that contains
+temporal bimodality and show that we can recover the correct reaction
+network with the correct regularization hyperparameters.
+
+\end{document}
