@@ -1,7 +1,6 @@
 import numpy as _np
 from scipy.integrate import odeint as _odeint
 from pathos.multiprocessing import Pool as _Pool
-import readdy_learn.analyze.progress as _pr
 
 
 def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps, noise_variance=0., n_realizations=1,
@@ -11,7 +10,7 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
             theta = _np.array([f(data) for f in bfc.functions])
             return _np.matmul(rates, theta)
 
-        xs = _np.linspace(0, n_steps * timestep, num=n_steps*supersample, endpoint=False)
+        xs = _np.linspace(0, n_steps * timestep, num=int(n_steps*supersample), endpoint=False)
         initial_condition = _np.array(initial_condition).squeeze()
         ys = _np.array(_odeint(fun_reference, initial_condition, xs)).squeeze()
         if noise_variance > 0.:
@@ -22,7 +21,7 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
             theta = _np.array([f(data) for f in bfc.functions])
             return _np.matmul(rates, theta)
 
-        xs = _np.linspace(0, n_steps * timestep, num=n_steps*supersample, endpoint=False)
+        xs = _np.linspace(0, n_steps * timestep, num=int(n_steps*supersample), endpoint=False)
         initial_condition = _np.array(initial_condition).squeeze()
 
         def generate_wrapper(args):
@@ -33,13 +32,11 @@ def generate_continuous_counts(rates, initial_condition, bfc, timestep, n_steps,
             return ys
 
         avgcounts = None
-        progress = _pr.Progress(n=n_realizations, label="generate averaged lma counts with additive noise")
         N = 0.
 
         params = [(i,) for i in range(n_realizations)]
         with _Pool(processes=njobs) as p:
             for counts in p.imap(generate_wrapper, params, 1):
-                progress.increase(1)
                 N += 1.
                 if avgcounts is None:
                     avgcounts = counts
@@ -63,7 +60,6 @@ def generate_averaged_kmc_counts(set_up_system, target_time, timestep, n_realiza
     prevlevel = kmc.log.getEffectiveLevel()
     kmc.log.setLevel(logging.WARNING)
     params = [(set_up_system, target_time, timestep) for _ in range(n_realizations)]
-    progress = _pr.Progress(n=n_realizations, label="generate averaged kmc")
     try:
         def generate_wrapper(args):
             _, counts = generate_kmc_counts(*args)
@@ -75,7 +71,6 @@ def generate_averaged_kmc_counts(set_up_system, target_time, timestep, n_realiza
         if njobs == 1:
             for p in params:
                 counts = generate_wrapper(p)
-                progress.increase(1)
                 N += 1.
                 if avgcounts is None:
                     avgcounts = counts
@@ -89,7 +84,6 @@ def generate_averaged_kmc_counts(set_up_system, target_time, timestep, n_realiza
         else:
             with _Pool(processes=njobs) as p:
                 for counts in p.imap(generate_wrapper, params, 1):
-                    progress.increase(1)
                     N += 1.
                     if avgcounts is None:
                         avgcounts = counts
@@ -107,7 +101,6 @@ def generate_averaged_kmc_counts(set_up_system, target_time, timestep, n_realiza
             print("WARN: times[1]-times[0] was {} but was expected to be {}".format(times[1] - times[0], timestep))
         return times, avgcounts
     finally:
-        progress.finish()
         kmc.log.setLevel(prevlevel)
 
 

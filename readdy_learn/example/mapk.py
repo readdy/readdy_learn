@@ -190,14 +190,11 @@ def solve(config: MAPKConfiguration, counts, dcounts_dt, alpha, l1_ratio):
 def solve_grid(config: MAPKConfiguration, counts, dcounts_dt, alphas, l1_ratios, njobs=1):
     import itertools
     import pathos.multiprocessing as multiprocessing
-    from readdy_learn.analyze.progress import Progress
 
     alphas = _np.atleast_1d(_np.array(alphas).squeeze())
     lambdas = _np.atleast_1d(_np.array(l1_ratios).squeeze())
     params = itertools.product(alphas, lambdas)
     params = [(counts, dcounts_dt, p[0], p[1]) for p in params]
-
-    progress = Progress(len(params), label="validation", nstages=1)
 
     def worker(args):
         c, dc, a, l = args
@@ -212,8 +209,6 @@ def solve_grid(config: MAPKConfiguration, counts, dcounts_dt, alphas, l1_ratios,
     with multiprocessing.Pool(processes=njobs) as p:
         for idx, res in enumerate(p.imap_unordered(worker, params, 1)):
             result.append(res)
-            progress.increase()
-    progress.finish()
 
     return result
 
@@ -228,7 +223,7 @@ def cv(config: MAPKConfiguration, counts, dcounts_dt, alphas=(1.,), l1_ratios=(1
     cv.splitter = 'kfold'
     cv.n_splits = n_splits
     cv.njobs = njobs
-    cv.show_progress = True
+    cv.show_progress = False
     cv_result = cv.cross_validate(alphas, l1_ratios, realizations=1)
     result = {"cv_result": cv_result}
     return result

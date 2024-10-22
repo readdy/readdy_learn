@@ -104,7 +104,7 @@ def obtain_derivative(traj, alpha=1000, atol=1e-10, tol=1e-10, maxit=1000, alpha
                     ld = deriv.tv_derivative(ys, traj.times, alpha=alpha, **kw)
                     best_alpha = alpha
                 # linearly interpolate to the full time range
-                integrated_ld = deriv.integrate.cumtrapz(ld, x=traj.times, initial=0) + \
+                integrated_ld = deriv.integrate.cumulative_trapezoid(ld, x=traj.times, initial=0) + \
                                 x0[s] if x0 is not None else ys[0]
                 if variance is not None:
                     var = variance
@@ -611,7 +611,7 @@ class ReactionAnalysis(_interface.ReactionAnalysisObject):
                 plt.plot(traj.times, estimated[:, type_id], "k--",
                          label=None if type_id != 3 else "law of mass action solution")
                 if plot_estimated:
-                    integrated_ld = deriv.integrate.cumtrapz(traj.separate_derivs[type_id], x=traj.times, initial=0) \
+                    integrated_ld = deriv.integrate.cumulative_trapezoid(traj.separate_derivs[type_id], x=traj.times, initial=0) \
                                     + np.array(self.initial_states[n]).squeeze()[type_id]
                     plt.plot(traj.times, integrated_ld, "r--", label="integrated derivative")
         # plt.legend(loc="upper right")

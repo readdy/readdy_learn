@@ -4,7 +4,6 @@ import numpy as _np
 import itertools as _itertools
 
 import readdy_learn.analyze.interface as _interface
-import readdy_learn.analyze.progress as _progress
 
 import pathos.multiprocessing as _multiprocessing
 
@@ -58,8 +57,8 @@ class Validation(object):
         alphas = _np.array(alphas).squeeze()
         lambdas = _np.array(lambdas).squeeze()
 
-        assert _np.alltrue(lambdas <= 1), "some lambdas were greater than 1"
-        assert _np.alltrue(lambdas >= 0), "some lambdas were smaller than 0"
+        assert _np.all(lambdas <= 1), "some lambdas were greater than 1"
+        assert _np.all(lambdas >= 0), "some lambdas were smaller than 0"
 
         print("validating across grid with {} alphas, {} lambdas, {} cutoffs with {} realizations"
               .format(len(alphas), len(lambdas), len(cutoffs), realizations))
@@ -70,19 +69,9 @@ class Validation(object):
 
         result = []
 
-        progress = None
-        if self.show_progress:
-            progress = _progress.Progress(len(params),
-                                          label="validation", nstages=1)
-
         with _multiprocessing.Pool(processes=self.njobs) as p:
             for idx, res in enumerate(p.imap_unordered(self._validate, params, 1)):
                 result.append(res)
-                if self.show_progress:
-                    progress.increase()
-
-        if self.show_progress:
-            progress.finish()
 
         self.result_ = result
         return result

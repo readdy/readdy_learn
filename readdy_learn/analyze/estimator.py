@@ -254,7 +254,6 @@ class CV(object):
         return {'scores': scores, 'alpha': alpha, 'l1_ratio': l1_ratio, 'train_trajs': train_ix, 'test_trajs': test_ix}
 
     def fit_cross_trajs(self):
-        from readdy_learn.analyze.progress import Progress
         from sklearn.model_selection import LeaveOneOut
 
         loo = LeaveOneOut()
@@ -263,13 +262,9 @@ class CV(object):
             train_sets.append((train, test))
         params = itertools.product(self.alphas, self.l1_ratios, train_sets)
         result = []
-        progress = Progress(n=len(self.alphas) * len(self.l1_ratios) * len(train_sets))
-
         with Pool(processes=self.n_jobs) as p:
             for idx, res in enumerate(p.imap_unordered(self.compute_cv_result_cross_trajs, params, 1)):
                 result.append(res)
-                progress.increase()
-        progress.finish()
         self.result = result
 
     def compute_cv_result(self, params):
@@ -305,32 +300,18 @@ class CV(object):
     def fit(self):
         params = itertools.product(self.alphas, self.l1_ratios)
         result = []
-        if self.show_progress:
-            from ipywidgets import IntProgress
-            from IPython.display import display
-            f = IntProgress(min=0, max=len(self.alphas) * len(self.l1_ratios) - 1)
-            display(f)
         with Pool(processes=self.n_jobs) as p:
             for idx, res in enumerate(p.imap_unordered(self.compute_cv_result, params, 1)):
                 result.append(res)
-                if self.show_progress:
-                    f.value = idx
-        if self.show_progress:
-            f.close()
         self.result = result
 
 
 def get_dense_params(traj, bfc, n_initial_values=16, n_jobs=8, initial_value=None):
-    from ipywidgets import IntProgress
-    from IPython.display import display
     if initial_value is not None:
         n_initial_values = 1
         initial_values = [initial_value]
     else:
         initial_values = [np.random.random(bfc.n_basis_functions) for _ in range(n_initial_values)]
-
-    f = IntProgress(min=1, max=n_initial_values)
-    display(f)
 
     def worker(init_xi):
         est = ReaDDyElasticNetEstimator(traj, bfc, alpha=0, l1_ratio=1.0, init_xi=init_xi, verbose=False)

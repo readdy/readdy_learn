@@ -5,7 +5,6 @@ import numpy as _np
 import itertools as _itertools
 
 import readdy_learn.analyze.interface as _interface
-import readdy_learn.analyze.progress as _progress
 import readdy_learn.analyze.estimator as _estimator
 
 import pathos.multiprocessing as _multiprocessing
@@ -124,8 +123,8 @@ class CrossValidation(object):
         alphas = _np.atleast_1d(_np.array(alphas).squeeze())
         lambdas = _np.atleast_1d(_np.array(lambdas).squeeze())
 
-        assert _np.alltrue(lambdas <= 1), "some lambdas were greater than 1"
-        assert _np.alltrue(lambdas >= 0), "some lambdas were smaller than 0"
+        assert (_np.all(lambdas <= 1)), "some lambdas were greater than 1"
+        assert _np.all(lambdas >= 0), "some lambdas were smaller than 0"
 
         print("validating across grid with {} alphas, {} lambdas, {} cutoffs with {} realizations"
               .format(len(alphas), lambdas.size, len(cutoffs), realizations))
@@ -134,20 +133,11 @@ class CrossValidation(object):
         params = [(p[0], p[1], p[2], j + i * realizations) for i, p in enumerate(params)
                   for j, _ in enumerate(range(realizations))]
 
-        progress = None
-        if self.show_progress:
-            progress = _progress.Progress(len(params), label="validation", nstages=1)
-
         result = []
 
         with _multiprocessing.Pool(processes=self.njobs) as p:
             for idx, res in enumerate(p.imap_unordered(self._cross_validate, params, 1)):
                 result.append(res)
-                if self.show_progress:
-                    progress.increase()
-
-        if self.show_progress:
-            progress.finish()
 
         self.result_ = result
         return result

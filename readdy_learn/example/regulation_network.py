@@ -3,7 +3,6 @@ import pynumtools.kmc as _kmc
 import readdy_learn.analyze.basis as _basis
 import matplotlib.pyplot as plt
 from pathos.multiprocessing import Pool as _Pool
-import readdy_learn.analyze.progress as _pr
 import readdy_learn.analyze.interface as _interface
 import readdy_learn.analyze.analyze as _ana
 from pynumtools.finite_differences import fd_coefficients as _fd_coeffs
@@ -407,8 +406,6 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8,
 
     result = {}
 
-    progress = _pr.Progress(n=samples_per_alpha * len(alphas), label="sample for alphas")
-
     def worker(args):
         alpha = args[0]
         analysis = regulation_network.generate_analysis_object(fname_prefix='case_1', fname_postfix='0')
@@ -428,8 +425,6 @@ def sample_along_alpha(regulation_network, alphas, samples_per_alpha=1, njobs=8,
                 result[alpha].append(rates)
             else:
                 result[alpha] = [rates]
-            progress.increase()
-    progress.finish()
 
     return result
 
@@ -504,7 +499,6 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
         return do_for_n_realizations(n)
 
     from collections import defaultdict
-    progress = _pr.Progress(n=len(realizations) * samples_per_variance, label="sample L2 error for variances")
     result = {}
     with _Pool(processes=njobs) as p:
         for n in realizations:
@@ -516,7 +510,5 @@ def sample_lsq_rates(realizations, base_variance=.1, samples_per_variance=8, njo
                 res['prefix'] = r['prefix']
                 res['postfix'] = r['postfix']
                 res['n'] = n
-                progress.increase()
             result[n] = res
-    progress.finish()
     return result

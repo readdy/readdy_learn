@@ -368,15 +368,6 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
     assert isinstance(data, np.ndarray)
 
     label = None
-    if show_progress:
-        from ipywidgets import Label, Box
-        from IPython.display import display
-        label = Label("Progress: 0/{} it, atol={}/{}, rtol={}/{}".format(0, '?', atol, '?', rtol))
-        box = Box([label])
-        display(box)
-
-    if show_progress:
-        label.value = 'copying data and setting f(0) = 0'
 
     # require f(0) = 0
     data = np.copy(data) - data[0]
@@ -389,8 +380,6 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
     n = len(data)
 
     # differentiation operator
-    if show_progress:
-        label.value = 'obtaining differentiation operator'
     D = get_fd_matrix_midpoints(xs, k=1, window_width=5)
     # D = #get_differentiation_operator_midpoint(xs)
     D_T = D.transpose(copy=True).tocsc()
@@ -410,39 +399,22 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
 
     Aadj_A = lambda v: A_adjoint(A(v))
 
-    if show_progress:
-        label.value = 'calculating native gradient of data'
     u = np.gradient(data, xs)
 
-    if show_progress:
-        label.value = 'precalculating A*(data)'
     KT_data = A_adjoint(data)
 
     xs_diff = np.diff(xs)
     # DX = sparse.spdiags(np.diff(xs), 0, n - 1, n - 1)
 
-    if show_progress:
-        label.value = 'preparing E_n'
     E_n = sparse.dia_matrix((n - 1, n - 1), dtype=xs.dtype)
     prev_grad_norm = None
 
     spsolve_term = None
     if precondition or solver == 'spsolve' or solver == 'np' or True:
-        if show_progress:
-            if precondition:
-                label.value = 'computing preconditioner: getting integration operator'
-            else:
-                label.value = 'assembling matrix'
         K = get_integration_operator(xs)
-        if show_progress and precondition:
-            label.value = 'computing preconditioner: getting adjoint integration operator'
         KT = get_integration_adjoint_operator(xs)
-        if show_progress and precondition:
-            label.value = 'calculating K^T * K'
         spsolve_term = KT * K
 
-    if show_progress:
-        label.value = 'begin solver loop for alpha={}'.format(alpha)
     # Main loop.
     relative_change = None
     first_strike = False
@@ -460,14 +432,8 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
         if solver == 'lgmres' or solver == 'lgmres_scipy':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
-                if show_progress:
-                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, compute spilu' \
-                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
-                if show_progress:
-                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, lgmres' \
-                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 if solver == 'lgmres_scipy':
                     s, info_i = splin.lgmres(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
                 else:
@@ -480,14 +446,8 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
         elif solver == 'bicgstab':
             linop = splin.LinearOperator((n, n), lambda v: (alpha * L * v + Aadj_A(v)))
             if precondition:
-                if show_progress:
-                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, compute spilu' \
-                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 lu = splin.spilu(alpha * L + spsolve_term, drop_tol=5e-2)
                 precond = splin.LinearOperator((n, n), lambda v: lu.solve(v))
-                if show_progress:
-                    label.value = 'Progress: {}/{} it, atol={}/{}, rtol={}/{}, bicgstab' \
-                        .format(ii, maxit, prev_grad_norm, atol, relative_change, rtol)
                 [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit, M=precond)
             else:
                 [s, info_i] = splin.bicgstab(A=linop, b=-g, x0=u, tol=tol, maxiter=linalg_solver_maxit)
@@ -525,17 +485,10 @@ def ld_derivative(data, xs, alpha=10, maxit=1000, linalg_solver_maxit=100, tol=1
         # Update current solution
         u = u + s
 
-        if show_progress:
-            label.value = "Progress: {}/{} it, atol={}/{}, rtol={}/{}" \
-                .format(ii, maxit, np.linalg.norm(g), atol, relative_change, rtol)
 
         if atol is not None and np.linalg.norm(g) < atol:
-            if show_progress:
-                label.value = "ld derivative reached atol = {} < {}, finish".format(atol, np.linalg.norm(g))
             break
         if rtol is not None and relative_change < rtol:
-            if show_progress:
-                label.value = "ld derivative reached rtol = {} < {}, finish".format(rtol, relative_change)
             break
 
     if show_progress:
@@ -650,7 +603,6 @@ def estimate_noise_variance(xs, ys):
 #    else:
 
 def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, reuse_deriv=True, **kw):
-    from readdy_learn.analyze.progress import Progress
 
     args = dict(kw)
     if variance is not None:
@@ -662,8 +614,6 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, reus
     derivs = []
     best = 0
     current_best_tv = None
-
-    prog = Progress(n=len(alphas), label='Find alpha', nstages=n_iters)
 
     scores = []
 
@@ -711,8 +661,6 @@ def best_tv_derivative(data, xs, alphas, n_iters=4, variance=None, x0=None, reus
 
 def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw):
     from pathos.multiprocessing import Pool
-    from readdy_learn.analyze.progress import Progress
-
     assert len(alphas) > 0
     assert n_iters > 0
 
@@ -724,8 +672,6 @@ def best_ld_derivative(data, xs, alphas, n_iters=4, njobs=8, variance=None, **kw
     wuerger = lambda x: (x, ld_derivative(data, xs, **kwkopy, alpha=x))
 
     for i in range(n_iters):
-        prog = Progress(n=len(alphas), label='Find alpha')
-
         print("current level = {}, looking in [{}, {}]".format(i, np.min(alphas), np.max(alphas)))
 
         derivs = []
