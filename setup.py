@@ -67,5 +67,5 @@ setup(
     ext_modules=ext_modules,
     packages=find_packages(),
     zip_safe=False,
-    install_requires=['numpy', 'scipy', 'pathos', 'scikit-learn', 'h5py', 'matplotlib', 'progress_reporter']
+    install_requires=['numpy', 'scipy', 'pathos', 'scikit-learn', 'h5py', 'matplotlib']
 )
