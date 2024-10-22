@@ -31,7 +31,7 @@ import numpy as np
 import scipy.optimize as so
 from pathos.multiprocessing import Pool
 from readdy_learn.analyze_tools import opt
-from sklearn.linear_model.base import BaseEstimator
+from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.model_selection import TimeSeriesSplit
 
